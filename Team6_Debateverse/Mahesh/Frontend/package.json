@@ -1,0 +1,8 @@
+{
+  "name": "frontend",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "react-scripts": "^5.0.1"
+  }
+}
