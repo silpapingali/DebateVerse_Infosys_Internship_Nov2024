@@ -1,8 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-function Register() {
+const Register= ()=>{
   const navigate = useNavigate();
+  const [RegisterData,setRegisterData] = useState({
+    name:'',
+    email:'',
+    password:'',
+    role:''
+  })
+  const handleChange=(e)=>{ 
+    setRegisterData(
+      {
+        ...RegisterData,
+        [e.target.name]: e.target.value
+      }
+    )
+  }
+  const handleSubmit= async(e)=>{
+    e.preventDefault();
+    console.log(RegisterData);
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -15,6 +33,8 @@ function Register() {
               id="name"
               name="name"
               type="text"
+              onChange={handleChange}
+              value={RegisterData.name}
               required
               className="w-full px-3 py-2 mt-1 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             />
@@ -24,6 +44,8 @@ function Register() {
             <input
               id="email"
               name="email"
+              onChange={handleChange}
+              value={RegisterData.email}
               type="email"
               required
               className="w-full px-3 py-2 mt-1 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
@@ -35,6 +57,8 @@ function Register() {
               id="password"
               name="password"
               type="password"
+              onChange={handleChange}
+              value={RegisterData.password}
               required
               className="w-full px-3 py-2 mt-1 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             />
@@ -44,6 +68,8 @@ function Register() {
             <select
               id="role"
               name="role"
+              onChange={handleChange}
+              value={RegisterData.role}
               required
               className="w-full px-3 py-2 mt-1 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             >
