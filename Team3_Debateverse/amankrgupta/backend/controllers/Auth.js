@@ -1,9 +1,35 @@
-const userModel = require("../models/userModels");
+const userModels = require("../models/userModels");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
-const Login = (req, res) => {
+const Login = async (req, res) => {
   const { email, password } = req.body;
-  
+  console.log({ email, password });
+
+  try {
+    const user = await userModels.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: "User not found" });
+    }
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res
+        .status(400)
+        .json({ message: "email or password is incorrect" });
+    }
+    const token = jwt.sign({ email, password }, process.env.JWT_SECRET, {
+      expiresIn: "10m",
+    });
+    res.status(200).json({
+      message: "logged in",
+      token,
+    });
+  } catch {
+    console.log("error during login");
+    res.status(400).json({
+      message: "server error",
+    });
+  }
 };
 
 const Register = async (req, res) => {
@@ -11,13 +37,13 @@ const Register = async (req, res) => {
   console.log({ name, email, password, role });
 
   try {
-    const user = await userModel.findOne({ email });
+    const user = await userModels.findOne({ email });
     console.log(user);
     if (user) {
       return res.status(400).json({ message: "User already exists" });
     }
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new userModel({
+    const newUser = new userModels({
       name,
       email,
       password: hashedPassword,
@@ -27,7 +53,7 @@ const Register = async (req, res) => {
     res.status(201).json({ message: "User created successfully" });
   } catch (error) {
     // console.error("Error during registration:", error);
-    res.status(500).json({error, message: "Server error" });
+    res.status(500).json({ error, message: "Server error" });
   }
 };
 

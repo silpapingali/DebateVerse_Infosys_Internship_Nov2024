@@ -1,6 +1,6 @@
 const { body, validationResult } = require("express-validator");
 
-const Validate = [
+const RegisterValidate = [
   body("name")
     .notEmpty()
     .withMessage("Name is required")
@@ -15,14 +15,32 @@ const Validate = [
     .withMessage("Role must be either user or admin"),
 
   (req, res, next) => {
-    const result= validationResult(req);
-    if (!result.isEmpty()) {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
       return res
         .status(400)
-        .json({ errors: result.array(), message: "Invalid input" });
+        .json({ errors: errors.array() , message: "Invalid input" });
     }
     next();
   },
 ];
 
-module.exports = { Validate };
+const LoginValidate = [
+  body("email")
+    .isEmail()
+    .withMessage("Invalid email format"),
+  body("password")
+    .isLength({ min: 6 })
+    .withMessage("Password is too short"),
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res
+        .status(400)
+        .json({ errors: errors.array(), message: "Invalid input" });
+    }
+    next();
+  },
+];
+
+module.exports = { RegisterValidate, LoginValidate };

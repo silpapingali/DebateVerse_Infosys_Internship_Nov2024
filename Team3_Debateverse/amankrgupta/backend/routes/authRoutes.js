@@ -1,12 +1,9 @@
-
 const express = require('express');
 const Authroute = express.Router();
-const { Validate } = require('../middlewares/AuthValidation');
-
+const { RegisterValidate, LoginValidate } = require('../middlewares/AuthValidation');
 const {Login, Register} = require('../controllers/Auth');
-const { validate } = require('../models/userModels');
 
-Authroute.post('/login',Login)
-Authroute.post('/register',Validate, Register);
+Authroute.post('/login', LoginValidate, Login)
+Authroute.post('/register', RegisterValidate, Register);
 
 module.exports = Authroute;
