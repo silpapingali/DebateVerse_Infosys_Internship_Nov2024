@@ -12,13 +12,14 @@ const Register = async (req, res) => {
   console.log({ name, email, password, role });
 
   try {
-    const user = userModel.findOne({ email });
+    const user =await userModel.findOne({ email });
     console.log(user);
     if (user) {
       return res.status(400).json({ message: "User already exists" });
     }
     const newUser = new userModel({ name, email, password, role });
-    newData.password = await bcrypt.hash(password, process.env.SALT);
+    newUser.password = await bcrypt.hash(password, process.env.SALT);
+    console.log(newData);
     await newUser.save();
     res.status(201).json({ message: "User created successfully" });
   } catch (error) {
