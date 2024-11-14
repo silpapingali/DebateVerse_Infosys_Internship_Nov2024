@@ -3,8 +3,7 @@ const bcrypt = require("bcrypt");
 
 const Login = (req, res) => {
   const { email, password } = req.body;
-  console.log({ email, password });
-  res.send("Logined successfully");
+  
 };
 
 const Register = async (req, res) => {
