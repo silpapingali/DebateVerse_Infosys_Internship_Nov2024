@@ -52,8 +52,25 @@ const Register = async (req, res) => {
     res.status(201).json({ message: "User created successfully" });
   } catch (error) {
     // console.error("Error during registration:", error);
-    res.status(500).json({ error, message: "Server error" });
+    res.status(400).json({ error, message: "Server error" });
   }
 };
 
-module.exports = { Login, Register };
+const ResetPassword =async (req, res)=>{
+  const {email, password }= req.body;
+  console.log(email, password);
+  if (!password){
+    const user= await userModels.findOne({email});
+    if(!user){
+      return res.json({message: "email not found"});
+    }
+    return res.json({message: "email exist"});
+  } else {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user= await userModels.findOneAndUpdate({email},{password: hashedPassword});
+    console.log(user);
+    res.status(200).json({message: "password reseted"})
+  }
+}
+
+module.exports = { Login, Register, ResetPassword };
