@@ -33,8 +33,8 @@ const Login = async (req, res) => {
 };
 
 const Register = async (req, res) => {
-  const { name, email, password, role } = req.body;
-  console.log({ name, email, password, role });
+  const { email, password, role } = req.body;
+  console.log({ email, password, role });
 
   try {
     const user = await userModels.findOne({ email });
@@ -44,7 +44,6 @@ const Register = async (req, res) => {
     }
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = new userModels({
-      name,
       email,
       password: hashedPassword,
       role,
