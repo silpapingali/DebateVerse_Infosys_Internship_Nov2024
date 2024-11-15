@@ -8,7 +8,6 @@ const RegisterValidate = [
   body("role")
     .isIn(["user", "admin"])
     .withMessage("Role must be either user or admin"),
-
   (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
