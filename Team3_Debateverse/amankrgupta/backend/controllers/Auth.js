@@ -5,7 +5,6 @@ const { verifyMail, resetMail } = require("../utils/Mailer");
 
 const Login = async (req, res) => {
   const { email, password } = req.body;
-  console.log({ email, password });
 
   try {
     const user = await userModels.findOne({ email });
@@ -13,8 +12,8 @@ const Login = async (req, res) => {
       return res.status(400).json({ message: "User not found" });
     }
     if (!user.isVerified) {
-      await sendMail(user);
-      return res.json({ message: "verify email" });
+      const result= await verifyMail(user);
+      return res.status(400).json({ message: "verify email" });
     }
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
@@ -29,10 +28,11 @@ const Login = async (req, res) => {
       message: "logged in",
       token,
     });
-  } catch {
+  } catch(err) {
     console.log("error during login");
-    res.status(400).json({
+    res.status(500).json({
       message: "server error",
+      err,
     });
   }
 };
@@ -64,7 +64,7 @@ const Register = async (req, res) => {
     }
   } catch (error) {
     console.error("Error during registration:", error);
-    res.status(400).json({ error, message: "Server error" });
+    res.status(500).json({ error, message: "Server error" });
   }
 };
 
@@ -97,10 +97,10 @@ const ResetPassword = async (req, res) => {
   if (!password) {
     const user = await userModels.findOne({ email });
     if (!user) {
-      return res.json({ message: "email not found" });
+      return res.status(400).json({ message: "email not found" });
     }
     const mailed= await resetMail(email);
-    return res.json({ message: "email exist" });
+    return res.status(400).json({ message: "email exist" });
   } else {
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await userModels.updateOne(
