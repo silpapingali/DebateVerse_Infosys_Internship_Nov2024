@@ -13,7 +13,7 @@ const RegisterValidate = [
     if (!errors.isEmpty()) {
       return res
         .status(400)
-        .json({ errors: errors.array() , message: "Invalid input" });
+        .json({inputerrors : errors.array() , message: "Invalid input type !" });
     }
     next();
   },
@@ -22,16 +22,16 @@ const RegisterValidate = [
 const LoginValidate = [
   body("email")
     .isEmail()
-    .withMessage("Invalid email format"),
+    .withMessage("Invalid email format !"),
   body("password")
     .isLength({ min: 6 })
-    .withMessage("Password is too short"),
+    .withMessage("Password is too short !"),
   (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res
         .status(400)
-        .json({ errors: errors.array(), message: "Invalid input" });
+        .json({ inputerrors: errors.array(), message: "Invalid input type !" });
     }
     next();
   },

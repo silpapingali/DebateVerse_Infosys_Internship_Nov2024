@@ -5,48 +5,51 @@ const { verifyMail, resetMail } = require("../utils/Mailer");
 
 const Login = async (req, res) => {
   const { email, password } = req.body;
-
+  console.log({email, password});
   try {
     const user = await userModels.findOne({ email });
     if (!user) {
-      return res.status(400).json({ message: "User not found" });
+      return res.status(400).json({ message: "Email not found ! Please register" });
     }
     if (!user.isVerified) {
-      const result= await verifyMail(user);
-      return res.status(400).json({ message: "verify email" });
+      const result = await verifyMail(user);
+      return res
+        .status(400)
+        .json({
+          message: "Not verified ! Verification link sent to your email",
+        });
     }
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res
         .status(400)
-        .json({ message: "email or password is incorrect" });
+        .json({ message: "Email or password is incorrect !" });
     }
     const token = jwt.sign({ email, password }, process.env.JWT_SECRET, {
-      expiresIn: "5m",
+      expiresIn: "1m",
     });
     res.status(200).json({
-      message: "logged in",
+      message: "Welcome Back ! You are Logged In",
       token,
     });
-  } catch(err) {
-    console.log("error during login");
+  } catch (err) {
     res.status(500).json({
-      message: "server error",
-      err,
+      message: "Server error !",
     });
   }
 };
 
 const Register = async (req, res) => {
   const { email, password, role, isVerified } = req.body;
-  console.log({ email, password, role, isVerified });
+  // console.log({ email, password, role, isVerified });
 
   try {
     const user = await userModels.findOne({ email });
     if (user) {
-      return res.status(400).json({ message: "User already exists" });
+      return res.status(200).json({ message: "User already exists !" });
     }
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // const hashedPassword = await bcrypt.hash(password, 10);
+
     const newUser = new userModels({
       email,
       password: hashedPassword,
@@ -58,13 +61,12 @@ const Register = async (req, res) => {
     if (send) {
       res
         .status(201)
-        .json({ message: "User created successfully && email sent" });
+        .json({ message: "Success ! Verify your email from inbox" });
     } else {
-      res.status(400).json({ message: "could not sent mail" });
+      res.status(400).json({ message: "Server issue ! Please try again" });
     }
   } catch (error) {
-    console.error("Error during registration:", error);
-    res.status(500).json({ error, message: "Server error" });
+    res.status(500).json({ error, message: "Server error !" });
   }
 };
 
@@ -74,11 +76,13 @@ const Verify = async (req, res) => {
     const user = await userModels.findOne({ email });
     console.log(user);
     if (!user) {
-      return res.render("verified", { message: "Invalid URL: user not found" });
+      return res.render("verified", {
+        message: "Invalid URL ! Verification failed",
+      });
     }
     if (!p == user.password) {
       return res.render("verified", {
-        message: "Invalid url password not matched",
+        message: "Invalid URL ! Verification failed",
       });
     }
     await userModels.updateOne({ email }, { isVerified: true });
@@ -86,8 +90,8 @@ const Verify = async (req, res) => {
       message: "Congratulations! You are Verified",
     });
   } catch (err) {
-    console.log(err, "in catch");
-    return res.render("verified", { message: "server error" });
+    // console.log(err, "in catch");
+    return res.render("verified", { message: "Server error ! Verification failed" });
   }
 };
 
@@ -97,10 +101,13 @@ const ResetPassword = async (req, res) => {
   if (!password) {
     const user = await userModels.findOne({ email });
     if (!user) {
-      return res.status(400).json({ message: "email not found" });
+      return res.status(400).json({ message: "Email not found !" });
     }
-    const mailed= await resetMail(email);
-    return res.status(400).json({ message: "email exist" });
+    const mailed = await resetMail(email);
+    if(!mailed){
+      return res.status(400).json({ message: "Unable to sent ! Please try again later" });
+    } 
+    return res.status(200).json({ message: "Reset password link sent to your email !" });
   } else {
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await userModels.updateOne(
@@ -108,7 +115,7 @@ const ResetPassword = async (req, res) => {
       { password: hashedPassword }
     );
     console.log(user);
-    res.status(200).json({ message: "password reseted" });
+    res.status(200).json({ message: "Password reset successful !" });
   }
 };
 
