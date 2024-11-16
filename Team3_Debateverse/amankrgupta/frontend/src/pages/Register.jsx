@@ -24,10 +24,11 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if(confirmPassword != Register.password){
+    if(confirmPassword == Register.password){
       toast.error("Password mismatch ! Check confirm password again")
       return;
     }
+    console.log(RegisterData);
     setIsLoading(true);
     try {
       const res = await axios.post(
@@ -86,8 +87,8 @@ const Register = () => {
               id="password"
               name="password"
               type="password"
-              onChange={(e)=> setConfirmPassword(e.target.value)}
-              value={confirmPassword}
+              onChange={handleChange}
+              value={RegisterData.password}
               required
               className="w-full px-3 py-2 mt-1 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             />
@@ -103,7 +104,7 @@ const Register = () => {
               id="confirmPassword"
               name="confirmPassword"
               type= "text"
-              onChange={handleChange}
+              onChange={(e)=> setConfirmPassword(e.target.value)}
               required
               className="w-full px-3 py-2 mt-1 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             />
