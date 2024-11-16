@@ -2,10 +2,12 @@ import axios from "axios";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import {Eye, EyeOff} from "lucide-react";
 
 const Register = () => {
   const navigate = useNavigate();
   const [IsLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [RegisterData, setRegisterData] = useState({
     email: "",
     password: "",
@@ -70,7 +72,7 @@ const Register = () => {
               className="w-full px-3 py-2 mt-1 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             />
           </div>
-          <div>
+          <div className="relative">
             <label
               htmlFor="password"
               className="block text-sm font-medium text-gray-700"
@@ -80,12 +82,15 @@ const Register = () => {
             <input
               id="password"
               name="password"
-              type="password"
+              type={showPassword? "text" : "password"}
               onChange={handleChange}
               value={RegisterData.password}
               required
               className="w-full px-3 py-2 mt-1 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             />
+            <button type="button" onClick={()=> setShowPassword(!showPassword)} className="absolute inset-y-11 right-1 flex items-center px-3 text-gray-600">
+              {showPassword? <EyeOff/> : <Eye/>}
+            </button>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">

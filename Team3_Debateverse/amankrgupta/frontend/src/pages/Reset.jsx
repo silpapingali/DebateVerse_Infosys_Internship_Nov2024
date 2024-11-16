@@ -1,29 +1,33 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { toast } from "react-toastify"
+import {Eye, EyeOff} from "lucide-react";
 
-export const Reset = ({ isAllow }) => {
+export const Reset = () => {
+  const navigate = useNavigate();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [params]= useSearchParams();
+  const [showPassword, setShowPassword] = useState(false);
+  const token= params.get("token");
+  console.log(token);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (password !== confirmPassword) {
-      toast.error("Passwords do not match");
+      toast.error("Passwords do not match !");
       return;
     }
     setLoading(true);
     try {
       const res = await axios.post(
-        `http://localhost:3000/api/auth/reset-password`,
+        `http://localhost:3000/api/auth/resetpassword`,
         { token, password }
       );
-      toast.success(res.data.message, {
-        onClose: () => useNavigate("/login"), // Navigate to login after toast closes
-      });
+      toast.success(res.data.message);
+      navigate("/login");
     } catch (err) {
       toast.error(err.response?.data?.message || "Error! Please try again");
     } finally {
@@ -62,7 +66,7 @@ export const Reset = ({ isAllow }) => {
             <input
               id="confirmPassword"
               name="confirmPassword"
-              type="password"
+              type="text"
               onChange={(e) => setConfirmPassword(e.target.value)}
               value={confirmPassword}
               required

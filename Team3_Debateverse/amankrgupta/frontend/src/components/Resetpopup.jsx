@@ -15,14 +15,13 @@ const Resetpopup = ({ onClose }) => {
     setIsLoading(true);
     e.preventDefault();
     try {
-      const res = await axios.post('http://localhost:3000/api/auth/resetpassword', { email, password:"" });
+      const res = await axios.post('http://localhost:3000/api/auth/resetrequest', { email, password:"" });
       toast.success(res.data.message);
+      onClose();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Error! Please try again');
     } finally {
         setIsLoading(false);
-        setEmail('');
-        onClose();
     }
   };
 

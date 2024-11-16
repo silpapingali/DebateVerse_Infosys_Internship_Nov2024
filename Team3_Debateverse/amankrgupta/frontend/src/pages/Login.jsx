@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import {Eye, EyeOff} from "lucide-react";
 import Resetpopup from '../components/Resetpopup';
 
 const Login = () => {
@@ -12,6 +13,7 @@ const Login = () => {
   });
   const [loading, setLoading] = useState(false); // Loading state
   const [showResetPopup, setShowResetPopup] = useState(false); // State to manage the visibility of the ResetPopup
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
     setLoginData({
@@ -28,7 +30,7 @@ const Login = () => {
       if (res.status === 200) {
         localStorage.setItem('token', res.data.token); 
         toast.success(res.data.message);
-        navigate('/'); 
+        navigate('/dashboard'); 
       } else {
         toast.error(res.data.message);
       }
@@ -69,13 +71,13 @@ const Login = () => {
               onChange={handleChange}
             />
           </div>
-          <div>
+          <div className="relative">
             <label className="block text-sm font-medium text-gray-700" htmlFor="password">
               Password
             </label>
             <input
               className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               id="password"
               placeholder="Enter your password"
               name="password"
@@ -83,6 +85,13 @@ const Login = () => {
               value={loginData.password}
               onChange={handleChange}
             />
+            <button
+              type="button"
+              className="absolute inset-y-11 right-1 flex items-center px-3 text-gray-600"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <EyeOff /> : <Eye />}
+            </button>
           </div>
           <div className="text-right">
             <button

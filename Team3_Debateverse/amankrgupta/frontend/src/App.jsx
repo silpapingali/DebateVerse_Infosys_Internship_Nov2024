@@ -11,11 +11,11 @@ function App() {
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/dashboard" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/debates" element={<Debates />} />
-        <Route path="/reset-password" element={<Reset isAllow={true} />} />
-        <Route path="/reset-password" element={<Reset isAllow={false}/>} />
+        <Route path="/resetpassword" element={<Reset />} />
       </Routes>
     </Router>
   );
