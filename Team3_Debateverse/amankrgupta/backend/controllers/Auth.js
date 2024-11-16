@@ -19,7 +19,7 @@ const Login = async (req, res) => {
         .status(400)
         .json({ message: "Email or password is incorrect !" });
     }
-    const token = jwt.sign({ email, password }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ email, password, role: databaseUser.role }, process.env.JWT_SECRET, {
       expiresIn: "1m",
     });
     res.status(200).json({

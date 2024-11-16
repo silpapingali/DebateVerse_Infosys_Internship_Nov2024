@@ -2,12 +2,12 @@ import axios from "axios";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import {Eye, EyeOff} from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 
 const Register = () => {
   const navigate = useNavigate();
   const [IsLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [RegisterData, setRegisterData] = useState({
     email: "",
     password: "",
@@ -23,8 +23,12 @@ const Register = () => {
   };
 
   const handleSubmit = async (e) => {
-    setIsLoading(true);
     e.preventDefault();
+    if(confirmPassword != Register.password){
+      toast.error("Password mismatch ! Check confirm password again")
+      return;
+    }
+    setIsLoading(true);
     try {
       const res = await axios.post(
         "http://localhost:3000/api/auth/register",
@@ -32,16 +36,15 @@ const Register = () => {
       );
       if (res.status == 201) {
         toast.success(res.data.message);
-        navigate("/login")
+        navigate("/login");
       } else toast.error(res.data.message);
     } catch (err) {
       if (err.response && err.response.data && err.response.data.inputerrors) {
         err.response.data.inputerrors.forEach((error) => {
-          toast.error(error.msg+" !");
+          toast.error(error.msg + " !");
         });
       } else {
-        const errorMessage =
-          err.message || "Error! Please try again.";
+        const errorMessage = err.message || "Error! Please try again.";
         toast.error(errorMessage);
       }
       console.error(err);
@@ -72,7 +75,7 @@ const Register = () => {
               className="w-full px-3 py-2 mt-1 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             />
           </div>
-          <div className="relative">
+          <div>
             <label
               htmlFor="password"
               className="block text-sm font-medium text-gray-700"
@@ -82,15 +85,28 @@ const Register = () => {
             <input
               id="password"
               name="password"
-              type={showPassword? "text" : "password"}
-              onChange={handleChange}
-              value={RegisterData.password}
+              type="password"
+              onChange={(e)=> setConfirmPassword(e.target.value)}
+              value={confirmPassword}
               required
               className="w-full px-3 py-2 mt-1 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             />
-            <button type="button" onClick={()=> setShowPassword(!showPassword)} className="absolute inset-y-11 right-1 flex items-center px-3 text-gray-600">
-              {showPassword? <EyeOff/> : <Eye/>}
-            </button>
+          </div>
+          <div>
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Confirm Password
+            </label>
+            <input
+              id="confirmPassword"
+              name="confirmPassword"
+              type= "text"
+              onChange={handleChange}
+              required
+              className="w-full px-3 py-2 mt-1 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">
