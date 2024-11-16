@@ -72,8 +72,14 @@ const Verify = async (req, res) => {
       });
     }
     const { email, password, role, isVerified } = decoded;
-    const hashedPassword= await bcrypt.hash(password, 10);
     try {
+      const user = await userModels.findOne({ email });
+      if (user) {
+        return res.render("verified", {
+          message: "Congratulations! You are Verified",
+        });
+      }
+      const hashedPassword = await bcrypt.hash(password, 10);
       const newUser = new userModels({
         email,
         password: hashedPassword,
@@ -92,11 +98,11 @@ const Verify = async (req, res) => {
   });
 };
 
-const ResetRequest= async (req, res)=>{
-  const {email}= req.body;
+const ResetRequest = async (req, res) => {
+  const { email } = req.body;
   console.log(email, " in request reset");
-  try{
-    const user = await userModels.findOne({email});
+  try {
+    const user = await userModels.findOne({ email });
     if (!user) {
       return res.status(400).json({ message: "Email not found !" });
     }
@@ -110,15 +116,17 @@ const ResetRequest= async (req, res)=>{
       .status(200)
       .json({ message: "Reset password link sent to your email !" });
   } catch {
-    res.status(400).json({message: "Server error ! Please try again"})
+    res.status(400).json({ message: "Server error ! Please try again" });
   }
-}
+};
 
 const ResetPassword = async (req, res) => {
   const { token, password } = req.body;
-  jwt.verify(token, process.env.JWT_SECRET, async (err, decoded)=>{
-    if(err){
-      res.status(400).json({message: "Expire or Invalid link ! Request again"})
+  jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
+    if (err) {
+      res
+        .status(400)
+        .json({ message: "Expire or Invalid link ! Request again" });
     }
     console.log(decoded);
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -128,7 +136,7 @@ const ResetPassword = async (req, res) => {
     );
     console.log(user);
     res.status(200).json({ message: "Password reset successful !" });
-  })
+  });
 };
 
 module.exports = { Login, Register, ResetPassword, Verify, ResetRequest };
