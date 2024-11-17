@@ -2,7 +2,6 @@ import axios from "axios";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { Eye, EyeOff } from "lucide-react";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -24,11 +23,11 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if(confirmPassword == Register.password){
-      toast.error("Password mismatch ! Check confirm password again")
+    if (confirmPassword == Register.password) {
+      toast.error("Password mismatch ! Check confirm password again");
       return;
     }
-    if(RegisterData.password.length<6){
+    if (RegisterData.password.length < 6) {
       toast.error("Password must be at least 6 characters long !");
       return;
     }
@@ -46,10 +45,10 @@ const Register = () => {
     } catch (err) {
       if (err.response && err.response.data && err.response.data.inputerrors) {
         err.response.data.inputerrors.forEach((error) => {
-          toast.error(error.msg + " !");
+          toast.error(error.msg);
         });
       } else {
-        const errorMessage = err.message || "Error! Please try again.";
+        const errorMessage = err.message || "Error ! Please try again.";
         toast.error(errorMessage);
       }
       console.error(err);
@@ -107,8 +106,8 @@ const Register = () => {
             <input
               id="confirmPassword"
               name="confirmPassword"
-              type= "text"
-              onChange={(e)=> setConfirmPassword(e.target.value)}
+              type="text"
+              onChange={(e) => setConfirmPassword(e.target.value)}
               required
               className="w-full px-3 py-2 mt-1 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             />

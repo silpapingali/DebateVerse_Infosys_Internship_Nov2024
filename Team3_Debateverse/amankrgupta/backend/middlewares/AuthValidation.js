@@ -13,7 +13,7 @@ const RegisterValidate = [
     if (!errors.isEmpty()) {
       return res
         .status(400)
-        .json({ inputerrors: errors.array(), message: "Invalid input type !" });
+        .json({ inputerrors: errors.array()});
     }
     next();
   },
@@ -29,7 +29,7 @@ const LoginValidate = [
     if (!errors.isEmpty()) {
       return res
         .status(400)
-        .json({ inputerrors: errors.array(), message: "Invalid input type !" });
+        .json({ inputerrors: errors.array()});
     }
     next();
   },
@@ -44,7 +44,7 @@ const ResetPasswordValidate = [
     if (!errors.isEmpty()) {
       return res
         .status(400)
-        .json({ inputerrors: errors.array(), message: "Password must be at least 6 characters long !" });
+        .json({ inputerrors: errors.array()});
     }
     next();
   },

@@ -29,9 +29,9 @@ const verifyMail = async (newUser) => {
 const resetMail = async (email) => {
   console.log("in mailer", email);
   try {
-    // console.log("first");
-    const token = jwt.sign({email}, process.env.JWT_SECRET, { expiresIn: "10m" });
-    // console.log("second", email);
+    const token = jwt.sign({ email }, process.env.JWT_SECRET, {
+      expiresIn: "10m",
+    });
     const url = `http://localhost:5173/resetpassword?token=${token}`;
     await transporter.sendMail({
       from: process.env.MAILER_EMAIL,
