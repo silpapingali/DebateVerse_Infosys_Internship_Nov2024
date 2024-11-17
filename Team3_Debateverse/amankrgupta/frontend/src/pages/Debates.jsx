@@ -1,6 +1,9 @@
+import React from 'react'
 
 const Debates = () => {
-  return <div>Debates Page</div>;
-};
+  return (
+    <div>Debates</div>
+  )
+}
 
-export default Debates;
+export default Debates

@@ -3,7 +3,7 @@ const db = require("./models/db");
 const cors = require("cors");
 require("dotenv").config();
 const Authroute = require("./routes/authRoutes");
-const { Authjwt } = require("./middlewares/Authjwt");
+const DebateRoute= require("./routes/debateRoute")
 
 const app = express();
 
@@ -15,11 +15,8 @@ app.use(cors());
 app.set("view engine", "ejs");
 
 
-app.use("/api/auth", Authroute)
-app.get("/products",Authjwt,(req, res)=>{
-  console.log("welcome to product");
-  res.json({message: "welcome to product"});
-})
+app.use("/api/auth", Authroute);
+app.use("/api/debates", DebateRoute);
 
 app.listen(process.env.PORT, () => {
   console.log("server started");

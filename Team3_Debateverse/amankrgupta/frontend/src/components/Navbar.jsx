@@ -1,41 +1,93 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { UserContext } from "../context/userContext";
+import { useContext, useState } from "react";
+import { LogOut, Menu, X } from "lucide-react";
+import Swal from "sweetalert2";
 
 const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { isAuthenticated, setIsAuthenticated } = useContext(UserContext);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const toggleMenu = () => {
-    setIsOpen(!isOpen);
+    setIsMenuOpen(!isMenuOpen);
+  };
+  const Logout = () => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "Do you really want to log out?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, log out!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        localStorage.removeItem("token");
+        setIsAuthenticated(false);
+        toggleMenu();
+        navigate("/login");
+        Swal.fire("Logged Out!", "You have been logged out.", "success");
+      }
+    });
   };
 
   return (
-    <nav className="p-4 bg-gray-800">
-      <div className="container flex items-center justify-between mx-auto">
-        <div className="text-xl font-bold text-white">DebateHub</div>
-        <div className="hidden space-x-4 md:flex">
-          <Link to="/" className="text-gray-300 hover:text-white">Home</Link>
-          <Link to="/debates" className="text-gray-300 hover:text-white">Debates</Link>
-          <Link to="/contact" className="text-gray-300 hover:text-white">Contact</Link>
-          <Link to="/about" className="text-gray-300 hover:text-white">About</Link>
-        </div>
+    <nav className="w-full bg-[#1e3a8a] p-5">
+      <div className="container mx-auto flex justify-between items-center">
+        {/* Logo */}
+        <button
+          onClick={() => navigate("/")}
+          className="text-white text-xl font-bold"
+        >
+          DebateHub
+        </button>
+
+        {/* Hamburger icon for mobile */}
         <div className="md:hidden">
-          <button onClick={toggleMenu} className="text-gray-300 hover:text-white focus:outline-none">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={isOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}></path>
-            </svg>
+          <button onClick={toggleMenu} className="text-white">
+            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
-      </div>
-      {isOpen && (
-        <div className="md:hidden">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            <Link to="/" className="block text-gray-300 hover:text-white">Home</Link>
-            <Link to="/debates" className="block text-gray-300 hover:text-white">Debates</Link>
-            <Link to="/contact" className="block text-gray-300 hover:text-white">Contact</Link>
-            <Link to="/about" className="block text-gray-300 hover:text-white">About</Link>
-          </div>
+
+        {/* Menu: Show hidden on small screens, always visible on larger screens */}
+        <div
+          className={`${
+            isMenuOpen ? "block" : "hidden"
+          } md:flex flex flex-col md:flex-row items-center justify-center gap-3 md:space-x-14 absolute md:relative top-16 md:top-0 left-0 w-full bg-[#1e3a8a] md:w-auto p-4 md:p-0`}
+        >
+          {isAuthenticated && (
+            <>
+              <Link
+                onClick={toggleMenu}
+                to="/"
+                className={`hover:text-white ${
+                  location.pathname === "/"
+                    ? "underline text-white"
+                    : "text-gray-400"
+                }`}
+              >
+                Home
+              </Link>
+              <Link
+                onClick={toggleMenu}
+                to="/dashboard"
+                className={`hover:text-white ${
+                  location.pathname === "/dashboard"
+                    ? "underline text-white"
+                    : "text-gray-400"
+                }`}
+              >
+                Dashboard
+              </Link>
+              <button onClick={Logout}>
+                <LogOut className="text-gray-200" />
+              </button>
+            </>
+          )}
         </div>
-      )}
+      </div>
     </nav>
   );
 };

@@ -20,7 +20,7 @@ const Login = async (req, res) => {
         .json({ message: "Email or password is incorrect !" });
     }
     const token = jwt.sign({ email, password, role: databaseUser.role }, process.env.JWT_SECRET, {
-      expiresIn: "1m",
+      expiresIn: "10m",
     });
     res.status(200).json({
       message: "Welcome Back ! You are Logged In",
