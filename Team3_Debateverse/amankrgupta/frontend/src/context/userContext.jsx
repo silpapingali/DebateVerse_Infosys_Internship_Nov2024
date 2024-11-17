@@ -11,7 +11,7 @@ const UserContextProvider = ({ children }) => {
   const location = useLocation();  // Get the current route
 
   useEffect(() => {
-    const noAuthRequiredRoutes = ["/login", "/register"];
+    const noAuthRequiredRoutes = ["/login", "/register", "/resetpassword"];
     if (noAuthRequiredRoutes.includes(location.pathname)) {
       return;
     }

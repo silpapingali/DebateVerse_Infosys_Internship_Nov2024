@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Home from "./pages/Home";
 import Navbar from "./components/Navbar";
 import Login from "./pages/Login";
@@ -8,7 +8,7 @@ import { Reset } from "./pages/Reset";
 import { UserContextProvider } from "./context/userContext";
 function App() {
   return (
-    <Router>
+    <BrowserRouter>
       <UserContextProvider>
         <Navbar />
         <Routes>
@@ -19,7 +19,7 @@ function App() {
           <Route path="/resetpassword" element={<Reset />} />
         </Routes>
       </UserContextProvider>
-    </Router>
+    </BrowserRouter>
   );
 }
 
