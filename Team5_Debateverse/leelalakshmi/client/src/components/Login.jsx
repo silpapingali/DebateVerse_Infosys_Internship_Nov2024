@@ -1,38 +1,63 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
+import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
-import { FcGoogle } from "react-icons/fc";
-import { useForm } from "react-hook-form";
-import { useAuth } from '../context/AuthContext';
+import { store } from '../App';
 
 const Login = () => {
-    const [message, setMessage] = useState("");
-    const {loginUser,signInWithGoogle} = useAuth();
     const navigate = useNavigate();
+    const [token, setToken] = useContext(store);
+    const [data, setData] = useState({
+        email: '',
+        password: '',
+    });
+    const [errorMessage, setErrorMessage] = useState(''); // For displaying error messages
 
-    const { register, handleSubmit, formState: { errors } } = useForm();
-
-    const onSubmit = async (data) => {
-        // Mock validation check
-        try {
-            await loginUser(data.email,data.password);
-            alert("Login successfull");
-            navigate("/")
-        } catch (error) {
-            setMessage("Please provide a valid email and password")
-            console.log(error) 
-        }
-        
+    // Handle input changes
+    const changeHandler = (e) => {
+        setData({ ...data, [e.target.name]: e.target.value });
     };
 
-    const handleGoogleSignIn = async () => {
-        // Google sign-in logic
+    // Handle form submission
+    const submitHandler = async (e) => {
+        e.preventDefault();
+        if (!data.email || !data.password) {
+            setErrorMessage('Please enter both email and password');
+            return;
+        }
+        // Check if the email format is valid
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailPattern.test(data.email)) {
+            setErrorMessage('Invalid email format');
+            return;
+        }
         try {
-            await signInWithGoogle();
-            alert("Login successful!")
-            navigate("/")
+            const res = await axios.post('http://localhost:5000/login', data); // Ensure correct URL
+            setToken(res.data.token); // Save token to context
+            if (res.data.role === 'admin') {
+                navigate('/admindashboard'); // Redirect to admin dashboard if user is admin
+              } else {
+                navigate('/userdashboard'); // Redirect to user dashboard if user is normal user
+              } // Redirect on success
         } catch (error) {
-            alert("Google sign in failed")
-            console.log(error) 
+            // Customize error messages based on error response
+            if (error.response) {
+                // If error response exists, it means it's from the server
+                if (error.response.data === 'USER_NOT_FOUND') {
+                    setErrorMessage('Email not found. Please check your email address.');
+                } else if (error.response.data === 'PASSWORD_MISSMATCH') {
+                    setErrorMessage('Password doesn\'t match. Please check your password.');
+                } else if (error.response.data === 'DATABASE_ISSUE') {
+                    setErrorMessage('Database issue: Unable to login at this time. Please try again later.');
+                } else if (error.response.data === 'SERVER_ISSUE') {
+                    setErrorMessage('Server issue: Unable to process your request at the moment. Please try again later.');
+                } 
+                else {
+                    setErrorMessage('Login failed. Please try again.');
+                }
+            } else {
+                setErrorMessage('An error occurred. Please try again later.');
+            }
+            console.error(error.response?.data?.error || error.message);
         }
     };
 
@@ -41,54 +66,57 @@ const Login = () => {
             <div className="w-full max-w-sm mx-auto bg-white/80 shadow-md rounded px-8 pt-6 pb-8 mb-4">
                 <h2 className="text-xl font-semibold mb-4">Please Login</h2>
 
-                <form onSubmit={handleSubmit(onSubmit)}>
-                    <div className='mb-4'>
-                        <label className='block text-gray-700 text-sm mb-2' htmlFor='email'>Email</label>
-                        <input 
-                            {...register("email", { required: true })}
-                            type='email' 
-                            name='email' 
-                            id='email' 
-                            placeholder='Email Address' 
-                            className='shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow' 
+                <form onSubmit={submitHandler}>
+                    <div className="mb-4">
+                        <label className="block text-gray-700 text-sm mb-2" htmlFor="email">
+                            Email
+                        </label>
+                        <input
+                            type="email"
+                            name="email"
+                            id="email"
+                            placeholder="Email Address"
+                            onChange={changeHandler}
+                            value={data.email}
+                            className="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow"
                         />
-                        {errors.email && <p className="text-red-500 text-xs italic">Email is required</p>}
                     </div>
 
-                    <div className='mb-4'>
-                        <label className='block text-gray-700 text-sm mb-2' htmlFor='password'>Password</label>
-                        <input 
-                            {...register("password", { required: true })}
-                            type='password' 
-                            name='password' 
-                            id='password' 
-                            placeholder='Password' 
-                            className='shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow' 
+                    <div className="mb-4">
+                        <label className="block text-gray-700 text-sm mb-2" htmlFor="password">
+                            Password
+                        </label>
+                        <input
+                            type="password"
+                            name="password"
+                            id="password"
+                            placeholder="Password"
+                            onChange={changeHandler}
+                            value={data.password}
+                            className="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow"
                         />
-                        {errors.password && <p className="text-red-500 text-xs italic">Password is required</p>}
                     </div>
 
-                    {message && <p className='text-red-500 text-xs italic mb-3'>{message}</p>}
+                    {errorMessage && (
+                        <p className="text-red-500 text-xs italic mb-4">{errorMessage}</p>
+                    )}
 
                     <div>
-                        <button className='bg-gray-700 hover:bg-gray-500 text-white font-bold py-2 px-8 rounded focus:outline-none'>Submit</button>
+                        <button
+                            type="submit"
+                            className="bg-gray-700 hover:bg-gray-500 text-white font-bold py-2 px-8 rounded focus:outline-none"
+                        >
+                            Submit
+                        </button>
                     </div>
                 </form>
 
-                <p className='align-baseline font-medium mt-4 mb-2 text-sm'>
-                    Haven't an account? Please <Link to='/register' className='text-blue-500 hover:text-blue-700'>Register</Link>
+                <p className="align-baseline font-medium mt-4 mb-2 text-sm">
+                    Haven't an account? Please{' '}
+                    <Link to="/register" className="text-blue-500 hover:text-blue-700">
+                        Register
+                    </Link>
                 </p>
-
-                {/* Google sign-in */}
-                <div>
-                    <button 
-                        onClick={handleGoogleSignIn}
-                        className='w-full flex items-center justify-center bg-blue-800 hover:bg-blue-700 text-white py-2 px-4 rounded focus:outline-none'
-                    >
-                        <FcGoogle className='mr-2' />
-                        Sign in with Google
-                    </button>
-                </div>
             </div>
         </div>
     );
