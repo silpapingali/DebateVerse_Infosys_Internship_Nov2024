@@ -10,9 +10,8 @@ const Login = () => {
         email: '',
         password: '',
     });
-    const [errorMessage, setErrorMessage] = useState(''); // For displaying error messages
+    const [errorMessage, setErrorMessage] = useState(''); 
 
-    // Handle input changes
     const changeHandler = (e) => {
         setData({ ...data, [e.target.name]: e.target.value });
     };
@@ -31,22 +30,25 @@ const Login = () => {
             return;
         }
         try {
-            const res = await axios.post('http://localhost:5000/login', data); // Ensure correct URL
-            setToken(res.data.token); // Save token to context
+            const res = await axios.post('http://localhost:5000/login', data); 
+            setToken(res.data.token); 
             if (res.data.role === 'admin') {
-                navigate('/admindashboard'); // Redirect to admin dashboard if user is admin
+                navigate('/admindashboard'); 
               } else {
-                navigate('/userdashboard'); // Redirect to user dashboard if user is normal user
-              } // Redirect on success
+                navigate('/userdashboard'); 
+              } 
         } catch (error) {
-            // Customize error messages based on error response
+        
             if (error.response) {
-                // If error response exists, it means it's from the server
+                
                 if (error.response.data === 'USER_NOT_FOUND') {
                     setErrorMessage('Email not found. Please check your email address.');
                 } else if (error.response.data === 'PASSWORD_MISSMATCH') {
-                    setErrorMessage('Password doesn\'t match. Please check your password.');
-                } else if (error.response.data === 'DATABASE_ISSUE') {
+                    navigate('/passwordcorrect')
+                }else if (error.response.data === 'Email not verified') {
+                    setErrorMessage('Email not verified please check your email once');
+                } 
+                 else if (error.response.data === 'DATABASE_ISSUE') {
                     setErrorMessage('Database issue: Unable to login at this time. Please try again later.');
                 } else if (error.response.data === 'SERVER_ISSUE') {
                     setErrorMessage('Server issue: Unable to process your request at the moment. Please try again later.');

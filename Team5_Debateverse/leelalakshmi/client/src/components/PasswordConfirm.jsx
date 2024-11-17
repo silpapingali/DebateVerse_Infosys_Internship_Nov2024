@@ -4,8 +4,6 @@ import { Link } from 'react-router-dom';
 const PasswordConfirm = () => {
     const handleReset = (event) => {
         event.preventDefault();
-        // Perform password reset confirmation logic here
-        // After successful reset, you may also navigate to the login page
     };
 
     return (
