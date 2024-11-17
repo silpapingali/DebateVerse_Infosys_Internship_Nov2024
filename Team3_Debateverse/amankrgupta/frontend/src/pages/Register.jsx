@@ -28,6 +28,10 @@ const Register = () => {
       toast.error("Password mismatch ! Check confirm password again")
       return;
     }
+    if(RegisterData.password.length<6){
+      toast.error("Password must be at least 6 characters long !");
+      return;
+    }
     console.log(RegisterData);
     setIsLoading(true);
     try {

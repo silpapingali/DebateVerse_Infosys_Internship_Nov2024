@@ -19,9 +19,13 @@ const Login = async (req, res) => {
         .status(400)
         .json({ message: "Email or password is incorrect !" });
     }
-    const token = jwt.sign({ email, password, role: databaseUser.role }, process.env.JWT_SECRET, {
-      expiresIn: "1m",
-    });
+    const token = jwt.sign(
+      { email, password, role: databaseUser.role },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "10m",
+      }
+    );
     res.status(200).json({
       message: "Welcome Back ! You are Logged In",
       token,
@@ -124,7 +128,7 @@ const ResetPassword = async (req, res) => {
   const { token, password } = req.body;
   jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
     if (err) {
-      res
+      return res
         .status(400)
         .json({ message: "Expire or Invalid link ! Request again" });
     }
