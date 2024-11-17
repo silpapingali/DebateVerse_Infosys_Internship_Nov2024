@@ -7,6 +7,8 @@ import PasswordConfirm from "../components/PasswordConfirm";
 import RegisterSuccess from "../components/RegisterSuccess";
 import Home from "../components/Home";
 import About from "../components/About";
+import Userdashboard from "../components/Userdashboard";
+import Admindashboard from "../components/Admindashboard";
 const router = createBrowserRouter([
     {
       path: "/",
@@ -40,7 +42,18 @@ const router = createBrowserRouter([
               path:"/registersuccess",
               element:<RegisterSuccess/>
 
-            }
+            },
+            {
+              path:"/userdashboard",
+              element:<Userdashboard/>
+
+            },
+            {
+              path:"/admindashboard",
+              element:<Admindashboard/>
+
+            },
+
 
       ]
     },
