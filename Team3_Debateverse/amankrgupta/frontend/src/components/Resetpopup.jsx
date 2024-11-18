@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { X } from "lucide-react";
@@ -6,6 +6,11 @@ import { X } from "lucide-react";
 const Resetpopup = ({ onClose }) => {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const popRef = useRef();
+
+  const closePopup = (e) => {
+    if (popRef.current == e.target) onClose();
+  };
 
   const handleChange = (e) => {
     setEmail(e.target.value);
@@ -29,8 +34,12 @@ const Resetpopup = ({ onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-opacity-50 backdrop-blur-sm bg-gray-400 flex justify-center items-center">
-      <div className="p-2 flex flex-col bg-white rounded">
+    <div
+      ref={popRef}
+      onClick={closePopup}
+      className="fixed inset-0 bg-opacity-50 backdrop-blur-sm bg-gray-400 flex justify-center items-center"
+    >
+      <div className="p-2 flex flex-col w-full max-w-md bg-white rounded">
         <button className="place-self-end" onClick={onClose}>
           <X size={30} />
         </button>
@@ -53,7 +62,7 @@ const Resetpopup = ({ onClose }) => {
                 isLoading
                   ? "bg-indigo-400"
                   : "bg-indigo-600 hover:bg-indigo-700"
-              }  border border-transparent rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
+              }  border border-transparent rounded-md shadow-sm focus:outline-none`}
             >
               {isLoading ? "Sending..." : "Send Reset Link"}
             </button>

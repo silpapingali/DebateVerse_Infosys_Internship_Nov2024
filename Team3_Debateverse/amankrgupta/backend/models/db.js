@@ -6,7 +6,7 @@ const db = () => {
     .then(() => {
       console.log("database connected");
     })
-    .catch((err) => console.log("db connection failed", err));
+    .catch((err) => console.log(err, "db connection failed"));
 };
 
 module.exports = db;

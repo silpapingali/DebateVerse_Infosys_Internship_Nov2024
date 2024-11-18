@@ -43,11 +43,11 @@ const Login = () => {
       }
     } catch (err) {
       console.log(err);
-      if (err.response && err.response.data && err.response.data.inputerrors) {
+      if (err?.response?.data?.inputerrors) {
         err.response.data.inputerrors.forEach((error) => {
           toast.error(error.msg);
         });
-      } else if (err.response && err.response.data) {
+      } else if (err?.response?.data?.message) {
         toast.error(err.response.data.message);
       } else {
         toast.error(err.message || "Error! Please try again");
