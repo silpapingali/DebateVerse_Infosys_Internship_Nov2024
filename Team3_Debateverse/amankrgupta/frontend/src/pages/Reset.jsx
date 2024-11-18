@@ -75,7 +75,7 @@ export const Reset = () => {
           <div>
             <button
               type="submit"
-              className={`w-full px-4 py-2 text-sm font-medium text-white border border-transparent rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
+              className={`w-full px-4 py-2 text-sm font-medium text-white border border-transparent rounded-md shadow-sm focus:outline-none ${
                 loading ? "bg-indigo-400" : "bg-indigo-600 hover:bg-indigo-700"
               }`}
               disabled={loading}
