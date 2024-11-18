@@ -32,7 +32,7 @@ const Login = async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({
-      message: "Server error !",
+      message: "Server error ! Please refresh the page",
     });
   }
 };
@@ -59,10 +59,10 @@ const Register = async (req, res) => {
         .status(201)
         .json({ message: "Success ! Verify your email from inbox" });
     } else {
-      res.status(400).json({ message: "Server issue ! Please try again" });
+      res.status(400).json({ message: "Unable to sent verification link ! Try again later" });
     }
   } catch (error) {
-    res.status(500).json({ message: "Server error !" });
+    res.status(500).json({ message: "Server error ! Please refresh the page" });
   }
 };
 

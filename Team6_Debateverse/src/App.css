@@ -1,0 +1,31 @@
+body{
+  background-color:beige;
+}
+.main nav{
+  font-weight: bold;
+}
+.main .button{
+  color: brown;
+  text-align: right;
+}
+.App .main{
+  text-transform: uppercase;
+  display: inline-flex;
+  padding: 10px 10px;
+}
+.right-aligned-routes {
+  float: right;
+}
+.right-aligned-routes .button{
+  color: brown;
+  font-weight: bold;
+  padding: 10px 10px;
+  padding-top: 20px;
+  text-transform: uppercase;
+  
+}
+header{
+  background-color: white;
+}
+
+

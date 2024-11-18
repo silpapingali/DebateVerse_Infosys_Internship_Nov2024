@@ -2,7 +2,6 @@ import axios from "axios";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { Eye, EyeOff } from "lucide-react";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -24,11 +23,11 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if(confirmPassword == Register.password){
-      toast.error("Password mismatch ! Check confirm password again")
+    if (confirmPassword != RegisterData.password) {
+      toast.error("Password mismatch ! Check confirm password again");
       return;
     }
-    if(RegisterData.password.length<6){
+    if (RegisterData.password.length < 6) {
       toast.error("Password must be at least 6 characters long !");
       return;
     }
@@ -44,15 +43,15 @@ const Register = () => {
         navigate("/login");
       } else toast.error(res.data.message);
     } catch (err) {
-      if (err.response && err.response.data && err.response.data.inputerrors) {
+      if (err?.response?.data?.inputerrors) {
         err.response.data.inputerrors.forEach((error) => {
-          toast.error(error.msg + " !");
+          toast.error(error.msg);
         });
+      } else if (err?.response?.data?.message) {
+        toast.error(err.response.data.message);
       } else {
-        const errorMessage = err.message || "Error! Please try again.";
-        toast.error(errorMessage);
+        toast.error(err.message || "Error! Please try again");
       }
-      console.error(err);
     } finally {
       setIsLoading(false);
     }
@@ -73,9 +72,9 @@ const Register = () => {
             <input
               id="email"
               name="email"
+              type="email"
               onChange={handleChange}
               value={RegisterData.email}
-              type="email"
               required
               className="w-full px-3 py-2 mt-1 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             />
@@ -107,8 +106,9 @@ const Register = () => {
             <input
               id="confirmPassword"
               name="confirmPassword"
-              type= "text"
-              onChange={(e)=> setConfirmPassword(e.target.value)}
+              type="text"
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              value={confirmPassword}
               required
               className="w-full px-3 py-2 mt-1 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             />

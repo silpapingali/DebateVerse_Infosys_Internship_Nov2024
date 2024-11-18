@@ -14,7 +14,7 @@ const verifyMail = async (newUser) => {
   const token = jwt.sign(newUser, process.env.JWT_SECRET, { expiresIn: "10m" });
   const url = `http://localhost:3000/api/auth/register/verify?token=${token}`;
   try {
-    const result = await transporter.sendMail({
+    await transporter.sendMail({
       from: process.env.MAILER_EMAIL,
       to: newUser.email,
       subject: "Verify your email",
@@ -22,6 +22,7 @@ const verifyMail = async (newUser) => {
     });
     return true;
   } catch (err) {
+    // console.log(err,"mail");
     return false;
   }
 };
@@ -29,9 +30,9 @@ const verifyMail = async (newUser) => {
 const resetMail = async (email) => {
   console.log("in mailer", email);
   try {
-    // console.log("first");
-    const token = jwt.sign({email}, process.env.JWT_SECRET, { expiresIn: "10m" });
-    // console.log("second", email);
+    const token = jwt.sign({ email }, process.env.JWT_SECRET, {
+      expiresIn: "10m",
+    });
     const url = `http://localhost:5173/resetpassword?token=${token}`;
     await transporter.sendMail({
       from: process.env.MAILER_EMAIL,
@@ -41,7 +42,6 @@ const resetMail = async (email) => {
     });
     return true;
   } catch (err) {
-    console.log(err);
     return false;
   }
 };
