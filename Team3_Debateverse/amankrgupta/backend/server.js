@@ -1,19 +1,23 @@
-const express= require("express");
-const app= express();
-require('dotenv').config();
-const db = require('./database/db')
-const Authroute = require('./routes/authRoutes')
-const cors = require('cors')
+const express = require("express");
+const db = require("./models/db");
+const cors = require("cors");
+require("dotenv").config();
+const Authroute = require("./routes/authRoutes");
+const DebateRoute= require("./routes/debateRoute")
 
-app.use(express.json());
-app.use(express.urlencoded({extended: true}));
+const app = express();
 
-app.use(cors());
-// databse connection
 db();
 
-app.use('/api/auth',Authroute)
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cors());
+app.set("view engine", "ejs");
 
-app.listen(process.env.PORT,()=>{
-    console.log("server started");
-})
+
+app.use("/api/auth", Authroute);
+app.use("/api/debates", DebateRoute);
+
+app.listen(process.env.PORT, () => {
+  console.log("server started");
+});
