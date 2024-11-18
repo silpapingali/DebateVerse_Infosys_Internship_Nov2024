@@ -105,6 +105,86 @@ app.post('/signup', (req, res) => {
     });
 });
 
+app.post('/forgot-password', (req, res) => {
+    const { email } = req.body;
+
+    const checkEmailSql = "SELECT * FROM user1 WHERE email = ?";
+    db.query(checkEmailSql, [email], (err, data) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ error: "Database error occurred." });
+        }
+
+        if (data.length === 0) {
+            return res.status(400).json({ message: "Email not found." });
+        }
+
+        const token = require('crypto').randomBytes(16).toString('hex'); // Generate a random token
+        const expiresAt = new Date(Date.now() + 3600000); // Token valid for 1 hour
+
+        const insertResetRequestSql = "INSERT INTO password_reset_requests (id, email, token, expires_at) VALUES (UUID(), ?, ?, ?)";
+        db.query(insertResetRequestSql, [email, token, expiresAt], (err) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).json({ error: "Failed to create reset request." });
+            }
+
+            // Send the reset link (replace this with actual email-sending logic)
+            console.log(`Password reset link: http://localhost:3000/reset-password/${token}`);
+            res.status(200).json({ message: "Password reset link sent to email." });
+        });
+    });
+});
+
+app.get('/reset-password/:token', (req, res) => {
+    const { token } = req.params;
+
+    const checkTokenSql = "SELECT * FROM password_reset_requests WHERE token = ? AND expires_at > NOW()";
+    db.query(checkTokenSql, [token], (err, data) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ error: "Database error occurred." });
+        }
+
+        if (data.length === 0) {
+            return res.status(400).json({ message: "Invalid or expired token." });
+        }
+
+        res.status(200).json({ message: "Token is valid.", email: data[0].email });
+    });
+});
+
+app.post('/reset-password', (req, res) => {
+    const { token, password } = req.body;
+
+    const checkTokenSql = "SELECT * FROM password_reset_requests WHERE token = ? AND expires_at > NOW()";
+    db.query(checkTokenSql, [token], (err, data) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ error: "Database error occurred." });
+        }
+
+        if (data.length === 0) {
+            return res.status(400).json({ message: "Invalid or expired token." });
+        }
+
+        const hashedPassword = bcrypt.hashSync(password, 10);
+        const updatePasswordSql = "UPDATE user1 SET password = ? WHERE email = ?";
+        db.query(updatePasswordSql, [hashedPassword, data[0].email], (err) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).json({ error: "Failed to reset password." });
+            }
+
+            const deleteResetRequestSql = "DELETE FROM password_reset_requests WHERE token = ?";
+            db.query(deleteResetRequestSql, [token], () => {});
+
+            res.status(200).json({ message: "Password reset successfully." });
+        });
+    });
+});
+
+
 // Start server
 app.listen(8081, () => {
     console.log("Server is running on port 8081.");
