@@ -18,7 +18,7 @@ function Validation(values) {
     if (values.confirmPassword === "") {
         error.confirmPassword = "Confirm Password should not be empty";
     } else if (values.confirmPassword !== values.password) {
-        error.confirmPassword = "Passwords do not match";
+        error.confirmPassword = "Password and confirm password do not match";
     }
 
     return error;

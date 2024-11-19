@@ -10,13 +10,27 @@ function ResetPassword() {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
 
+    const validatePassword = (password) => {
+        const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+        return passwordRegex.test(password);
+    };
+
     const handleSubmit = (event) => {
         event.preventDefault();
+
+        
         if (password !== confirmPassword) {
             setError("Passwords do not match");
             return;
         }
 
+        
+        if (!validatePassword(password)) {
+            setError("Password must be at least 8 characters long, contain one capital letter, and one digit.");
+            return;
+        }
+
+       
         axios.post('http://localhost:8081/reset-password', { token, password })
             .then(res => {
                 setSuccess("Password reset successful!");
@@ -65,3 +79,4 @@ function ResetPassword() {
 }
 
 export default ResetPassword;
+

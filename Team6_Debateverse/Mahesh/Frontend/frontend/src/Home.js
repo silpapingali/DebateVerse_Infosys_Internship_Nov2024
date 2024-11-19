@@ -6,7 +6,7 @@ function Home() {
     const navigate = useNavigate();
 
     const handleLogout = () => {
-        // Clear any auth state if needed
+        
         navigate('/');
     };
 

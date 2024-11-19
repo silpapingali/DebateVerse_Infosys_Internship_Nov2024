@@ -39,13 +39,14 @@ function Login() {
                         } else {
                             navigate('/home');
                         }
-                    } else {
-                        setLoginError('Invalid email or password');
                     }
                 })
                 .catch(err => {
-                    console.log(err);
-                    setLoginError('An error occurred during login');
+                    if (err.response && err.response.status === 400) {
+                        setLoginError(err.response.data.message); 
+                    } else {
+                        setLoginError('An error occurred during login');
+                    }
                 })
                 .finally(() => {
                     setIsSubmitting(false);
