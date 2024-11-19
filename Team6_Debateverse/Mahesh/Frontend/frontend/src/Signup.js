@@ -14,6 +14,7 @@ function Signup() {
     const navigate = useNavigate();
     const [errors, setErrors] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [successMessage, setSuccessMessage] = useState("");  // State to hold success message
 
     const handleInput = (event) => {
         setValues(prev => ({ ...prev, [event.target.name]: event.target.value }));
@@ -30,7 +31,9 @@ function Signup() {
         if (isSubmitting && Object.keys(errors).length === 0) {
             axios.post('http://localhost:8081/signup', values)
                 .then(res => {
-                    navigate('/'); // Navigate to login on success
+                    // If signup is successful, display success message
+                    setSuccessMessage("Registration link has been sent to your account. Please click on it to confirm registration.");
+                    setIsSubmitting(false);
                 })
                 .catch(err => {
                     if (err.response && err.response.status === 400) {
@@ -38,9 +41,9 @@ function Signup() {
                     } else {
                         console.error(err);
                     }
+                    setIsSubmitting(false);
                 });
         }
-        setIsSubmitting(false);
     }, [errors, isSubmitting, navigate, values]);
 
     return (
@@ -83,17 +86,20 @@ function Signup() {
                         {errors.confirmPassword && <span className='text-danger'>{errors.confirmPassword}</span>}
                     </div>
 
-                    
-
                     <button type='submit' className='btn btn-success w-100 bg-primary'>Signup</button>
                     <p>You agree to our terms and policies</p>
                     <Link to="/" className='btn btn-default border w-100 bg-light text-decoration-none'>Login</Link>
                 </form>
+
+               
+                {successMessage && (
+                    <div className='alert alert-success mt-3'>
+                        {successMessage}
+                    </div>
+                )}
             </div>
         </div>
     );
 }
 
 export default Signup;
-
-
