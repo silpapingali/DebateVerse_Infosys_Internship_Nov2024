@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
@@ -34,14 +33,13 @@ public class Debate {
 
     @ManyToOne
     @JoinColumn(name = "created_by_id", nullable = false)
-    @JsonBackReference
     private User createdBy;
 
     @OneToMany(mappedBy = "debate", cascade = CascadeType.ALL)
     @JsonManagedReference
     private List<Option> options = new ArrayList<>();
 
-    private boolean isPublic = true;
+    private boolean isPublic = false;
     private boolean isBlocked = false;
 
     private LocalDate createdOn = LocalDate.now();

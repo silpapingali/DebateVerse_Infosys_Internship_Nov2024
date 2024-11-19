@@ -12,9 +12,10 @@ export class RegisterComponent {
   user: any = {
     email: '',
     password: '',
+    confPass: '',
   };
 
-  confirmPass: any = '';
+  errors: any = '';
 
   constructor(
     private _auth: AuthServiceService,
@@ -23,14 +24,7 @@ export class RegisterComponent {
   ) {}
 
   register() {
-    if (this.user.password !== this.confirmPass) {
-      this._snack.open('Passwords do not match', 'Close', {
-        duration: 2000,
-        verticalPosition: 'bottom',
-        horizontalPosition: 'right',
-      });
-      return;
-    }
+    this.errors = '';
 
     console.log(this.user);
 
@@ -38,11 +32,15 @@ export class RegisterComponent {
       next: (res: any) => {
         if (res.success) {
           console.log(res.message);
-          this._snack.open(res.message || 'User registered successfully', 'Close', {
-            duration: 2000,
-            verticalPosition: 'bottom',
-            horizontalPosition: 'right',
-          });
+          this._snack.open(
+            res.message || 'User registered successfully',
+            'Close',
+            {
+              duration: 2000,
+              verticalPosition: 'bottom',
+              horizontalPosition: 'right',
+            }
+          );
           this._router.navigate(['/verify-email'], {
             queryParams: { email: this.user.email },
           });
@@ -56,13 +54,14 @@ export class RegisterComponent {
       },
       error: (err) => {
         console.log(err);
-        this._snack.open(err.error.message || 'Something went wrong!', 'Close', {
-          duration: 2000,
-          verticalPosition: 'bottom',
-          horizontalPosition: 'right',
-        });
+        if (err.error.message) this.errors = err.error.message;
+        else
+          this._snack.open('Server Unavailable!', 'Close', {
+            duration: 2000,
+            verticalPosition: 'bottom',
+            horizontalPosition: 'right',
+          });
       },
     });
   }
-
 }

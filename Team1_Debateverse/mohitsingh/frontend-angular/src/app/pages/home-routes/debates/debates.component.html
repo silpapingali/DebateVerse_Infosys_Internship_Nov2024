@@ -1,7 +1,18 @@
 <div class="min-h-full bg-gray-100">
   <main>
-    <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6">
-      <h1>Public Debates</h1>
+    <div *ngIf="debates.length>0; else noDebates" class="mx-auto max-w-7xl px-4 py-6 sm:px-6">
+      <!-- {{debates | json}} -->
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        <ng-container *ngFor="let debate of debates">
+          <div class="bg-white shadow-lg rounded-lg p-6">
+            <h3 class="text-2xl font-semibold text-gray-800">{{debate.text}}</h3>
+            <a href="#" class="text-blue-500 hover:underline mt-4 inline-block">Join the Debate</a>
+          </div>
+        </ng-container>
+      </div>
     </div>
+    <ng-template #noDebates>
+      <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6"><p>No debates available / Service Unavailable.</p></div>
+    </ng-template>
   </main>
 </div>
