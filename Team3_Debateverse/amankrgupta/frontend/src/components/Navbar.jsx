@@ -37,7 +37,7 @@ const Navbar = () => {
     <nav className="fixed w-full bg-[#1e3a8a] p-4 md:px-10">
       <div className="container mx-auto flex justify-between items-center">
         <button
-          onClick={() => navigate("/")}
+          onClick={() => location.pathname='/'}
           className="text-white text-xl font-bold"
         >
           DebateHub
@@ -57,15 +57,6 @@ const Navbar = () => {
           {isAuth && role == "user" && (
             <>
               <NavLink
-                to="/userdebates"
-                className={({ isActive }) =>
-                  isActive ? "bg-white rounded-xl px-3" : "text-gray-400"
-                }
-                onClick={toggleMenu}
-              >
-                All Debates
-              </NavLink>
-              <NavLink
                 to="/userdashboard"
                 className={({ isActive }) =>
                   isActive ? "bg-white rounded-xl px-3" : "text-gray-400"
@@ -73,6 +64,15 @@ const Navbar = () => {
                 onClick={toggleMenu}
               >
                 Dashboard
+              </NavLink>
+              <NavLink
+                to="/userdebates"
+                className={({ isActive }) =>
+                  isActive ? "bg-white rounded-xl px-3" : "text-gray-400"
+                }
+                onClick={toggleMenu}
+              >
+                All Debates
               </NavLink>
               <button onClick={Logout}>
                 <LogOut className="text-gray-200" />

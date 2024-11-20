@@ -13,7 +13,6 @@ const AdminDashboard = () => {
           This is admin Dashboard
         </h1>
         <p className="text-xl text-center mb-8 text-white"></p>
-        <button onClick={handleClick}>click</button>
       </div>
     </div>
   );

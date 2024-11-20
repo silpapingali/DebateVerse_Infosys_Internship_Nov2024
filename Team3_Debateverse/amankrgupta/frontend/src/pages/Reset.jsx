@@ -13,7 +13,7 @@ export const Reset = () => {
   const token= params.get("token");
   console.log(token);
   if(!token){
-    window.location.pathname='/';
+    location.pathname='/';
   }
 
   const handleSubmit = async (e) => {
