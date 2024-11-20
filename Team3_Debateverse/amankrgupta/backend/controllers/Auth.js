@@ -13,6 +13,19 @@ const Login = async (req, res) => {
         .status(400)
         .json({ message: "Email not found ! Please register" });
     }
+    if (!databaseUser.isVerified) {
+      const send = await verifyMail(email);
+      if (send) {
+        res
+          .status(400)
+          .json({ message: "Not verified ! Verification link sent to email" });
+      } else {
+        res.status(400).json({
+          message: "Not verified ! Unable to sent verification link try again",
+        });
+      }
+      return;
+    }
     const isMatch = await bcrypt.compare(password, databaseUser.password);
     if (!isMatch) {
       return res
@@ -23,12 +36,14 @@ const Login = async (req, res) => {
       { email, password, role: databaseUser.role },
       process.env.JWT_SECRET,
       {
-        expiresIn: "10m",
+        expiresIn: "30m",
       }
     );
+    console.log(databaseUser.role);
     res.status(200).json({
       message: "Welcome Back ! You are Logged In",
       token,
+      role: databaseUser.role,
     });
   } catch (err) {
     res.status(500).json({
@@ -44,22 +59,28 @@ const Register = async (req, res) => {
   try {
     const user = await userModels.findOne({ email });
     if (user) {
-      return res.status(200).json({ message: "User already exists !" });
+      return res
+        .status(200)
+        .json({ message: "User already exists ! Please Login" });
     }
-
-    const newUser = {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = new userModels({
       email,
-      password,
+      password: hashedPassword,
       role,
       isVerified,
-    };
-    const send = await verifyMail(newUser);
+    });
+    await newUser.save();
+    const send = await verifyMail(email);
     if (send) {
       res
         .status(201)
         .json({ message: "Success ! Verify your email from inbox" });
     } else {
-      res.status(400).json({ message: "Unable to sent verification link ! Try again later" });
+      res.status(400).json({
+        message:
+          "Verification link not sent ! Login to receive verification link",
+      });
     }
   } catch (error) {
     res.status(500).json({ message: "Server error ! Please refresh the page" });
@@ -75,24 +96,19 @@ const Verify = async (req, res) => {
         message: "Invalid URL ! Verification is failed",
       });
     }
-    const { email, password, role, isVerified } = decoded;
+    const { email } = decoded;
     try {
-      const user = await userModels.findOne({ email });
+      const user = await userModels.findOneAndUpdate(
+        { email },
+        { isVerified: true }
+      );
       if (user) {
         return res.render("verified", {
           message: "Congratulations! You are Verified",
         });
       }
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const newUser = new userModels({
-        email,
-        password: hashedPassword,
-        role,
-        isVerified,
-      });
-      await newUser.save();
       return res.render("verified", {
-        message: "Congratulations! You are Verified",
+        message: "Invalid URL ! Verification is failed",
       });
     } catch (err) {
       return res.render("verified", {
@@ -143,4 +159,21 @@ const ResetPassword = async (req, res) => {
   });
 };
 
-module.exports = { Login, Register, ResetPassword, Verify, ResetRequest };
+const AuthCheck = (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(403).json();
+    }
+    return res.status(200).json({role: decoded.role});
+  });
+};
+
+module.exports = {
+  Login,
+  Register,
+  ResetPassword,
+  Verify,
+  ResetRequest,
+  AuthCheck,
+};
