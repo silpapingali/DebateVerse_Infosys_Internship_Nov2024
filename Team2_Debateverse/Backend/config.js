@@ -5,4 +5,4 @@ module.exports = {
           email: process.env.MAILER_EMAIL ,
           emailPassword: process.env.MAILER_PASSWORD,
         };
-        
+         
