@@ -36,7 +36,7 @@ const Login = async (req, res) => {
       { email, password, role: databaseUser.role },
       process.env.JWT_SECRET,
       {
-        expiresIn: "30m",
+        expiresIn: "10m",
       }
     );
     console.log(databaseUser.role);
@@ -89,33 +89,20 @@ const Register = async (req, res) => {
 
 const Verify = async (req, res) => {
   const { token } = req.query;
-  jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
-    if (err) {
-      // console.log(err);
-      return res.render("verified", {
-        message: "Invalid URL ! Verification is failed",
-      });
-    }
+  try {
+    const decoded = await jwt.verify(token, process.env.JWT_SECRET);
     const { email } = decoded;
-    try {
-      const user = await userModels.findOneAndUpdate(
-        { email },
-        { isVerified: true }
-      );
-      if (user) {
-        return res.render("verified", {
-          message: "Congratulations! You are Verified",
-        });
-      }
-      return res.render("verified", {
-        message: "Invalid URL ! Verification is failed",
-      });
-    } catch (err) {
-      return res.render("verified", {
-        message: "Server error ! Verification failed",
-      });
+    const user = await userModels.findOneAndUpdate(
+      { email },
+      { isVerified: true }
+    );
+    if (user) {
+      return res.redirect("http://localhost:5173/login?status=true");
     }
-  });
+    return res.redirect("http://localhost:5173/login?status=false");
+  } catch (err) {
+    return res.redirect("http://localhost:5173/login?status=false");
+  }
 };
 
 const ResetRequest = async (req, res) => {
@@ -150,12 +137,16 @@ const ResetPassword = async (req, res) => {
     }
     console.log(decoded);
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await userModels.updateOne(
-      { email: decoded.email },
-      { password: hashedPassword }
-    );
-    console.log(user);
-    res.status(200).json({ message: "Password reset successful !" });
+    try{
+      const user = await userModels.updateOne(
+        { email: decoded.email },
+        { password: hashedPassword }
+      );
+      console.log(user);
+      res.status(200).json({ message: "Password reset successful !" });
+    } catch (err){
+      res.status(400).json({message: 'Server error ! Please try again later'})
+    }
   });
 };
 
@@ -165,7 +156,7 @@ const AuthCheck = (req, res) => {
     if (err) {
       return res.status(403).json();
     }
-    return res.status(200).json({role: decoded.role});
+    return res.status(200).json({ role: decoded.role });
   });
 };
 

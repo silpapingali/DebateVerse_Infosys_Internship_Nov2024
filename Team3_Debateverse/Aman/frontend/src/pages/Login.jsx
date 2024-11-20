@@ -1,6 +1,6 @@
 import React, { useContext, useState } from "react";
 import axios from "axios";
-import { useNavigate,Navigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Eye, EyeOff } from "lucide-react";
 import ResetPopup from "../components/ResetPopup";
@@ -15,7 +15,17 @@ const Login = () => {
   const [loading, setLoading] = useState(false); // Loading state
   const [showResetPopup, setShowResetPopup] = useState(false); // State to manage the visibility of the ResetPopup
   const [showPassword, setShowPassword] = useState(false);
-  const { setIsAuth, isAuth, setRole, role } = useContext(UserContext);
+  const { setIsAuth, setRole } = useContext(UserContext);
+  const [params] = useSearchParams();
+  const status = params.get("status");
+  if (status) {
+    status == "true"
+      ? toast.success("Congratulations! You are Verified Please login")
+      : toast.error("Invalid URL ! Login to receive verification link again");
+    setTimeout(() => {
+      navigate("/login");
+    }, 500);
+  }
 
   const handleChange = (e) => {
     setLoginData({
