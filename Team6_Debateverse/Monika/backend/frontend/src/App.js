@@ -1,27 +1,25 @@
 import React from 'react';
-import { BrowserRouter , Routes, Route } from 'react-router-dom';
-import Login from './components/auth/Login';
-import Signup from './components/auth/Signup';
+import Login from './Login';
+import {BrowserRouter, Routes, Route} from 'react-router-dom';
+import Signup from './Signup';
 import Home from './Home';
-import Admin from './Admin';
-import ForgotPassword from './components/auth/ForgotPassword';
-import ResetPassword from './components/auth/ResetPassword';
-import VerifyOtp from './components/auth/VerifyOtp';
+import ForgotPassword from './ForgotPassword';
+import VerifyOtp from './VerifyOtp';
+import ResetPassword from './ResetPassword';
 
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+        <Route path='/' element={<Login/>}></Route>
+        <Route path='/Signup' element={<Signup/>}></Route>
+        <Route path='/Home' element={<Home/>}></Route>
         <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/ /reset-password/:token" element={<ResetPassword />} />
-        <Route path="/VerifyOtp" element={<VerifyOtp />} />
-        <Route path="/Home" element={<Home />} />
-        <Route path="/Admin" element={<Admin/>}/>
-      
+        <Route path="/verify-otp" element={<VerifyOtp />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+    
       </Routes>
     </BrowserRouter>
-  );
+  )
 }
