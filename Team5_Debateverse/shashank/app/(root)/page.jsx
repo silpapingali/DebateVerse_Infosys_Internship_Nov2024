@@ -7,7 +7,6 @@ const Page = async () => {
     const clerkUser = await currentUser();
     if(!clerkUser) {
         redirect('/sign-in');
-        return null;
     }
   return (
     <div className="container mx-auto">

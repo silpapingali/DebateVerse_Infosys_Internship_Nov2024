@@ -31,11 +31,20 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public Map<String, Object> createUser(User user) {
-        if (!user.getEmail().matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
-            throw new RuntimeException("Invalid email format");
+        if(user.getEmail() == null || user.getEmail().isEmpty()) {
+            throw new IllegalArgumentException("Email cannot be empty");
         }
-        if (user.getPassword().length() < 8) {
-            throw new RuntimeException("Password must be at least 8 characters long");
+        if (!user.getEmail().matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
+            throw new IllegalArgumentException("Please enter a valid email address e.g. xyz@gmail.com");
+        }
+        if(user.getPassword() == null || user.getPassword().isEmpty()) {
+            throw new IllegalArgumentException("Password cannot be empty");
+        }
+        if (user.getPassword().length() < 5 ) {
+            throw new IllegalArgumentException("Password must be at least 5 characters long");
+        }
+        if(!user.getPassword().equals(user.getConfPass())) {
+            throw new IllegalArgumentException("Passwords do not match");
         }
 
         User newUser = new User();
