@@ -58,7 +58,7 @@ const Register = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+    <div className="pt-16 flex items-center justify-center min-h-screen bg-gradient-to-r from-indigo-300 via-indigo-400 to-indigo-500">
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded shadow-md">
         <h2 className="text-2xl font-bold text-center">Register</h2>
         <form className="space-y-4" onSubmit={handleSubmit}>
@@ -98,7 +98,7 @@ const Register = () => {
           </div>
           <div>
             <label
-              htmlFor="password"
+              htmlFor="confirmPassword"
               className="block text-sm font-medium text-gray-700"
             >
               Confirm Password
@@ -112,47 +112,6 @@ const Register = () => {
               required
               className="w-full px-3 py-2 mt-1 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Role
-            </label>
-            <div className="flex gap-10">
-              <div className="flex items-center mt-2">
-                <input
-                  id="user"
-                  name="role"
-                  type="radio"
-                  value="user"
-                  checked={RegisterData.role === "user"}
-                  onChange={handleChange}
-                  className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
-                />
-                <label
-                  htmlFor="user"
-                  className="ml-2 block text-sm font-medium text-gray-700"
-                >
-                  User
-                </label>
-              </div>
-              <div className="flex items-center mt-2">
-                <input
-                  id="admin"
-                  name="role"
-                  type="radio"
-                  value="admin"
-                  checked={RegisterData.role === "admin"}
-                  onChange={handleChange}
-                  className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
-                />
-                <label
-                  htmlFor="admin"
-                  className="ml-2 block text-sm font-medium text-gray-700"
-                >
-                  Admin
-                </label>
-              </div>
-            </div>
           </div>
           <div>
             <button

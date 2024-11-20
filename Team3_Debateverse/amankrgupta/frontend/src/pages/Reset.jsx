@@ -1,17 +1,20 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { toast } from "react-toastify"
-import {Eye, EyeOff} from "lucide-react";
+import { toast } from "react-toastify";
 
 export const Reset = () => {
   const navigate = useNavigate();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  
   const [params]= useSearchParams();
   const token= params.get("token");
   console.log(token);
+  if(!token){
+    window.location.pathname='/';
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -35,7 +38,8 @@ export const Reset = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+    
+    <div className="pt -16 flex items-center justify-center min-h-screen bg-gradient-to-r from-indigo-300 via-indigo-400 to-indigo-500">
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded shadow-md">
         <h2 className="text-2xl font-bold text-center">Create New Password</h2>
         <form className="space-y-4" onSubmit={handleSubmit}>
