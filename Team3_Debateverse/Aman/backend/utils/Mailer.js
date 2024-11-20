@@ -13,6 +13,7 @@ const verifyMail = async (email) => {
   console.log("in mailer", email);
   try {
     const token = jwt.sign({email}, process.env.JWT_SECRET, { expiresIn: "10m" });
+    //use env
     const url = `http://localhost:3000/api/auth/register/verify?token=${token}`;
     await transporter.sendMail({
       from: `"DebateHub Support" <${process.env.MAILER_EMAIL}>`,
@@ -22,7 +23,7 @@ const verifyMail = async (email) => {
     });
     return true;
   } catch (err) {
-    console.log(err,"mail");
+    console.log("err in mailer");
     return false;
   }
 };

@@ -1,7 +1,4 @@
-import { useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
-import { UserContext } from "../context/UserContext";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -16,13 +13,13 @@ const Home = () => {
           Discuss, Interact, and Grow
         </p>
         <div className="text-center">
-              <button
-                onClick={() => navigate("/register")}
-                className="px-6 py-3 font-medium text-white bg-indigo-600 rounded hover:bg-indigo-700"
-              >
-                Get Started
-              </button>
-            </div>
+          <button
+            onClick={() => navigate("/login")}
+            className="px-6 py-3 font-medium text-white bg-indigo-600 rounded hover:bg-indigo-700"
+          >
+            Get Started
+          </button>
+        </div>
       </div>
     </div>
   );

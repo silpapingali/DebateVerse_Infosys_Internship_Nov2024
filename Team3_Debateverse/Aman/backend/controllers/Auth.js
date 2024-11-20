@@ -5,7 +5,6 @@ const { verifyMail, resetMail } = require("../utils/Mailer");
 
 const Login = async (req, res) => {
   const { email, password } = req.body;
-  console.log({ email, password });
   try {
     const databaseUser = await userModels.findOne({ email });
     if (!databaseUser) {
@@ -18,14 +17,15 @@ const Login = async (req, res) => {
       if (send) {
         res
           .status(400)
-          .json({ message: "Not verified ! Verification link sent to email" });
+          .json({ message: "Not Verified ! Verification link sent to email" });
       } else {
         res.status(400).json({
-          message: "Not verified ! Unable to sent verification link try again",
+          message: "Verification link not sent ! Register again later",
         });
       }
       return;
     }
+
     const isMatch = await bcrypt.compare(password, databaseUser.password);
     if (!isMatch) {
       return res
@@ -39,7 +39,6 @@ const Login = async (req, res) => {
         expiresIn: "10m",
       }
     );
-    console.log(databaseUser.role);
     res.status(200).json({
       message: "Welcome Back ! You are Logged In",
       token,
@@ -53,24 +52,24 @@ const Login = async (req, res) => {
 };
 
 const Register = async (req, res) => {
-  const { email, password, role, isVerified } = req.body;
-  console.log({ email, password, role, isVerified }, "in register");
+  const { email, password } = req.body;
+  console.log({ email, password }, "in register");
 
   try {
     const user = await userModels.findOne({ email });
-    if (user) {
+    if (user && user.isVerified) {
       return res
         .status(200)
         .json({ message: "User already exists ! Please Login" });
     }
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new userModels({
-      email,
-      password: hashedPassword,
-      role,
-      isVerified,
-    });
-    await newUser.save();
+    if (!user) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const newUser = new userModels({
+        email,
+        password: hashedPassword,
+      });
+      await newUser.save();
+    }
     const send = await verifyMail(email);
     if (send) {
       res
@@ -78,8 +77,7 @@ const Register = async (req, res) => {
         .json({ message: "Success ! Verify your email from inbox" });
     } else {
       res.status(400).json({
-        message:
-          "Verification link not sent ! Login to receive verification link",
+        message: "Verification link not sent ! Register again later",
       });
     }
   } catch (error) {
@@ -137,15 +135,17 @@ const ResetPassword = async (req, res) => {
     }
     console.log(decoded);
     const hashedPassword = await bcrypt.hash(password, 10);
-    try{
+    try {
       const user = await userModels.updateOne(
         { email: decoded.email },
         { password: hashedPassword }
       );
       console.log(user);
       res.status(200).json({ message: "Password reset successful !" });
-    } catch (err){
-      res.status(400).json({message: 'Server error ! Please try again later'})
+    } catch (err) {
+      res
+        .status(400)
+        .json({ message: "Server error ! Please try again later" });
     }
   });
 };

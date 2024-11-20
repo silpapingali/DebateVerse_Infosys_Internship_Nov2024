@@ -12,8 +12,8 @@ const Login = () => {
     email: "",
     password: "",
   });
-  const [loading, setLoading] = useState(false); // Loading state
-  const [showResetPopup, setShowResetPopup] = useState(false); // State to manage the visibility of the ResetPopup
+  const [loading, setLoading] = useState(false);
+  const [showResetPopup, setShowResetPopup] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const { setIsAuth, setRole } = useContext(UserContext);
   const [params] = useSearchParams();

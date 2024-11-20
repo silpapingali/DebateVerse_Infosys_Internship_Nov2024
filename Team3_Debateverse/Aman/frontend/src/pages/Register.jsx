@@ -1,17 +1,18 @@
 import axios from "axios";
 import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const Register = () => {
   const navigate = useNavigate();
   const [IsLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState("");
   const [RegisterData, setRegisterData] = useState({
     email: "",
     password: "",
-    role: "user",
-    isVerified: false,
   });
 
   const handleChange = (e) => {
@@ -73,45 +74,64 @@ const Register = () => {
               id="email"
               name="email"
               type="email"
+              required
+              placeholder="Enter your email"
               onChange={handleChange}
               value={RegisterData.email}
-              required
-              className="w-full px-3 py-2 mt-1 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
-          <div>
+          <div className="relative">
             <label
-              htmlFor="password"
               className="block text-sm font-medium text-gray-700"
+              htmlFor="password"
             >
               Password
             </label>
             <input
               id="password"
               name="password"
-              type="password"
-              onChange={handleChange}
-              value={RegisterData.password}
+              type={showPassword ? "text" : "password"}
               required
-              className="w-full px-3 py-2 mt-1 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              placeholder="Enter your password"
+              value={RegisterData.password}
+              onChange={handleChange}
+              className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
-          </div>
-          <div>
-            <label
-              htmlFor="confirmPassword"
-              className="block text-sm font-medium text-gray-700"
+            <button
+              type="button"
+              className="absolute inset-y-11 right-1 flex items-center px-3 text-gray-600"
+              onClick={() => setShowPassword(!showPassword)}
             >
-              Confirm Password
+              {showPassword ? <EyeOff /> : <Eye />}
+            </button>
+          </div>
+          <div className="relative">
+            <label
+              className="block text-sm font-medium text-gray-700"
+              htmlFor="password"
+            >
+              Password
             </label>
             <input
-              id="confirmPassword"
-              name="confirmPassword"
-              type="text"
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              value={confirmPassword}
+              className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              type={showConfirmPassword ? "text" : "password"}
+              id="password"
+              placeholder="Enter your password"
+              name="password"
               required
-              className="w-full px-3 py-2 mt-1 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              value={confirmPassword}
+              onChange={(e) => {
+                setConfirmPassword(e.target.value);
+              }}
             />
+            <button
+              type="button"
+              className="absolute inset-y-11 right-1 flex items-center px-3 text-gray-600"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            >
+              {showConfirmPassword ? <EyeOff /> : <Eye />}
+            </button>
           </div>
           <div>
             <button

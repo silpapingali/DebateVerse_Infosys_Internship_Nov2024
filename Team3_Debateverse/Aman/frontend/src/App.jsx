@@ -10,7 +10,6 @@ import About from "./pages/About";
 import UserDashboard from "./pages/UserDashboard";
 import Footer from "./components/Footer";
 import AdminDashboard from "./pages/AdminDashboard";
-// import PublicProtected from "./ProtectedRoute/PublicProtected";
 import UserProtected from "./ProtectedRoute/UserProtected";
 import AdminProtected from "./ProtectedRoute/AdminProtected";
 import PublicProtected from "./ProtectedRoute/PublicProtected";
@@ -25,6 +24,7 @@ function App() {
             <Route path="/userdebates" element={<UserDebates />} />
             <Route path="/userdashboard" element={<UserDashboard />} />
           </Route>
+          
           <Route element={<AdminProtected />}>
             <Route path="/userdebates" element={<UserDebates />} />
             <Route path="/admindashboard" element={<AdminDashboard />} />
@@ -38,7 +38,6 @@ function App() {
           </Route>
           <Route path="/resetpassword" element={<Reset />} />
           <Route path="*" element={<Navigate to="/" />} />
-
         </Routes>
         <Footer />
       </UserContextProvider>
