@@ -1,17 +1,18 @@
 import axios from "axios";
 import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const Register = () => {
   const navigate = useNavigate();
   const [IsLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState("");
   const [RegisterData, setRegisterData] = useState({
     email: "",
     password: "",
-    role: "user",
-    isVerified: false,
   });
 
   const handleChange = (e) => {
@@ -58,7 +59,7 @@ const Register = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+    <div className="pt-16 flex items-center justify-center min-h-screen bg-gradient-to-r from-indigo-300 via-indigo-400 to-indigo-500">
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded shadow-md">
         <h2 className="text-2xl font-bold text-center">Register</h2>
         <form className="space-y-4" onSubmit={handleSubmit}>
@@ -73,86 +74,64 @@ const Register = () => {
               id="email"
               name="email"
               type="email"
+              required
+              placeholder="Enter your email"
               onChange={handleChange}
               value={RegisterData.email}
-              required
-              className="w-full px-3 py-2 mt-1 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
-          <div>
+          <div className="relative">
             <label
-              htmlFor="password"
               className="block text-sm font-medium text-gray-700"
+              htmlFor="password"
             >
               Password
             </label>
             <input
               id="password"
               name="password"
-              type="password"
-              onChange={handleChange}
-              value={RegisterData.password}
+              type={showPassword ? "text" : "password"}
               required
-              className="w-full px-3 py-2 mt-1 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              placeholder="Enter your password"
+              value={RegisterData.password}
+              onChange={handleChange}
+              className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
-          </div>
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700"
+            <button
+              type="button"
+              className="absolute inset-y-11 right-1 flex items-center px-3 text-gray-600"
+              onClick={() => setShowPassword(!showPassword)}
             >
-              Confirm Password
+              {showPassword ? <EyeOff /> : <Eye />}
+            </button>
+          </div>
+          <div className="relative">
+            <label
+              className="block text-sm font-medium text-gray-700"
+              htmlFor="password"
+            >
+              Password
             </label>
             <input
-              id="confirmPassword"
-              name="confirmPassword"
-              type="text"
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              value={confirmPassword}
+              className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              type={showConfirmPassword ? "text" : "password"}
+              id="password"
+              placeholder="Enter your password"
+              name="password"
               required
-              className="w-full px-3 py-2 mt-1 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              value={confirmPassword}
+              onChange={(e) => {
+                setConfirmPassword(e.target.value);
+              }}
             />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Role
-            </label>
-            <div className="flex gap-10">
-              <div className="flex items-center mt-2">
-                <input
-                  id="user"
-                  name="role"
-                  type="radio"
-                  value="user"
-                  checked={RegisterData.role === "user"}
-                  onChange={handleChange}
-                  className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
-                />
-                <label
-                  htmlFor="user"
-                  className="ml-2 block text-sm font-medium text-gray-700"
-                >
-                  User
-                </label>
-              </div>
-              <div className="flex items-center mt-2">
-                <input
-                  id="admin"
-                  name="role"
-                  type="radio"
-                  value="admin"
-                  checked={RegisterData.role === "admin"}
-                  onChange={handleChange}
-                  className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
-                />
-                <label
-                  htmlFor="admin"
-                  className="ml-2 block text-sm font-medium text-gray-700"
-                >
-                  Admin
-                </label>
-              </div>
-            </div>
+            <button
+              type="button"
+              className="absolute inset-y-11 right-1 flex items-center px-3 text-gray-600"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            >
+              {showConfirmPassword ? <EyeOff /> : <Eye />}
+            </button>
           </div>
           <div>
             <button
