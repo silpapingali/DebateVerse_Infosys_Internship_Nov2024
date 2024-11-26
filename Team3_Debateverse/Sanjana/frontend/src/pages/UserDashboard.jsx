@@ -1,9 +1,11 @@
 import { useContext, useState } from "react";
 import { UserContext } from "../context/UserContext";
+import { useNavigate } from "react-router-dom";
 
 
 const UserDashboard = () => {
   const { isAuth, role } = useContext(UserContext);
+  const navigate = useNavigate();
 
   // State to manage options
   const [options, setOptions] = useState([""]);
@@ -20,10 +22,18 @@ const UserDashboard = () => {
     setOptions(updatedOptions);
   };
 
+  // Handle submit button click
   const handleClick = () => {
     console.log("isAuth:", isAuth, "role:", role);
     console.log("Current Options:", options);
+    // Here, you could submit the options data to an API if needed
   };
+
+  // If the user is not authenticated, redirect to the login page
+  if (!isAuth) {
+    navigate("/login");
+    return null;  // Don't render anything until the user is authenticated
+  }
 
   return (
     <div>
