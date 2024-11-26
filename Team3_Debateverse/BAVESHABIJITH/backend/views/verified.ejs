@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Email Verification</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: lightgrey;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .container {
+      background-color: #fff;
+      padding: 50px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+    .message {
+      margin-bottom: 30px;
+    }
+    .message h3 {
+      color: #333;
+    }
+    a {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #0071e9;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 4px;
+      transition: background-color 0.3s;
+    }
+    a:hover {
+      background-color: #004c9d; /* Darker indigo shade */
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="message">
+      <h3><%= message %></h3>
+    </div>
+    <a href="http://localhost:5173/login">Go to login</a>
+  </div>
+</body>
+</html>
