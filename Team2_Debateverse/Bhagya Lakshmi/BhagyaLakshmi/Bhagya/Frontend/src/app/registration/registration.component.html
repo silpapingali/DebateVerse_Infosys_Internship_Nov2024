@@ -1,0 +1,29 @@
+<div class="form-container">
+   
+    
+    <!-- Registration Form -->
+    <form *ngIf="!registrationSuccess" (ngSubmit)="onSubmit()">
+        <h1>Sign Up to DebateVerse</h1>
+        <!-- Email Input -->
+      <input type="email" placeholder="Email" [(ngModel)]="email" name="email" required />
+      
+      <!-- Password Input -->
+      <input type="password" placeholder="Password" [(ngModel)]="password" name="password" required />
+      
+      <!-- Confirm Password Input -->
+      <input type="password" placeholder="Confirm Password" [(ngModel)]="confirmPassword" name="confirmPassword" required />
+      
+      <button type="submit">Register</button>
+    </form>
+  
+    <!-- Success Message -->
+    <div *ngIf="registrationSuccess" class="success-message">
+      <h2>Welcome Abroad!</h2>
+      <p>You have successfully registered. A confirmation email has been sent to <strong>{{ email }}</strong>.</p>
+      <p>Please click on the link in your email to complete your registration!</p>
+    </div>
+  
+    <!-- Link to Login Page -->
+    <a routerLink="/login" *ngIf="registrationSuccess">Go to Login</a>
+  </div>
+  
