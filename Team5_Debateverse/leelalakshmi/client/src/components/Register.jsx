@@ -12,6 +12,7 @@ const Register = () => {
 
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const changeHandler = (e) => {
     setData({ ...data, [e.target.name]: e.target.value });
@@ -44,12 +45,14 @@ const Register = () => {
       return;
     }
 
+    setLoading(true); // Set loading state to true when the request starts
     try {
       const res = await axios.post('http://localhost:5000/register', data);
 
       // Display success message
       setSuccessMessage('Registration successful! Please check your email for confirmation.');
       setErrorMessage('');
+      setLoading(false); // Reset loading state
 
       // Redirect to the success page after a delay (optional)
       navigate('/registersuccess');
@@ -63,6 +66,7 @@ const Register = () => {
       } else {
         setErrorMessage('Registration failed. Please try again.');
       }
+      setLoading(false); // Reset loading state
       setSuccessMessage('');
     }
   };
@@ -123,10 +127,14 @@ const Register = () => {
           {successMessage && (
             <p className="text-green-500 text-xs italic mb-4">{successMessage}</p>
           )}
+          {loading && (
+            <p className="text-blue-700 text-xs font-bold italic mb-4">Please wait...</p>
+          )}
           <div>
             <button
               type="submit"
               className="bg-gray-700 hover:bg-gray-500 text-white font-bold py-2 px-8 rounded focus:outline-none"
+              disabled={loading} // Disable the button while loading
             >
               Submit
             </button>

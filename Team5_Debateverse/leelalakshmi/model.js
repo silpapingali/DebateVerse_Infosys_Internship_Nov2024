@@ -14,13 +14,13 @@ const UserSchema = new mongoose.Schema({
   role: {
      type: String, 
      default: 'user' },
-  isVerified: {
-      type: Boolean,
-      default: false,
-    },
-    verificationToken: { 
-      type: String, 
-      default: null },
+  isVerified:{
+    type: Boolean,
+    default: 'false'
+  },
+  createdAt: {
+     type: Date, default: Date.now, index: { expires: '1h' }
+     },
     resetPasswordToken: { 
       type: String,
       default: null },

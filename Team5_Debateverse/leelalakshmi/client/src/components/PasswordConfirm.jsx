@@ -1,9 +1,37 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useParams, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const PasswordConfirm = () => {
-    const handleReset = (event) => {
+    const { token } = useParams(); // Get the token from the URL parameters
+    const navigate = useNavigate(); // To redirect after successful reset
+
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [error, setError] = useState('');
+    const [message, setMessage] = useState('');
+
+    const handleReset = async (event) => {
         event.preventDefault();
+
+        if (password !== confirmPassword) {
+            setError('Passwords do not match');
+            return;
+        }
+
+        try {
+            const response = await axios.post(`http://localhost:5000/reset-password/${token}`, {
+                newPassword: password,
+            });
+
+            setMessage(response.data.message);
+            setError('');
+            // Optionally redirect the user to the login page after successful reset
+            setTimeout(() => navigate('/login'), 2000); // Redirect after 2 seconds
+        } catch (err) {
+            setError(err.response?.data?.error || 'An error occurred. Please try again later.');
+            setMessage('');
+        }
     };
 
     return (
@@ -14,36 +42,50 @@ const PasswordConfirm = () => {
                     Confirm your new password and you can now login with the new one.
                 </p>
 
+                {error && <p className="text-red-500 text-sm">{error}</p>}
+                {message && <p className="text-green-500 text-sm">{message}</p>}
+
                 <form onSubmit={handleReset}>
-                    <div className='mb-4'>
-                        <label className='block text-gray-700 text-sm mb-2' htmlFor='password'>Password</label>
-                        <input 
-                            type='password' 
-                            name='password' 
-                            id='password' 
-                            placeholder='Password' 
-                            className='shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow' 
+                    <div className="mb-4">
+                        <label className="block text-gray-700 text-sm mb-2" htmlFor="password">
+                            Password
+                        </label>
+                        <input
+                            type="password"
+                            name="password"
+                            id="password"
+                            placeholder="Password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow"
                         />
                     </div>
 
-                    <div className='mb-4'>
-                        <label className='block text-gray-700 text-sm mb-2' htmlFor='confirmPassword'>Confirm Password</label>
-                        <input 
-                            type='password' 
-                            name='confirmPassword' 
-                            id='confirmPassword' 
-                            placeholder='Confirm Password' 
-                            className='shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow' 
+                    <div className="mb-4">
+                        <label className="block text-gray-700 text-sm mb-2" htmlFor="confirmPassword">
+                            Confirm Password
+                        </label>
+                        <input
+                            type="password"
+                            name="confirmPassword"
+                            id="confirmPassword"
+                            placeholder="Confirm Password"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            className="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow"
                         />
                     </div>
 
-                    <button type="submit" className='bg-gray-700 hover:bg-gray-500 text-white font-bold py-2 px-8 rounded focus:outline-none'>
+                    <button
+                        type="submit"
+                        className="bg-gray-700 hover:bg-gray-500 text-white font-bold py-2 px-8 rounded focus:outline-none"
+                    >
                         Reset
                     </button>
                 </form>
 
-                <p className='mt-4 text-sm text-gray-700'>
-                    Go back to <Link to='/login' className='text-blue-500 hover:text-blue-700'>Sign in</Link>
+                <p className="mt-4 text-sm text-gray-700">
+                    Go back to <Link to="/login" className="text-blue-500 hover:text-blue-700">Sign in</Link>
                 </p>
             </div>
         </div>
