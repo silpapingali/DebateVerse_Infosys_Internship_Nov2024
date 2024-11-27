@@ -14,7 +14,7 @@ export class AuthServiceService {
     private _router: Router
   ) {}
 
-  private loggedIn$ = new BehaviorSubject<boolean>(this.isLoggedIn());
+  loggedIn$ = new BehaviorSubject<boolean>(this.isLoggedIn());
 
   isLoggedIn$ = this.loggedIn$.asObservable();
 
@@ -23,29 +23,7 @@ export class AuthServiceService {
   }
 
   login(user: any) {
-    return this._http
-      .post('http://localhost:8080/auth/generate-token', user)
-      .subscribe({
-        next: (res: any) => {
-          localStorage.setItem('token', res.token);
-          localStorage.setItem('user', JSON.stringify(res.user));
-          this.loggedIn$.next(true);
-          if (res.user.role === 'ADMIN') {
-            this._router.navigate(['/admin']);
-          } else if (res.user.role === 'USER') {
-            this._router.navigate(['/user']);
-          }
-          this._snack.open('Login Successful', 'Close', {
-            duration: 3000,
-          });
-        },
-        error: (err) => {
-          console.log(err);
-          this._snack.open(err.error.message || 'Service Error!', 'Close', {
-            duration: 3000,
-          });
-        },
-      });
+    return this._http.post('http://localhost:8080/auth/generate-token', user);
   }
 
   forgotPassword(email: string) {

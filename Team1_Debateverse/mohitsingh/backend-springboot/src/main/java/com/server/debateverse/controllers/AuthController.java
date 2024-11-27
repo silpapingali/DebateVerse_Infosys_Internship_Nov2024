@@ -11,6 +11,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -51,12 +52,20 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
 
     private void authenticate(String username, String password) throws Exception {
+        // First check if the user exists in the database
+        User user = customUserDetailService.getUserByEmail(username); // Assuming this method checks if the user exists
+        if (user == null) {
+            throw new UsernameNotFoundException("User not found!"); // User not found, throw an exception
+        }
+        if (!user.isEnabled()) {
+            throw new DisabledException("User is disabled!"); // User is disabled, throw an exception
+        }
+
+        // Now proceed with authentication if the user exists
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
-        } catch (DisabledException e) {
-            throw new Exception("USER_DISABLED", e);
         } catch (BadCredentialsException e) {
-            throw new BadCredentialsException("INVALID_CREDENTIALS");
+            throw new BadCredentialsException("Invalid credentials!"); // Handle bad credentials
         }
     }
 
@@ -72,15 +81,26 @@ public class AuthController {
 
         try {
             // Authenticate the user
+            System.out.println("Authenticating");
             authenticate(jwtRequest.getEmail(), jwtRequest.getPassword());
+            System.out.println("Authenticated");
+
             final UserDetails userDetails = customUserDetailService.loadUserByUsername(jwtRequest.getEmail());
             User user = customUserDetailService.getUserByEmail(jwtRequest.getEmail());
             final String token = jwtTokenHelper.generateToken(userDetails);
+
             return ResponseEntity.ok(new JwtResponse(token, user, "Success"));
+        } catch (UsernameNotFoundException e) {
+            // Handle UsernameNotFoundException (user not found)
+            throw new RuntimeException("User not found!");
+        } catch (DisabledException e) {
+            // Handle DisabledException (user is disabled)
+            throw new RuntimeException("User is disabled!");
         } catch (BadCredentialsException e) {
-            throw new BadCredentialsException("Invalid credentials!");
-        }
-        catch (Exception e) {
+            // Handle BadCredentialsException (invalid credentials)
+            throw new RuntimeException("Invalid credentials!");
+        } catch (Exception e) {
+            // Catch any other exceptions
             throw new RuntimeException("An error occurred while generating token.");
         }
     }
