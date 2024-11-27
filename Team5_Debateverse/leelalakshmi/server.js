@@ -9,10 +9,19 @@ const app = express();
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const cron = require('node-cron');
+require('dotenv').config();
 
-mongoose.connect("mongodb+srv://213j1a4254:ABG693oD4mksdMlT@cluster0.fjfkt.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0").then(
+const mongoURI = process.env.MONGO_URI;
+const jwtSecret = process.env.JWT_SECRET;
+const emailUser = process.env.EMAIL_USER;
+const emailPass = process.env.EMAIL_PASS;
+const adminemail = process.env.EMAIL_ADMIN;
+
+
+mongoose.connect(mongoURI).then(
   () => console.log('DB Connection established')
 );
+
 
 app.get('/', (req, res) => {
   res.send('hello world');
@@ -50,13 +59,13 @@ app.post('/register', async (req, res) => {
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: 'karasaleelalakshmi9@gmail.com',
-        pass: 'eqpc dsia kpoi imsf',
+        user: emailUser,
+        pass: emailPass,
       },
     });
 
     const mailOptions = {
-      from: 'karasaleelalakshmi9@gmail.com',
+      from: emailUser,
       to: email,
       subject: 'Verify Your Email',
       html: `<p>Click <a href="${verificationLink}">here</a> to verify your email.</p>`,
@@ -175,13 +184,13 @@ app.post('/request-password-reset', async (req, res) => {
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: 'karasaleelalakshmi9@gmail.com',
-        pass: 'eqpc dsia kpoi imsf',
+        user: emailUser,
+        pass: emailPass,
       },
     });
 
     const mailOptions = {
-      from: 'karasaleelalakshmi9@gmail.com',
+      from: emailUser,
       to: email,
       subject: 'Password Reset',
       html: `<p>Click <a href="${resetLink}">here</a> to reset your password. This link will expire in 1 hour.</p>`,
