@@ -1,52 +1,29 @@
 import React from "react";
 
-const OptionField = ({ 
-  question, 
-  setQuestion, 
-  options, 
-  addOption, 
-  removeOption, 
-  changeOption 
-}) => {
+const OptionField = ({ options, onAddOption, onRemoveOption, onChangeOption }) => {
   return (
-    <div className="p-6 bg-white rounded-lg shadow-lg">
-      {/* Question Input */}
-      <div className="mb-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2">
-          Question
-        </label>
-        <input
-          type="text"
-          value={question}
-          onChange={(e) => setQuestion(e.target.value)}
-          className="w-full p-2 border rounded-md"
-          placeholder="Type your question here..."
-        />
-      </div>
-
-      {/* Options List */}
+    <div>
+      <label className="block text-gray-700 font-medium mb-2">Options:</label>
       {options.map((option, index) => (
-        <div key={index} className="flex items-center gap-2 mb-3">
+        <div key={index} className="flex items-center mb-2">
           <input
             type="text"
             value={option}
-            onChange={(e) => changeOption(index, e.target.value)}
-            className="w-full p-2 border rounded-md"
+            onChange={(e) => onChangeOption(index, e.target.value)}
+            className="flex-1 px-4 py-2 border rounded focus:outline-none focus:ring focus:ring-indigo-300"
             placeholder={`Option ${index + 1}`}
           />
           <button
-            onClick={() => removeOption(index)}
-            className="p-2 bg-red-500 text-white rounded hover:bg-red-600"
+            onClick={() => onRemoveOption(index)}
+            className="ml-2 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-700"
           >
             Remove
           </button>
         </div>
       ))}
-
-      {/* Add Option Button */}
       <button
-        onClick={addOption}
-        className="w-full mt-2 p-2 bg-green-500 text-white rounded hover:bg-green-600"
+        onClick={onAddOption}
+        className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
       >
         Add Option
       </button>
