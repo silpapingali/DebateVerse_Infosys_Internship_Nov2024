@@ -23,7 +23,7 @@ const Login = () => {
             setErrorMessage('Please enter both email and password');
             return;
         }
-        // Check if the email format
+        // Check if the email format is valid
         const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailPattern.test(data.email)) {
             setErrorMessage('Invalid email format');

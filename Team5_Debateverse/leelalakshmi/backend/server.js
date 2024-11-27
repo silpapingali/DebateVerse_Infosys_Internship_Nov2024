@@ -8,6 +8,7 @@ const bcrypt = require('bcryptjs'); // Import bcrypt
 const app = express();
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
+const cron = require('node-cron');
 require('dotenv').config();
 
 const mongoURI = process.env.MONGO_URI;
@@ -20,6 +21,7 @@ const adminemail = process.env.EMAIL_ADMIN;
 mongoose.connect(mongoURI).then(
   () => console.log('DB Connection established')
 );
+
 
 app.get('/', (req, res) => {
   res.send('hello world');
@@ -41,19 +43,18 @@ app.post('/register', async (req, res) => {
       return res.status(400).json({ error: 'Passwords do not match' });
     }
     const hashedPassword = await bcrypt.hash(password, 10);
-    const verificationToken = crypto.randomBytes(32).toString('hex');
+    
 
     let newUser = new Registeruser({
       email,
       password: hashedPassword,
-      role: email === adminemail ? 'admin' : 'user',
+      role: email === '213j1a4254@raghuinstech.com' ? 'admin' : 'user',
       isVerified: false,
-      verificationToken,
     });
 
     await newUser.save();
 
-    const verificationLink = `http://localhost:3000/verify-email/${verificationToken}`;
+    const verificationLink = `http://localhost:5173/verify-email?token=${newUser._id}`;;
 
     const transporter = nodemailer.createTransport({
       service: 'gmail',
@@ -80,26 +81,35 @@ app.post('/register', async (req, res) => {
 });
 
 // Verify Email Route
-app.get('/verify-email/:token', async (req, res) => {
+app.get('/verify-email', async (req, res) => {
   try {
-    const { token } = req.params;
+    const { token } = req.query; // Extract the token from the query string
 
-    let user = await Registeruser.findOne({ verificationToken: token });
-    if (!user) {
-      return res.status(400).send({ error: 'Invalid or expired token' });
+    if (!token) {
+      return res.status(400).send({ error: 'Token is required' });
     }
 
-    user.isVerified = true;
-    user.verificationToken = null;
-    await user.save();
+    // Find the user by ID (using token)
+    const user = await Registeruser.findById(token);
+    if (!user) {
+      return res.status(400).send({ error: 'Invalid or expired verification link' });
+    }
 
-    res.status(200).send({ message: 'Email successfully verified! You can now log in.' });
-    res.redirect('http://localhost:3000/login?verified=true'); 
+    // Update the user's verification status
+    if (!user.isVerified) {
+      user.isVerified = true;
+      await user.save();
+    }
+
+    // Respond with success to let the frontend handle UI changes
+    res.status(200).json({ message: 'Email successfully verified!' });
   } catch (error) {
     console.error(error);
     res.status(500).send({ error: 'Internal Server Error' });
   }
 });
+
+
 
 // Login Route
 app.post('/login', async (req, res) => {
@@ -109,9 +119,9 @@ app.post('/login', async (req, res) => {
     if (!exist) {
       return res.status(400).send('USER_NOT_FOUND');
     }
-    /*if (!exist.isVerified) {
+    if (!exist.isVerified) {
       return res.status(400).send('Email not verified');
-    }*/
+    }
     const isMatch = await bcrypt.compare(password, exist.password);
     if (!isMatch) {
       return res.status(400).send('PASSWORD_MISSMATCH');
@@ -145,7 +155,17 @@ app.post('/login', async (req, res) => {
   }
 });
 
-
+cron.schedule('0 * * * *', async () => {
+  try {
+    const result = await Registeruser.deleteMany({
+      isVerified: false,
+      createdAt: { $lt: new Date(Date.now() - 3600000) },
+    });
+    console.log(`Deleted ${result.deletedCount} unverified users`);
+  } catch (error) {
+    console.error('Error during cleanup:', error);
+  }
+});
 app.post('/request-password-reset', async (req, res) => {
   try {
     const { email } = req.body;
@@ -159,7 +179,7 @@ app.post('/request-password-reset', async (req, res) => {
     user.resetPasswordExpires = Date.now() + 3600000; 
     await user.save();
 
-    const resetLink = `http://localhost:3000/reset-password/${resetToken}`;
+    const resetLink = `http://localhost:5173/reset-password/${resetToken}`;
 
     const transporter = nodemailer.createTransport({
       service: 'gmail',
@@ -178,7 +198,7 @@ app.post('/request-password-reset', async (req, res) => {
 
     await transporter.sendMail(mailOptions);
 
-    res.status(200).json({ message: 'Password reset link sent to your email.' });
+    res.status(200).json({ message: 'Password reset link sent to your email.Please check your email' });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });
@@ -187,33 +207,36 @@ app.post('/request-password-reset', async (req, res) => {
 
 app.post('/reset-password/:token', async (req, res) => {
   try {
-    const { token } = req.params;
-    const { newPassword } = req.body;
+      const { token } = req.params;
+      const { newPassword } = req.body;
 
-    let user = await Registeruser.findOne({
-      resetPasswordToken: token,
-      resetPasswordExpires: { $gt: Date.now() }, 
-    });
+      // Find the user with the matching reset token and check if the token has expired
+      let user = await Registeruser.findOne({
+          resetPasswordToken: token,
+          resetPasswordExpires: { $gt: Date.now() }, // Ensure token has not expired
+      });
 
-    if (!user) {
-      return res.status(400).json({ error: 'Invalid or expired token' });
-    }
+      if (!user) {
+          return res.status(400).json({ error: 'Invalid or expired token' });
+      }
 
-    
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
+      // Hash the new password
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    
-    user.password = hashedPassword;
-    user.resetPasswordToken = null;
-    user.resetPasswordExpires = null;
-    await user.save();
+      // Update the user's password and clear the reset token
+      user.password = hashedPassword;
+      user.resetPasswordToken = null;
+      user.resetPasswordExpires = null;
+      await user.save();
 
-    res.status(200).json({ message: 'Password successfully updated! You can now log in.' });
+      res.status(200).json({ message: 'Password successfully updated! You can now log in.' });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
+      console.error(error);
+      res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
+
 
 
 // User Dashboard Route

@@ -9,6 +9,7 @@ import Home from "../components/Home";
 import About from "../components/About";
 import Userdashboard from "../components/Userdashboard";
 import Admindashboard from "../components/Admindashboard";
+import VerifySuccess from "../components/Verifysuccess";
 const router = createBrowserRouter([
     {
       path: "/",
@@ -35,7 +36,7 @@ const router = createBrowserRouter([
             element:<PasswordCorrect/>
             },
             {
-              path:"/passwordconfirm",
+              path:"/reset-password/:token",
               element:<PasswordConfirm/>
             },
             {
@@ -53,7 +54,10 @@ const router = createBrowserRouter([
               element:<Admindashboard/>
 
             },
-
+            {
+              path:"/verify-email",
+              element:<VerifySuccess/>
+            }
 
       ]
     },
