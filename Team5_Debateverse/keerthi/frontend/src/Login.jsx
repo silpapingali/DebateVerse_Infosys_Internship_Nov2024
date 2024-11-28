@@ -20,11 +20,8 @@ function Login() {
       .post("http://localhost:3001/login", { email, password })
       .then((result) => {
         if (result.data.Status === "Success") {
-          if (result.data.role === "admin") {
-            navigate("/admin-home");
-          } else {
-            navigate("/user-home");
-          }
+          localStorage.setItem("token", result.data.token);
+           navigate("/dashboard");
         } else {
           setError("Invalid Email or password.");
         }

@@ -34,7 +34,7 @@ function Register() {
         if (result.data === "EMAIL_ALREADY_EXISTS") {
           setError("This email is already registered. Please use a different one.");
         } else if (result.data === "Success") {
-          navigate('/home');
+          navigate('/dashboard');
         }
       })
       .catch(err => {
