@@ -5,27 +5,14 @@ import OptionField from "../components/OptionField";
 import { format } from "date-fns";
 
 const UserDashboard = () => {
-  const { isAuth, userId, role } = useContext(UserContext);
+  const { isAuth, userId, role, userDebates } = useContext(UserContext);
   const navigate = useNavigate();
 
-  const [debates, setDebates] = useState([]);
-  const [question, setQuestion] = useState("");
-  const [options, setOptions] = useState([""]);
-
   useEffect(() => {
-    if (isAuth) {
-      const fetchedDebates = [
-        { id: 1, title: "Debate 1", date: new Date(), likes: 10 },
-        { id: 2, title: "Debate 2", date: new Date(), likes: 15 },
-      ];
-      setDebates(fetchedDebates);
+    if (!isAuth) {
+      navigate("/login");
     }
-  }, [isAuth]);
-
-  if (!isAuth) {
-    navigate("/login");
-    return null;
-  }
+  }, [isAuth, navigate]);
 
   return (
     <div className="pt-16 flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-indigo-300 via-indigo-500 to-indigo-700">
@@ -34,7 +21,7 @@ const UserDashboard = () => {
 
       {/* Your Debates Section */}
       <div className="w-full max-w-lg relative">
-        <h2 className="text-2xl font-bold text-white mb-4"> Debates</h2>
+        <h2 className="text-2xl font-bold text-white mb-4"> My Debates</h2>
         <button
           onClick={() => navigate("/create-debate")}
           className="absolute top-0 right-0 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-700"
@@ -42,7 +29,7 @@ const UserDashboard = () => {
           Create New Debate
         </button>
         <div className="space-y-4 mt-8">
-          {debates.map((debate) => (
+          {userDebates.map((debate) => (
             <div
               key={debate.id}
               className="bg-white p-4 rounded-lg shadow-lg flex justify-between items-center"

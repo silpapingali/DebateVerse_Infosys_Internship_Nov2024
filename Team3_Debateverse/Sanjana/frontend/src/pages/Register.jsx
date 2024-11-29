@@ -1,3 +1,4 @@
+
 import axios from "axios";
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
@@ -116,9 +117,9 @@ const Register = () => {
             <input
               className="w-full px-3 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               type={showConfirmPassword ? "text" : "password"}
-              id="password"
+              id="confirmPassword"
               placeholder="Enter your password"
-              name="password"
+              name="confirmPassword"
               required
               value={confirmPassword}
               onChange={(e) => {
