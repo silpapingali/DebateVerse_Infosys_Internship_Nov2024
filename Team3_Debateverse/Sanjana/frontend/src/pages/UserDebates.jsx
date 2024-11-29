@@ -4,7 +4,7 @@ import { UserContext } from "../context/UserContext";
 import { useNavigate } from "react-router-dom";
 
 const CreateDebate = () => {
-  const [question, setQuestion] = useState(""); // State for question
+  const [question, setQuestion] = useState(""); // State for the question
   const [options, setOptions] = useState([""]); // State for options
   const { userDebates, setUserDebates } = useContext(UserContext); // Get userDebates from context
   const navigate = useNavigate();
@@ -35,9 +35,8 @@ const CreateDebate = () => {
     const newDebate = {
       id: Date.now(), // Unique ID
       title: question,
-      options,
+      options: options.map((opt) => ({ text: opt, likes: 0 })), // Add 'likes' to each option
       date: new Date().toISOString(),
-      likes: 0, // Initial likes count
     };
 
     // Update global state or local storage
