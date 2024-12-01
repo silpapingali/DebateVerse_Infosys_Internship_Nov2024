@@ -3,7 +3,7 @@ import Home from "./pages/Home";
 import Navbar from "./components/Navbar";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import UserDebates from "./pages/UserDebates";
+import UserAllDebates from "./pages/UserAllDebates";
 import { Reset } from "./pages/Reset";
 import { UserContextProvider } from "./context/UserContext";
 import About from "./pages/About";
@@ -21,12 +21,11 @@ function App() {
         <Navbar />
         <Routes>
           <Route element={<UserProtected />}>
-            <Route path="/userdebates" element={<UserDebates />} />
+            <Route path="/userdebates" element={<UserAllDebates />} />
             <Route path="/userdashboard" element={<UserDashboard />} />
           </Route>
           
           <Route element={<AdminProtected />}>
-            <Route path="/userdebates" element={<UserDebates />} />
             <Route path="/admindashboard" element={<AdminDashboard />} />
           </Route>
 

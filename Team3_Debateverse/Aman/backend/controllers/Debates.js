@@ -1,4 +1,3 @@
-const express = require("express");
 const debatesModel = require("../models/debatesModel");
 
 const AllDebates = async (req, res) => {
@@ -18,19 +17,19 @@ const AllDebates = async (req, res) => {
   }
 };
 
-const GetDebatesbyId = async (req, res) => {
-  const { userid, page } = req.query;
+const MyDebates = async (req, res) => {
+  const createdBy = req.user.email.split("@")[0];
+  const { page } = req.query;
   const skip = (page - 1) * 10;
-  console.log(userid);
+  console.log(page);
   try {
     const totalRecords = await debatesModel.countDocuments();
-    const totalPages = Math.ceil(totalRecords / 10);
     const debates = await debatesModel
-      .find({ createdBy: userid })
+      .find({ createdBy })
       .skip(skip)
       .limit(10)
       .sort({ createdOn: -1 });
-    res.status(200).json({ totalPages, debates });
+    res.status(200).json({ totalRecords, debates });
   } catch (err) {
     console.log(err);
     res.status(400).json({ message: "Server error ! Please try again later" });
@@ -38,11 +37,18 @@ const GetDebatesbyId = async (req, res) => {
 };
 
 const CreateDebate = async (req, res) => {
-  const debateData = req.body;
-  console.log(debateData);
+  const { question, options } = req.body;
+  const createdBy = req.user.email.split("@")[0];
+  console.log(createdBy);
+
   try {
-    const debate = new debatesModel(debateData);
-    await debate.save();
+    const debateData = new debatesModel({
+      question,
+      options: options.map((data, i) => ({ answer: data })),
+      createdOn: new Date(),
+      createdBy,
+    });
+    await debateData.save();
     res.status(200).json({ message: "Success ! Debate created" });
   } catch (err) {
     console.log(err);
@@ -50,4 +56,4 @@ const CreateDebate = async (req, res) => {
   }
 };
 
-module.exports = { AllDebates, CreateDebate, GetDebatesbyId };
+module.exports = { AllDebates, CreateDebate, MyDebates };

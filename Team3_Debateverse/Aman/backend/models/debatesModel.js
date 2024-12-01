@@ -5,13 +5,13 @@ const debatesSchema = new mongoose.Schema({
   options: [
     {
       answer: { type: String, required: true },
-      votes: { type: Number, required: true, default: 0 },
+      votes: { type: Number, default: 0 },
     },
   ],
-  totalVotes: { type: Number, required: true, default: 0 },
-  totalLikes: { type: Number, required: true, default: 0 },
   createdBy: { type: String, required: true },
-  createdOn: { type: String, required: true },
+  createdOn: { type: Date, required: true },
+  totalVotes: { type: Number, default: 0 },
+  totalLikes: { type: Number, default: 0 },
 });
 
 module.exports = mongoose.model("Debate", debatesSchema);

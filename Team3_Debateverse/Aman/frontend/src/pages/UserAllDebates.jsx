@@ -1,6 +1,6 @@
 
 
-const UserDebates = () => {
+const UserAllDebates = () => {
 
   return (
     <div>
@@ -14,4 +14,4 @@ const UserDebates = () => {
   );
 };
 
-export default UserDebates;
+export default UserAllDebates;
