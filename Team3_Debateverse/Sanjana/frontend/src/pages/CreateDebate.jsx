@@ -1,12 +1,12 @@
 import React, { useState, useContext } from "react";
 import OptionField from "../components/OptionField";
-import { UserContext } from "../context/UserContext"; // Context to manage user data
+import { UserContext } from "../context/UserContext";
 import { useNavigate } from "react-router-dom";
 
 const CreateDebate = () => {
   const [question, setQuestion] = useState(""); // State for question
   const [options, setOptions] = useState([""]); // State for options
-  const { setUserDebates } = useContext(UserContext); // Assuming UserContext has a setter for debates
+  const { userDebates, setUserDebates } = useContext(UserContext); // Get userDebates from context
   const navigate = useNavigate();
 
   // Add a new option
@@ -41,8 +41,8 @@ const CreateDebate = () => {
     };
 
     // Update global state or local storage
-    //setUserDebates((prevDebates) => [...prevDebates, newDebate]); // Add new debate to the user's debates
-    setUserDebates([...userDebates, newDebate]); 
+    setUserDebates([...userDebates, newDebate]); // Add new debate to the user's debates
+
     // Clear inputs after submission
     setQuestion("");
     setOptions([""]);

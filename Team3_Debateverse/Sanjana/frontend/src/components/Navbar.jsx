@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const { isAuth, setIsAuth, role, isRole } = useContext(UserContext);
+  const { isAuth, setIsAuth, role } = useContext(UserContext);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);

@@ -21,6 +21,7 @@ function App() {
       <UserContextProvider>
         <Navbar />
         <Routes>
+
           {/* User-specific routes */}
           <Route element={<UserProtected />}>
             <Route path="/userdebates" element={<UserDebates />} />
@@ -30,7 +31,7 @@ function App() {
           
           {/* Admin-specific routes */}
           <Route element={<AdminProtected />}>
-            <Route path="/userdebates" element={<UserDebates />} />
+          <Route path="/userdebates" element={<UserDebates />} />
             <Route path="/admindashboard" element={<AdminDashboard />} />
           </Route>
 
@@ -47,6 +48,7 @@ function App() {
         <Footer />
       </UserContextProvider>
     </BrowserRouter>
+    
   );
 }
 

@@ -15,6 +15,7 @@ const UserContextProvider = ({ children }) => {
 
   // State for managing debates created by the user
   const [userDebates, setUserDebates] = useState([]);
+  
 
   useEffect(() => {
     console.log("in context");
