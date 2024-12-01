@@ -1,20 +1,21 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-export const fetchUserDebates = createAsyncThunk(
-  "fetchuserdebates",
+export const fetchAllDebates = createAsyncThunk(
+  "fetchalldebates",
   async (data, thunk) => {
     const token = localStorage.getItem("token");
     console.log("in fetching");
     try {
       const response = await axios.get(
-        `http://localhost:3000/api/debates/mydebates/?page=${data}`,
+        `http://localhost:3000/api/debates/alldebates/?page=${data}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
+      console.log(response.data);
       return response.data;
     } catch (err) {
       return thunk.rejectWithValue(
@@ -24,8 +25,8 @@ export const fetchUserDebates = createAsyncThunk(
   }
 );
 
-const UserDebateSlice = createSlice({
-  name: "userdebateSlice",
+const AllDebateSlice = createSlice({
+  name: "alldebateSlice",
   initialState: {
     debates: {},
     totalRecords: 0,
@@ -34,7 +35,6 @@ const UserDebateSlice = createSlice({
     isLoading: true,
     errorMessage: null,
   },
-
   reducers: {
     setCurrPage: (state, action) => {
       state.currPage = action.payload;
@@ -42,10 +42,10 @@ const UserDebateSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchUserDebates.pending, (state, action) => {
+      .addCase(fetchAllDebates.pending, (state, action) => {
         state.isLoading = true;
       })
-      .addCase(fetchUserDebates.fulfilled, (state, action) => {
+      .addCase(fetchAllDebates.fulfilled, (state, action) => {
         if (Object.keys(state.debates).length > 10) {
           delete state.debates[Object.keys(state.debates)[0]];
         }
@@ -58,12 +58,12 @@ const UserDebateSlice = createSlice({
         state.isLoading = false;
         console.log(state.debates);
       })
-      .addCase(fetchUserDebates.rejected, (state, action) => {
+      .addCase(fetchAllDebates.rejected, (state, action) => {
         state.errorMessage = action.payload;
         state.isLoading = false;
         console.log(action);
       });
   },
 });
-export const { setCurrPage } = UserDebateSlice.actions;
-export default UserDebateSlice.reducer;
+export const { setCurrPage } = AllDebateSlice.actions;
+export default AllDebateSlice.reducer;

@@ -1,13 +1,9 @@
 import React from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch } from "react-redux";
 import { fetchUserDebates, setCurrPage } from "../redux/slices/userDebateSlice";
 import { toast } from "react-toastify";
 
-const PagesButton = () => {
-  const { totalPages, currPage, debates } = useSelector(
-    (states) => states.userDebates
-  );
-
+const PagesButton = ({ totalPages, currPage, debates }) => {
   const dispatch = useDispatch();
 
   const handlePageClick = (i) => {
@@ -33,15 +29,17 @@ const PagesButton = () => {
   }
 
   return (
-    <div className="flex justify-center items-center py-3">
-      {pages}
-      <button
-        onClick={() => handlePageClick(currPage + 1)}
-        className={`py-2 px-5 font-bold bg-blue-500 hover:bg-blue-600 hover:border`}
-      >
-        Next Page
-      </button>
-    </div>
+    totalPages > 1 && (
+      <div className="flex justify-center items-center py-3">
+        {pages}
+        <button
+          onClick={() => handlePageClick(currPage + 1)}
+          className={`py-2 px-5 font-bold bg-blue-500 hover:bg-blue-600 hover:border`}
+        >
+          Next Page
+        </button>
+      </div>
+    )
   );
 };
 

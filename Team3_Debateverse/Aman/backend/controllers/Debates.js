@@ -1,17 +1,18 @@
 const debatesModel = require("../models/debatesModel");
 
 const AllDebates = async (req, res) => {
+  const createdBy = req.user.email.split("@")[0];
   const { page } = req.query;
   const skip = (page - 1) * 10;
   try {
-    const totalRecords = await debatesModel.countDocuments();
-    const totalPages = Math.ceil(totalRecords / 10);
+    const totalRecords = await debatesModel.countDocuments({createdBy: {$ne: createdBy}});
+    console.log(totalRecords);
     const debates = await debatesModel
-      .find({})
+      .find({createdBy: {$ne: createdBy}})
       .skip(skip)
       .limit(10)
       .sort({ createdOn: -1 });
-    res.status(200).json({ totalPages, debates });
+    res.status(200).json({ totalRecords, debates });
   } catch (err) {
     res.status(400).json({ message: "Server error ! Try again later" });
   }
@@ -21,9 +22,8 @@ const MyDebates = async (req, res) => {
   const createdBy = req.user.email.split("@")[0];
   const { page } = req.query;
   const skip = (page - 1) * 10;
-  console.log(page);
   try {
-    const totalRecords = await debatesModel.countDocuments();
+    const totalRecords = await debatesModel.countDocuments({ createdBy });
     const debates = await debatesModel
       .find({ createdBy })
       .skip(skip)

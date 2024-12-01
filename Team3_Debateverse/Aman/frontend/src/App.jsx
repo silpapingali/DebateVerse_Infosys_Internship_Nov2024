@@ -20,10 +20,9 @@ function App() {
       <UserContextProvider>
         <Navbar />
         <Routes>
-          <Route element={<UserProtected />}>
+          
             <Route path="/userdebates" element={<UserAllDebates />} />
             <Route path="/userdashboard" element={<UserDashboard />} />
-          </Route>
           
           <Route element={<AdminProtected />}>
             <Route path="/admindashboard" element={<AdminDashboard />} />

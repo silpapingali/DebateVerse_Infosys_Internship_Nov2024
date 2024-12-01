@@ -8,7 +8,6 @@ const Authjwt= (req, res, next)=>{
             return res.status(403).json({message: "Session expired ! Pleaes login again from fun"})
         }
         req.user= decoded;
-        console.log(req.user);
         next();
     });
 }

@@ -16,7 +16,6 @@ const UserDashboard = () => {
     isLoading,
     errorMessage,
   } = useSelector((states) => states.userDebates);
-  console.log(debates, totalPages, isLoading, errorMessage);
 
   const [isCreatePop, setIsCreatePop] = useState(false);
 
@@ -53,13 +52,14 @@ const UserDashboard = () => {
                   <DebateCard
                     debate={val}
                     Qno={(currPage - 1) * 10 + ind + 1}
+                    isMine={true}
                   />
                 </div>
               );
             })}
           </div>
           {isCreatePop && <CreateDebate showCreate={showCreate} />}
-          <PagesButton />
+          <PagesButton totalPages={totalPages} debates={debates} currPage={currPage} />
         </>
       )}
     </div>

@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { format } from "date-fns";
 import { Heart, MessageCircleMore, ThumbsUp } from "lucide-react";
+import { UserContext } from "../context/UserContext";
 
-const DebateCard = ({ debate, Qno }) => {
+const DebateCard = ({ debate, Qno, isMine }) => {
   const [isLike, setIsLike] = useState(false);
 
   const handleLike = () => {
@@ -10,7 +11,7 @@ const DebateCard = ({ debate, Qno }) => {
   };
 
   return (
-    <div className="bg-blue-600 rounded-lg p-5 w-full">
+    <div className={`${isMine? "bg-blue-600": "bg-indigo-600"} rounded-lg p-5 w-full`}>
       <div className="flex justify-between items-center">
         <h1 className="font-semibold">
           Asked by <span className="text-green-400">{debate.createdBy}</span> on{" "}
@@ -19,6 +20,7 @@ const DebateCard = ({ debate, Qno }) => {
           </span>
         </h1>
         <button
+          disabled={isMine}
           onClick={handleLike}
           className={`flex gap-3 justify-center ${
             isLike ? "text-red-500" : ""

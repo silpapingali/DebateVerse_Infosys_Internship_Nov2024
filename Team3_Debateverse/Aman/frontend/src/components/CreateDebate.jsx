@@ -69,7 +69,7 @@ const CreateDebate = ({ showCreate }) => {
       onClick={closeCreate}
       className="fixed inset-0 flex justify-center items-center backdrop-blur-sm"
     >
-      <div className="bg-blue-800 md:w-1/2 relative rounded-lg p-5 md:p-20">
+      <div className="bg-blue-500 md:w-1/2 relative rounded-lg p-5 md:p-20">
         <button onClick={showCreate} className="absolute top-3 right-3">
           <FaXmark size={40} />
         </button>
@@ -101,7 +101,7 @@ const CreateDebate = ({ showCreate }) => {
 
         <button
           onClick={addOption}
-          className={`px-8 w-full py-2 rounded-lg bg-blue-600 font-bold`}
+          className={`px-8 w-full py-2 rounded-lg bg-blue-700 font-bold`}
         >
           Add Options
         </button>
