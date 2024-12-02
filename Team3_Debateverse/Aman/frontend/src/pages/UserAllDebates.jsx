@@ -21,7 +21,7 @@ const UserAllDebates = () => {
   }, []);
 
   return (
-    <div className="pt-16 lg:px-52 grid lg:grid-cols-[1fr,2fr] px-5 min-h-screen bg-blue-400">
+    <div className="pt-16 lg:px-52 grid lg:grid-cols-[1fr,3fr] px-5 min-h-screen bg-blue-400">
       {!isLoading && (
         <>
           <div className="hidden rounded-lg mb-1 lg:flex justify-center items-start bg-blue-600 h-screen">
