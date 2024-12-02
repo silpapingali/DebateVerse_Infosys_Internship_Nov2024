@@ -21,7 +21,7 @@ const UserAllDebates = () => {
   }, []);
 
   return (
-    <div className="pt-16 lg:px-52 grid lg:grid-cols-[1fr,3fr] px-5 min-h-screen bg-blue-400">
+    <div className="pt-16 lg:px-48 grid lg:grid-cols-[1fr,3fr] px-5 min-h-screen bg-blue-400">
       {!isLoading && (
         <>
           <div className="hidden rounded-lg mb-1 lg:flex justify-center items-start bg-blue-600 h-screen">
@@ -35,7 +35,7 @@ const UserAllDebates = () => {
                   <FaFilter size={25} />
                 </button>
             </div>
-            <input type="text" name="searchText" id="searchText" className="px-2 py-1 rounded-lg bg-indigo-700 text-white" placeholder="Search Debates"/>
+            <input type="text" name="searchText" id="searchText" className="p-2 rounded-lg bg-indigo-700 text-white" placeholder="Search Debates"/>
             {debates[currPage].map((deb, ind) => {
               return (
                 <div key={ind} className="w-full">

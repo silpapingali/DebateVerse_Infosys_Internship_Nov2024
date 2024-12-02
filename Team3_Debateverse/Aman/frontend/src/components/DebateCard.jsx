@@ -10,7 +10,7 @@ const DebateCard = ({ debate, liked, Qno, isMine }) => {
   const dispatch = useDispatch();
   // console.log(liked);
 
-  const [isVotePopup, setIsVotePopup] = useState(false);
+  const [isVotePopup, setIsVotePopup] = useState(0);
 
   const handleLike = (_id, index) => {
     dispatch(likeRequest(_id));
@@ -75,8 +75,8 @@ const DebateCard = ({ debate, liked, Qno, isMine }) => {
                     {option.votes}
                   </button>
                 </div>
-                {isVotePopup && (
-                  <div className="flex justify-center items-center gap-1 ml-10">
+                {isVotePopup != 0 && (
+                  <div className="flex justify-center items-center gap-1 md:ml-10">
                     <button className="p-2 rounded-full bg-violet-500">
                       <FaMinus size={16} />
                     </button>
@@ -99,17 +99,17 @@ const DebateCard = ({ debate, liked, Qno, isMine }) => {
         {!isMine && (
           <button
             onClick={() => {
-              setIsVotePopup(!isVotePopup);
+              setIsVotePopup(Qno);
             }}
             className="w-full bg-emerald-500 rounded-lg p-2 font-bold text-lg"
           >
-            {isVotePopup? "Submit" : "Vote"}
+            {isVotePopup ? "Submit" : "Vote"}
           </button>
         )}
-        {isVotePopup && (
+        {isVotePopup != 0 && (
           <button
             onClick={() => {
-              setIsVotePopup(!isVotePopup);
+              setIsVotePopup(0);
             }}
             className="w-full bg-red-500 rounded-lg p-2 font-bold text-lg"
           >
