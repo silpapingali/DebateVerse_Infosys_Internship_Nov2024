@@ -15,7 +15,6 @@ export const fetchAllDebates = createAsyncThunk(
           },
         }
       );
-      console.log(response.data);
       return response.data;
     } catch (err) {
       return thunk.rejectWithValue(
@@ -25,10 +24,28 @@ export const fetchAllDebates = createAsyncThunk(
   }
 );
 
+export const likeRequest = createAsyncThunk(
+  "likeRequest",
+  async (data, thunk) => {
+    const token = localStorage.getItem("token");
+    try {
+      const res = await axios.get(
+        `http://localhost:3000/api/debates/likerequest/?debateId=${data}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+    } catch (err) {}
+  }
+);
+
 const AllDebateSlice = createSlice({
   name: "alldebateSlice",
   initialState: {
     debates: {},
+    likes: {},
     totalRecords: 0,
     totalPages: 0,
     currPage: 1,
@@ -39,6 +56,14 @@ const AllDebateSlice = createSlice({
     setCurrPage: (state, action) => {
       state.currPage = action.payload;
     },
+    setLiked: (state, action) => {
+      console.log(action.payload);
+      state.likes[state.currPage][action.payload.index] =
+        !state.likes[state.currPage][action.payload.index];
+
+      state.debates[state.currPage][action.payload.index].totalLikes +=
+        action.payload.val;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -48,15 +73,19 @@ const AllDebateSlice = createSlice({
       .addCase(fetchAllDebates.fulfilled, (state, action) => {
         if (Object.keys(state.debates).length > 10) {
           delete state.debates[Object.keys(state.debates)[0]];
+          delete state.debates[Object.keys(state.likes)[0]];
         }
         state.debates = {
           ...state.debates,
           [state.currPage]: action.payload.debates,
         };
+        state.likes = {
+          ...state.likes,
+          [state.currPage]: action.payload.likes,
+        };
         state.totalRecords = action.payload.totalRecords;
         state.totalPages = Math.ceil(state.totalRecords / 10);
         state.isLoading = false;
-        console.log(state.debates);
       })
       .addCase(fetchAllDebates.rejected, (state, action) => {
         state.errorMessage = action.payload;
@@ -65,5 +94,5 @@ const AllDebateSlice = createSlice({
       });
   },
 });
-export const { setCurrPage } = AllDebateSlice.actions;
+export const { setCurrPage, setLiked } = AllDebateSlice.actions;
 export default AllDebateSlice.reducer;

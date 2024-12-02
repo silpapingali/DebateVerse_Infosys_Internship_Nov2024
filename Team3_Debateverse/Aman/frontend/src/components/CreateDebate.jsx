@@ -67,7 +67,7 @@ const CreateDebate = ({ showCreate }) => {
     <div
       ref={popDiv}
       onClick={closeCreate}
-      className="fixed inset-0 flex justify-center items-center backdrop-blur-sm"
+      className="fixed inset-0 flex justify-center items-center backdrop-blur"
     >
       <div className="bg-blue-500 md:w-1/2 relative rounded-lg p-5 md:p-20">
         <button onClick={showCreate} className="absolute top-3 right-3">

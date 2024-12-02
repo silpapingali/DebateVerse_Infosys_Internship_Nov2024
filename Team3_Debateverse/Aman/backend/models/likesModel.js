@@ -4,4 +4,4 @@ const likeSchema = new mongoose.Schema({
   debateId: { type: mongoose.Schema.Types.ObjectId, ref: "Debate" },
 });
 
-module.exports = mongoose.model("DebateLike", likeSchema);
+module.exports = mongoose.model("Likes", likeSchema);

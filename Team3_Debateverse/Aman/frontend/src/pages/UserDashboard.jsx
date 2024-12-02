@@ -18,6 +18,12 @@ const UserDashboard = () => {
   } = useSelector((states) => states.userDebates);
 
   const [isCreatePop, setIsCreatePop] = useState(false);
+  useEffect(() => {
+    if (isCreatePop) document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [isCreatePop]);
 
   useEffect(() => {
     dispatch(fetchUserDebates(1));
@@ -28,19 +34,19 @@ const UserDashboard = () => {
   };
 
   return (
-    <div className="pt-16 px-5 lg:px-72 min-h-screen bg-blue-400 p-1/2">
+    <div className="pt-16 grid lg:grid-cols-[1fr,2fr,1fr] px-5 min-h-screen bg-blue-400">
       {!isLoading && (
         <>
-          <div className="flex py-5 justify-between items-center">
-            <h1 className="text-2xl font-bold">{`My Debates (${totalRecords})`}</h1>
-            <button
-              onClick={showCreate}
-              className="bg-blue-600 font-bold px-10 py-2 rounded-lg"
-            >
-              Create
-            </button>
-          </div>
-          <div className="flex justify-center items-center pb-5 flex-col gap-5">
+          <div className="flex lg:col-start-2 justify-start items-center pb-5 flex-col gap-5">
+            <div className="flex pt-5 w-full justify-between items-center">
+              <h1 className="text-2xl font-bold">{`My Debates (${totalRecords})`}</h1>
+              <button
+                onClick={showCreate}
+                className="bg-blue-600 font-bold px-10 py-2 rounded-lg text-white"
+              >
+                Create
+              </button>
+            </div>
             {debates[currPage].map((val, ind) => {
               return (
                 <div key={ind} className="w-full">
@@ -57,9 +63,13 @@ const UserDashboard = () => {
                 </div>
               );
             })}
+            {isCreatePop && <CreateDebate showCreate={showCreate} />}
+            <PagesButton
+              totalPages={totalPages}
+              debates={debates}
+              currPage={currPage}
+            />
           </div>
-          {isCreatePop && <CreateDebate showCreate={showCreate} />}
-          <PagesButton totalPages={totalPages} debates={debates} currPage={currPage} />
         </>
       )}
     </div>
