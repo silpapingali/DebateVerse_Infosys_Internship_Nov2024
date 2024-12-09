@@ -1,150 +1,135 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const bcrypt = require('bcrypt');
+const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const cookieParser = require('cookie-parser');
-const UsersModel = require('./models/Users');
-const nodemailer = require('nodemailer');
+const cookieParser = require("cookie-parser");
+const nodemailer = require("nodemailer");
 
+// Import the UsersModel
+const UsersModel = require("./models/Users");
+
+// Configurations
+const PORT = 3001;
+const MONGO_URI = "mongodb://127.0.0.1:27017/users";
+const JWT_SECRET = "your_jwt_secret_key";
+const EMAIL_USER = "nunekeerthi05@gmail.com";
+const EMAIL_PASS = "kxbeytmjmwcpucyi";
+
+// Middleware
 const app = express();
 app.use(express.json());
 app.use(cors({
   origin: ["http://localhost:5173"],
   methods: ["GET", "POST"],
-  credentials: true
+  credentials: true,
 }));
 app.use(cookieParser());
 
-mongoose.connect("mongodb://127.0.0.1:27017/users");
+// Database Connection
+mongoose.connect(MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+  .then(() => console.log("Connected to MongoDB"))
+  .catch(err => console.error("MongoDB Connection Error:", err));
 
-const verifyUser = (req, res, next) => {
-  const token = req.cookies.token;
-  if (!token) {
-    return res.json("Token is missing");
-  } else {
-    jwt.verify(token, "jwt-secret-key", (err, decoded) => {
-      if (err) {
-        return res.json("Error with token");
-      } else {
-        if (decoded.role === "admin") {
-          next();
-        } else {
-          return res.json("not admin");
-        }
-      }
-    });
-  }
-};
-
-app.post('/register', (req, res) => {
+// Registration Route
+app.post("/register", async (req, res) => {
   const { email, password } = req.body;
 
-  // Check if user already exists
-  UsersModel.findOne({ email: email })
-    .then(user => {
-      if (user) {
-        return res.status(400).json({ Status: "Error", Message: "EMAIL_ALREADY_EXISTS" });
-      }
+  try {
+    const existingUser = await UsersModel.findOne({ email });
+    if (existingUser) return res.json("EMAIL_ALREADY_EXISTS");
 
-      // Proceed with registration if email does not exist
-      bcrypt.hash(password, 10)
-        .then(hash => {
-          UsersModel.create({ email, password: hash, status: 'pending' })
-            .then(newUser => {
-              console.log(`User registered with email: ${newUser.email}`);
-              return res.status(200).json({ Status: "Success", Message: "User registered successfully" });
-            })
-            .catch(err => {
-              console.error(err);
-              return res.status(500).json({ Status: "Error", Message: "Unable to register user" });
-            });
-        })
-        .catch(err => {
-          console.error(err);
-          return res.status(500).json({ Status: "Error", Message: "Error hashing password" });
-        });
-    })
-    .catch(err => {
-      console.error(err);
-      return res.status(500).json({ Status: "Error", Message: "Unable to check if user exists" });
-    });
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = new UsersModel({ email, password: hashedPassword });
+    await newUser.save();
+
+    res.json("Success");
+  } catch (error) {
+    console.error(error);
+    res.status(500).json("Error occurred during registration.");
+  }
 });
 
-
-app.post('/login', (req, res) => {
+// Login Route
+app.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
-  if (!email || !password) {
-    return res.json("Please enter both Email and password.");
+  try {
+    const user = await UsersModel.findOne({ email });
+    if (!user) return res.json({ Status: "Error", Message: "Invalid Email" });
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.json({ Status: "Error", Message: "Invalid Password" });
+
+    const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: "1h" });
+    res.json({ Status: "Success", token });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ Status: "Error", Message: "Login failed." });
   }
-
-  UsersModel.findOne({ email: email })
-    .then(user => {
-      if (!user) {
-        return res.json("USER_NOT_FOUND");
-      }
-
-      bcrypt.compare(password, user.password, (err, response) => {
-        if (err) {
-          return res.json("Error comparing password");
-        }
-
-        if (response) {
-          const token = jwt.sign({ email: user.email, role: user.role }, "jwt-secret-key", { expiresIn: '1h' });
-
-          res.json({
-            Status: "Success",
-            token: token,
-            role: user.role
-          });
-        } else {
-          return res.json("PASSWORD_MISMATCH");
-        }
-      });
-    })
-    .catch(err => {
-      console.error(err);
-      return res.json("Unable to login at this time. Please try again later.");
-    });
 });
 
-app.listen(3001, () => {
-    console.log("server is running")
-})
+// Forgot Password Route
+app.post("/forgot-password", async (req, res) => {
+  const { email } = req.body;
 
-app.post('/forgot-password',(req,res) => {
-    const {email} = req.body;
-    UsersModel.findOne({email:email})
-    .then(user => {
-        if(!user){
-            return res.send({Status: "User not existed"})
-        }
-        const token = jwt.sign({id: user._id}, "jwt_secret_key", {expiresIn: "1h"})
-        var transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-              user: 'nunekeerthi05@gmail.com',
-              pass: 'kxbeytmjmwcpucyi'
-            }
-          });
-          
-          var mailOptions = {
-            from: 'nunekeerthi05@gmail.com',
-            to: 'keerthikrishna0409@gmail.com',
-            subject: 'Reset your Password',
-            text: `http://localhost:5173/reset-password/${user._id}/${token}`
-          };
-          
-          transporter.sendMail(mailOptions, function(error, info){
-            if (error) {
-                console.error("Failed to send email:", error.message);
-                return res.status(500).json({ Status: "Error", Message: error.message });
-            } else {
-                console.log("Email sent successfully:", info.response);
-                return res.json({ Status: "Success", Info: info.response });
-            }
-            
-          });
-    })
-})
+  try {
+    const user = await UsersModel.findOne({ email });
+    if (!user) {
+      return res.json({ Message: "If the email exists, a reset link will be sent." });
+    }
+
+    const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: "1h" });
+    const resetLink = `http://localhost:5173/reset-password/${user._id}/${token}`;
+
+    // Configure Nodemailer
+    const transporter = nodemailer.createTransport({
+      service: "Gmail",
+      auth: {
+        user: EMAIL_USER,
+        pass: EMAIL_PASS,
+      },
+    });
+
+    const mailOptions = {
+      from: EMAIL_USER,
+      to: email,
+      subject: "Reset Your Password",
+      text: `Click on the link to reset your password: ${resetLink}`,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.json({ Status: "Success", Message: "Reset link sent to your email!" });
+  } catch (error) {
+    console.error("Error in forgot-password:", error);
+    res.status(500).json({ Message: "Failed to send reset link. Please try again." });
+  }
+});
+
+// Reset Password Route
+app.post("/reset-password/:userId/:token", async (req, res) => {
+  const { userId, token } = req.params;
+  const { password } = req.body;
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    if (decoded.id !== userId) {
+      return res.status(400).json({ Message: "Invalid token or user ID." });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await UsersModel.findByIdAndUpdate(userId, { password: hashedPassword });
+
+    res.json({ Status: "Success", Message: "Password reset successfully!" });
+  } catch (error) {
+    console.error("Error in reset-password:", error);
+    res.status(500).json({ Message: "Failed to reset password. Please try again." });
+  }
+});
+
+// Start Server
+app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));

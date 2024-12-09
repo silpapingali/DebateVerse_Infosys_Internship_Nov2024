@@ -10,6 +10,7 @@ import About from "./pages/About";
 import UserDashboard from "./pages/UserDashboard";
 import Footer from "./components/Footer";
 import AdminDashboard from "./pages/AdminDashboard";
+import CreateDebate from "./pages/CreateDebate"; // Import the CreateDebate component
 import UserProtected from "./ProtectedRoute/UserProtected";
 import AdminProtected from "./ProtectedRoute/AdminProtected";
 import PublicProtected from "./ProtectedRoute/PublicProtected";
@@ -20,16 +21,21 @@ function App() {
       <UserContextProvider>
         <Navbar />
         <Routes>
+
+          {/* User-specific routes */}
           <Route element={<UserProtected />}>
             <Route path="/userdebates" element={<UserDebates />} />
             <Route path="/userdashboard" element={<UserDashboard />} />
+            <Route path="/create-debate" element={<CreateDebate />} /> {/* Add CreateDebate route */}
           </Route>
           
+          {/* Admin-specific routes */}
           <Route element={<AdminProtected />}>
-            <Route path="/userdebates" element={<UserDebates />} />
+          <Route path="/userdebates" element={<UserDebates />} />
             <Route path="/admindashboard" element={<AdminDashboard />} />
           </Route>
 
+          {/* Public routes */}
           <Route element={<PublicProtected />}>
             <Route path="/" element={<Home />} />
             <Route path="/aboutus" element={<About />} />
@@ -42,6 +48,7 @@ function App() {
         <Footer />
       </UserContextProvider>
     </BrowserRouter>
+    
   );
 }
 
