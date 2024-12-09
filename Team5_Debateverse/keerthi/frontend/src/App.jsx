@@ -1,35 +1,44 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import 'bootstrap/dist/css/bootstrap.min.css'; 
-import Register from './Register';
-import Login from './Login';
-import Dashboard from './Dashboard'; 
-import ForgotPassword from "./ForgotPassword";
-import NewDebate from "./NewDebate";
-import MyDebates from "./MyDebates";
-import Navbar from "./Navbar";
-import DebateCard from "./DebateCard";
-import ResetPassword from "./ResetPassword";
-
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import Navbar from "./components/Navbar";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import UserAllDebates from "./pages/UserAllDebates";
+import { Reset } from "./pages/Reset";
+import { UserContextProvider } from "./context/UserContext";
+import About from "./pages/About";
+import UserDashboard from "./pages/UserDashboard";
+import AdminDashboard from "./pages/AdminDashboard";
+import UserProtected from "./ProtectedRoute/UserProtected";
+import AdminProtected from "./ProtectedRoute/AdminProtected";
+import PublicProtected from "./ProtectedRoute/PublicProtected";
 
 function App() {
   return (
-    <Router>
-      <Navbar/>
-      <div className="container mt-5 pt-4">
-      <Routes>
-        <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/create" element={<NewDebate/>} />
-        <Route path="/mydebates" element={<MyDebates/>} />
-        <Route path="/debateCard" element={<DebateCard/>} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password/:userId/:token" element={<ResetPassword />} />
+    <BrowserRouter>
+      <UserContextProvider>
+        <Navbar />
+        <Routes>
+          <Route element={<UserProtected />}>
+            <Route path="/userdebates" element={<UserAllDebates />} />
+            <Route path="/userdashboard" element={<UserDashboard />} />
+          </Route>
 
-      </Routes>
-      </div>
-    </Router>
+          <Route element={<AdminProtected />}>
+            <Route path="/admindashboard" element={<AdminDashboard />} />
+          </Route>
 
+          <Route element={<PublicProtected />}>
+            <Route path="/aboutus" element={<About />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+          </Route>
+
+          <Route path="/resetpassword" element={<Reset />} />
+          <Route path="/" element={<Navigate to="/login" />} /> {/* Redirect to login */}
+          <Route path="*" element={<Navigate to="/login" />} /> {/* Redirect unknown routes */}
+        </Routes>
+      </UserContextProvider>
+    </BrowserRouter>
   );
 }
 
