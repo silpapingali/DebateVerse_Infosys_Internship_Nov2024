@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 const Register = () => {
   const navigate = useNavigate();
   const [data, setData] = useState({
+    username: '',
     email: '',
     password: '',
     confirmpassword: '',
@@ -23,14 +24,12 @@ const Register = () => {
   const submitHandler = async (e) => {
     e.preventDefault();
 
-    // Check if all fields are filled
-    if (!data.email || !data.password || !data.confirmpassword) {
+    if (!data.username || !data.email || !data.password || !data.confirmpassword) {
       setErrorMessage('All fields are required.');
       setSuccessMessage('');
       return;
     }
 
-    // Validate email format
     const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
     if (!emailRegex.test(data.email)) {
       setErrorMessage('Please enter a valid email address.');
@@ -38,26 +37,22 @@ const Register = () => {
       return;
     }
 
-    // Check if passwords match
     if (data.password !== data.confirmpassword) {
       setErrorMessage('Passwords do not match.');
       setSuccessMessage('');
       return;
     }
 
-    setLoading(true); // Set loading state to true when the request starts
+    setLoading(true); 
     try {
       const res = await axios.post('http://localhost:5000/register', data);
 
-      // Display success message
       setSuccessMessage('Registration successful! Please check your email for confirmation.');
       setErrorMessage('');
-      setLoading(false); // Reset loading state
+      setLoading(false); 
 
-      // Redirect to the success page after a delay (optional)
       navigate('/registersuccess');
     } catch (error) {
-      // Handle errors based on the response from the backend
       if (error.response?.data?.error === 'User Already Exist') {
         console.log(error.response?.data?.error);
         setErrorMessage('Email already exists. Please log in.');
@@ -66,7 +61,7 @@ const Register = () => {
       } else {
         setErrorMessage('Registration failed. Please try again.');
       }
-      setLoading(false); // Reset loading state
+      setLoading(false); 
       setSuccessMessage('');
     }
   };
@@ -76,8 +71,22 @@ const Register = () => {
       <div className="w-full max-w-sm mx-auto bg-white/80 shadow-md rounded px-8 pt-6 pb-8 mb-4">
         <h2 className="text-xl font-semibold mb-4">Please Register</h2>
         <form onSubmit={submitHandler}>
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm mb-2" htmlFor="email">
+        <div className="mb-2">
+            <label className="block text-gray-700 text-sm mb-1" htmlFor="username">
+              Your Name
+            </label>
+            <input
+              type="text"
+              onChange={changeHandler}
+              name="username"
+              id="username"
+              placeholder="Name"
+              value={data.username}
+              className="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow"
+            />
+          </div>
+          <div className="mb-2">
+            <label className="block text-gray-700 text-sm mb-1" htmlFor="email">
               Email
             </label>
             <input
@@ -90,8 +99,8 @@ const Register = () => {
               className="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow"
             />
           </div>
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm mb-2" htmlFor="password">
+          <div className="mb-2">
+            <label className="block text-gray-700 text-sm mb-1" htmlFor="password">
               Password
             </label>
             <input
@@ -104,9 +113,9 @@ const Register = () => {
               className="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow"
             />
           </div>
-          <div className="mb-4">
+          <div className="mb-2">
             <label
-              className="block text-gray-700 text-sm mb-2"
+              className="block text-gray-700 text-sm mb-1"
               htmlFor="confirmpassword"
             >
               Confirm Password
@@ -134,7 +143,7 @@ const Register = () => {
             <button
               type="submit"
               className="bg-gray-700 hover:bg-gray-500 text-white font-bold py-2 px-8 rounded focus:outline-none"
-              disabled={loading} // Disable the button while loading
+              disabled={loading} 
             >
               Submit
             </button>

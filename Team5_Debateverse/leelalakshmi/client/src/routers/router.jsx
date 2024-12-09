@@ -10,6 +10,10 @@ import About from "../components/About";
 import Userdashboard from "../components/Userdashboard";
 import Admindashboard from "../components/Admindashboard";
 import VerifySuccess from "../components/Verifysuccess";
+import DebatesSearch from "../components/DebatesSearch";
+import NewDebate from "../components/NewDebate";
+import Navbar from "../components/Navbar";
+import Moderatedebate from "../components/Moderatedebate";
 const router = createBrowserRouter([
     {
       path: "/",
@@ -18,6 +22,10 @@ const router = createBrowserRouter([
         {
         path: "/",
         element:<Home/>
+        },
+        {
+          path:"/navbar",
+          element:<Navbar/>
         },
         {
             path: "/about",
@@ -57,6 +65,18 @@ const router = createBrowserRouter([
             {
               path:"/verify-email",
               element:<VerifySuccess/>
+            },
+            {
+              path:"/debatesearch",
+              element:<DebatesSearch/>            
+            },
+            {
+              path:"/newdebate",
+              element:<NewDebate/>
+            },
+            {
+              path:"/moderatedebate",
+              element:<Moderatedebate/>
             }
 
       ]

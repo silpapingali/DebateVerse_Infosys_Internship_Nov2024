@@ -1,16 +1,16 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react'
+import { IoSearchSharp } from "react-icons/io5";
 import { store } from '../App';
 import { useNavigate } from 'react-router-dom';
-import { MdOutlinePostAdd } from "react-icons/md";
+import axios from 'axios';
 import { ImUsers } from "react-icons/im";
 import { AiFillMessage } from "react-icons/ai";
 import { FaHeartCircleCheck } from "react-icons/fa6";
 import { FaHeartCircleXmark } from "react-icons/fa6";
-import axios from 'axios';
-const Userdashboard = () => {
+
+const DebatesSearch = () => {
   const {token, setToken} = useContext(store);
-  const [data, setData] = useState(null);
-  const [debates, setDebates] = useState([]); 
+  const [debates, setDebates] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -18,25 +18,11 @@ const Userdashboard = () => {
       navigate('/login'); 
       return;
     }
-    axios
-      .get('http://localhost:5000/userdashboard', {
-        headers: {
-          'x-token': token,
-        },
-      })
-      .then((res) => setData(res.data))
-      .catch((err) => {
-        if (err.response && err.response.status === 401) {
-          setToken(null); 
-          navigate('/login'); 
-        } else {
-          console.error(err); 
-        }
-      });
+
 
     // Fetch all debates
     axios
-      .get('http://localhost:5000/debates', {  
+      .get('http://localhost:5000/alldebates', {  
         headers: {
           'x-token': token,
         },
@@ -48,9 +34,10 @@ const Userdashboard = () => {
 
   }, [token, navigate, setToken]);
 
-  const handleCreate = () => {
-    navigate('/newdebate');  
-  };
+
+  const handleSubmit=()=>{
+    navigate('/userdashboard')
+  }
   
   const getDaySuffix = (day) => {
     if (day > 3 && day < 21) return 'th';
@@ -73,43 +60,50 @@ const Userdashboard = () => {
 
   return (
     <div className="p-4">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold text-primary">My Debates</h2>
-        <button
-          onClick={handleCreate}
-          className="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600"
-        >
-          Create New <MdOutlinePostAdd />
-        </button>
+      <div className="flex items-center  justify-end mb-4 space-x-4">
+      <button
+       onClick={handleSubmit}
+        className="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600"
+      >
+        Go Back
+      </button>
+
+      <div className="relative w-full sm:w-96"> 
+        <input 
+          type="text" 
+          placeholder="Search here"
+          className="bg-white/90 w-full py-2 pl-10 pr-4 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500" 
+        />
+        <IoSearchSharp className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600" />
+      </div>
       </div>
       <div>
         <div className="space-y-4 mt-4">
           {debates.length === 0 ? (
             <p className="text-1xl text-primary">No debates available, create your first debate.....</p>
           ) : (
-            debates.map((debate, index) => (
+            debates.map((debate) => (
               <div key={debate._id} className="relative bg-white/80 p-6 rounded-lg shadow-md max-w-5xl mx-auto mt-10">
-                <p className="text-sm text-blue-700 font-semibold mt-1">
-                  Asked on: {formatDate(debate.createdDate)}
-                </p>
+                
                 <h4 className="font-semibold text-xl">
-                  {index + 1}. {debate.question}
+                {debate.question}
                 </h4>
+                
                 <div className="absolute top-4 right-4 m-4 flex items-center space-x-2">
-                  <p className="text-lg font-bold text-gray-700">0</p>
-                  <FaHeartCircleCheck className="text-red-500" size={24} />
-                  <p className="text-lg font-bold text-gray-700">0</p>
-                  <FaHeartCircleXmark size={24}/>
-</div>
+                   <p className="text-lg font-bold text-gray-700">0</p>
+                   <FaHeartCircleCheck className="text-red-500" size={24} />
+                   <p className="text-lg font-bold text-gray-700">0</p>
+                   <FaHeartCircleXmark size={24}/>
+                </div>
                 <ul className="mt-2">
                   {debate.options.map((option, idx) => (
                     <li key={idx} className="flex justify-between items-center space-x-4">
                       <span className="flex-grow">{idx + 1}. {option}</span>
 
                       <div className="flex items-center justify-center space-x-2">
-                        <ImUsers size={24}/>
+                        <ImUsers size={24} />
                         <p>{debate.votes ? debate.votes[idx] : 0}</p> 
-                        <AiFillMessage size={24} className='text-blue-500' />
+                        <AiFillMessage size={24} className='text-blue-500'/>
                         <p>{debate.comments ? debate.comments[idx] : 0}</p> 
                       </div>
                     </li>
@@ -121,13 +115,24 @@ const Userdashboard = () => {
                     <p>Graph: Visualize votes for each option here</p>
                   </div>
                 </div>
+                <div className="flex space-x-4">
+                <p className="text-sm text-blue-700 font-semibold mt-1">
+                  Asked on: {formatDate(debate.createdDate)}
+                </p>
+                <p className="text-sm text-blue-700 font-semibold mt-1">
+                Posted By: {debate.createdBy}
+                </p>
+                </div>
               </div>
             ))
           )}
         </div>
       </div>
     </div>
+    
+    
+    
   );
 };
 
-export default Userdashboard;
+export default DebatesSearch;

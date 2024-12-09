@@ -5,7 +5,7 @@ import { store } from '../App';
 
 const Login = () => {
     const navigate = useNavigate();
-    const [token, setToken] = useContext(store);
+    const {token, setToken,role, setRole,username, setUsername} = useContext(store);
     const [data, setData] = useState({
         email: '',
         password: '',
@@ -31,7 +31,13 @@ const Login = () => {
         }
         try {
             const res = await axios.post('http://localhost:5000/login', data); 
-            setToken(res.data.token); 
+            setToken(res.data.token);
+            setRole(res.data.role); 
+            if (res.data.username) {
+                setUsername(res.data.username);
+            } else {
+                console.error('Username is not defined in the login response.');
+            }
             if (res.data.role === 'admin') {
                 navigate('/admindashboard'); 
               } else {
