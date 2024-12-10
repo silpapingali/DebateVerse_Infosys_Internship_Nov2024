@@ -3,7 +3,7 @@ import axios from "axios";
 
 // Fetch all debates with pagination
 export const fetchAllDebates = createAsyncThunk(
-  "fetchalldebates",
+  "fetchAllDebates",
   async (data, thunk) => {
     const token = localStorage.getItem("token");
     try {
@@ -56,10 +56,40 @@ const AllDebatesSlice = createSlice({
     currPage: 1,
     isLoading: true,
     errorMessage: null,
+    userVotes: {}, // User votes per debate tracking
   },
   reducers: {
     setCurrPage: (state, action) => {
       state.currPage = action.payload;
+    },
+    resetUserVotes: (state) => {
+      state.userVotes = {};
+    },
+    voteOption: (state, action) => {
+      const { debateId, optionId } = action.payload;
+      const MAX_VOTES = 10; 
+
+      if (!state.userVotes[debateId]) {
+        state.userVotes[debateId] = 0; // Initialize if no votes yet
+      }
+
+      // Check if the user has votes left
+      if (state.userVotes[debateId] < MAX_VOTES) {
+        const debate = state.debates[state.currPage]?.find(
+          (d) => d._id === debateId
+        );
+
+        if (debate) {
+          const option = debate.options.find((opt) => opt._id === optionId);
+
+          if (option) {
+            option.votes += 1;
+            state.userVotes[debateId] += 1;
+          }
+        }
+      } else {
+        console.log("User has already cast 10 votes for this debate.");
+      }
     },
   },
   extraReducers: (builder) => {
@@ -80,5 +110,5 @@ const AllDebatesSlice = createSlice({
   },
 });
 
-export const { setCurrPage } = AllDebatesSlice.actions;
+export const { setCurrPage, resetUserVotes, voteOption } = AllDebatesSlice.actions;
 export default AllDebatesSlice.reducer;
