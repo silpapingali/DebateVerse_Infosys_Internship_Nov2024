@@ -8,9 +8,12 @@ import { UserContextProvider } from "./context/UserContext";
 import About from "./pages/About";
 import UserDashboard from "./pages/UserDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
+import CreateDebate from "./components/CreateDebate";
 import UserProtected from "./ProtectedRoute/UserProtected";
 import AdminProtected from "./ProtectedRoute/AdminProtected";
 import PublicProtected from "./ProtectedRoute/PublicProtected";
+import DebateCard from "./components/DebateCard"; // Import DebateCard component
+import DebateDetails from "./components/DebateDetails";
 
 function App() {
   return (
@@ -21,6 +24,9 @@ function App() {
           <Route element={<UserProtected />}>
             <Route path="/userdebates" element={<UserAllDebates />} />
             <Route path="/userdashboard" element={<UserDashboard />} />
+            <Route path="/create-debate" element={<CreateDebate />} />
+            {/* Add route for DebateCard */}
+            <Route path="/debate/:debateId" element={<DebateDetails />} />
           </Route>
 
           <Route element={<AdminProtected />}>
@@ -34,8 +40,8 @@ function App() {
           </Route>
 
           <Route path="/resetpassword" element={<Reset />} />
-          <Route path="/" element={<Navigate to="/login" />} /> {/* Redirect to login */}
-          <Route path="*" element={<Navigate to="/login" />} /> {/* Redirect unknown routes */}
+          <Route path="/" element={<Navigate to="/login" />} />
+          <Route path="*" element={<Navigate to="/login" />} />
         </Routes>
       </UserContextProvider>
     </BrowserRouter>

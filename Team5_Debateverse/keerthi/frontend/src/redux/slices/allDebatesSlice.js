@@ -1,11 +1,11 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
+// Fetch all debates with pagination
 export const fetchAllDebates = createAsyncThunk(
   "fetchalldebates",
   async (data, thunk) => {
     const token = localStorage.getItem("token");
-    console.log("in fetching");
     try {
       const response = await axios.get(
         `http://localhost:8000/api/debates/alldebates/?page=${data}`,
@@ -24,25 +24,30 @@ export const fetchAllDebates = createAsyncThunk(
   }
 );
 
-export const likeRequest = createAsyncThunk(
-  "likeRequest",
-  async (data, thunk) => {
+// Like request
+export const likeDebateRequest = createAsyncThunk(
+  "likeDebateRequest",
+  async ({ debateId }, thunk) => {
     const token = localStorage.getItem("token");
     try {
-      const res = await axios.get(
-        `http://localhost:8000/api/debates/likerequest/?debateId=${data}`,
+      const response = await axios.get(
+        `http://localhost:8000/api/debates/likeDebate/?debateId=${debateId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
-    } catch (err) {}
+      return { debateId, likes: response.data.likes };
+    } catch (err) {
+      console.error("Error while liking debate", err);
+      return thunk.rejectWithValue("Error while liking debate");
+    }
   }
 );
 
-const AllDebateSlice = createSlice({
-  name: "alldebateSlice",
+const AllDebatesSlice = createSlice({
+  name: "allDebatesSlice",
   initialState: {
     debates: {},
     likes: {},
@@ -56,43 +61,24 @@ const AllDebateSlice = createSlice({
     setCurrPage: (state, action) => {
       state.currPage = action.payload;
     },
-    setLiked: (state, action) => {
-      console.log(action.payload);
-      state.likes[state.currPage][action.payload.index] =
-        !state.likes[state.currPage][action.payload.index];
-
-      state.debates[state.currPage][action.payload.index].totalLikes +=
-        action.payload.val;
-    },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchAllDebates.pending, (state, action) => {
-        state.isLoading = true;
-      })
       .addCase(fetchAllDebates.fulfilled, (state, action) => {
-        if (Object.keys(state.debates).length > 10) {
-          delete state.debates[Object.keys(state.debates)[0]];
-          delete state.debates[Object.keys(state.likes)[0]];
-        }
-        state.debates = {
-          ...state.debates,
-          [state.currPage]: action.payload.debates,
-        };
-        state.likes = {
-          ...state.likes,
-          [state.currPage]: action.payload.likes,
-        };
+        state.debates[state.currPage] = action.payload.debates;
+        state.likes[state.currPage] = action.payload.likes;
         state.totalRecords = action.payload.totalRecords;
         state.totalPages = Math.ceil(state.totalRecords / 10);
         state.isLoading = false;
       })
-      .addCase(fetchAllDebates.rejected, (state, action) => {
-        state.errorMessage = action.payload;
-        state.isLoading = false;
-        console.log(action);
+      .addCase(likeDebateRequest.fulfilled, (state, action) => {
+        const { debateId, likes } = action.payload;
+        if (state.likes[state.currPage]) {
+          state.likes[state.currPage][debateId] = likes;
+        }
       });
   },
 });
-export const { setCurrPage, setLiked } = AllDebateSlice.actions;
-export default AllDebateSlice.reducer;
+
+export const { setCurrPage } = AllDebatesSlice.actions;
+export default AllDebatesSlice.reducer;

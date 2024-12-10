@@ -1,12 +1,14 @@
-import { useEffect, useState } from "react";
-import CreateDebate from "../components/CreateDebate";
-import DebateCard from "../components/DebateCard";
-import { FaTrash } from "react-icons/fa6";
+import { useEffect } from "react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchUserDebates } from "../redux/slices/userDebateSlice";
+import DebateCard from "../components/DebateCard";
 import PagesButton from "../components/PagesButton";
+import { FaTrash } from "react-icons/fa6";
 
 const UserDashboard = () => {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const {
     debates,
@@ -17,20 +19,12 @@ const UserDashboard = () => {
     errorMessage,
   } = useSelector((states) => states.userDebates);
 
-  const [isCreatePop, setIsCreatePop] = useState(false);
-  useEffect(() => {
-    if (isCreatePop) document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "auto";
-    };
-  }, [isCreatePop]);
-
   useEffect(() => {
     dispatch(fetchUserDebates(1));
-  }, []);
+  }, [dispatch]);
 
-  const showCreate = () => {
-    setIsCreatePop(!isCreatePop);
+  const redirectToCreateDebate = () => {
+    navigate("/create-debate");
   };
 
   return (
@@ -41,29 +35,26 @@ const UserDashboard = () => {
             <div className="flex pt-5 w-full justify-between items-center">
               <h1 className="text-2xl font-bold">{`My Debates (${totalRecords})`}</h1>
               <button
-                onClick={showCreate}
+                onClick={redirectToCreateDebate}
                 className="bg-orange-500 font-bold px-10 py-2 rounded-lg text-white"
               >
                 Create
               </button>
             </div>
-            {debates[currPage].map((val, ind) => {
-              return (
-                <div key={ind} className="w-full">
-                  <div className="flex justify-end pb-1">
-                    <button>
-                      <FaTrash size={26} />
-                    </button>
-                  </div>
-                  <DebateCard
-                    debate={val}
-                    Qno={(currPage - 1) * 10 + ind + 1}
-                    isMine={true}
-                  />
+            {debates[currPage].map((val, ind) => (
+              <div key={ind} className="w-full">
+                <div className="flex justify-end pb-1">
+                  <button>
+                    <FaTrash size={26} />
+                  </button>
                 </div>
-              );
-            })}
-            {isCreatePop && <CreateDebate showCreate={showCreate} />}
+                <DebateCard
+                  debate={val}
+                  Qno={(currPage - 1) * 10 + ind + 1}
+                  isMine={true}
+                />
+              </div>
+            ))}
             <PagesButton
               totalPages={totalPages}
               debates={debates}

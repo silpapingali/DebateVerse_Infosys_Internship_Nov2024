@@ -1,47 +1,44 @@
 import axios from "axios";
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import { FaXmark } from "react-icons/fa6";
 import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 import { fetchUserDebates } from "../redux/slices/userDebateSlice";
 
-const CreateDebate = ({ showCreate }) => {
+const CreateDebate = () => {
   const [question, setQuestion] = useState("");
   const [options, setOptions] = useState(["", ""]);
   const [isLoading, setIsLoading] = useState(false);
-  const popDiv = useRef();
 
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const handleTextboxChanges = (index, value) => {
     const copy = [...options];
     copy[index] = value;
     setOptions(copy);
-    console.log(options);
   };
+
   const addOption = () => {
     if (options.length < 7) {
       setOptions([...options, ""]);
-      console.log(options.length);
     } else {
       toast.warning("Maximum 7 options Allowed");
     }
   };
+
   const removeOption = (index) => {
     if (options.length <= 2)
       return toast.warn("Minimum 2 options are required !");
-    setOptions(options.filter((_, i) => index != i));
-    console.log(options);
-  };
-  const closeCreate = (e) => {
-    if (popDiv.current == e.target) showCreate();
+    setOptions(options.filter((_, i) => index !== i));
   };
 
   const onSubmit = async () => {
     setIsLoading(true);
     const data = { question, options };
     const token = localStorage.getItem("token");
-    console.log(token);
+
     try {
       const res = await axios.post(
         "http://localhost:8000/api/debates/create",
@@ -53,10 +50,9 @@ const CreateDebate = ({ showCreate }) => {
         }
       );
       toast.success(res.data.message);
-      showCreate();
+      navigate("/userdashboard"); // Redirect to dashboard after successful creation
       dispatch(fetchUserDebates());
     } catch (err) {
-      // console.log(err, "in catch");
       toast.error(err?.response?.data?.message || "Server error !");
     } finally {
       setIsLoading(false);
@@ -64,16 +60,17 @@ const CreateDebate = ({ showCreate }) => {
   };
 
   return (
-    <div
-      ref={popDiv}
-      onClick={closeCreate}
-      className="fixed inset-0 flex justify-center items-center backdrop-blur"
-    >
-      <div className="bg-emerald-400 md:w-1/2 relative rounded-lg p-5 md:p-20">
-        <button onClick={showCreate} className="absolute top-3 right-3">
-          <FaXmark size={40} />
-        </button>
-        <h1 className="text-center text-3xl font-bold mb-10">Create Debate</h1>
+    <div className="min-h-screen flex flex-col justify-center items-center bg-emerald-400">
+      <div className="bg-white rounded-lg p-8 shadow-lg w-full max-w-2xl">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold text-center">Create Debate</h1>
+          <button
+            onClick={() => navigate("/userdashboard")}
+            className="px-4 py-2 bg-gray-300 text-black font-semibold rounded-lg hover:bg-gray-400"
+          >
+            Go Back
+          </button>
+        </div>
         <input
           type="text"
           required
@@ -82,28 +79,26 @@ const CreateDebate = ({ showCreate }) => {
           onChange={(e) => setQuestion(e.target.value)}
           className="p-2 mb-6 font-semibold rounded-lg w-full"
         />
-        {options.map((val, index) => {
-          return (
-            <div key={index} className="flex mb-2 justify-center items-center">
-              <input
-                type="text"
-                value={val}
-                className="p-2 rounded-lg w-full font-semibold"
-                onChange={(e) => handleTextboxChanges(index, e.target.value)}
-                placeholder={`Option ${index + 1}`}
-              />
-              <button onClick={() => removeOption(index)} className="">
-                <FaXmark size={40} />
-              </button>
-            </div>
-          );
-        })}
+        {options.map((val, index) => (
+          <div key={index} className="flex mb-2 justify-center items-center">
+            <input
+              type="text"
+              value={val}
+              className="p-2 rounded-lg w-full font-semibold"
+              onChange={(e) => handleTextboxChanges(index, e.target.value)}
+              placeholder={`Option ${index + 1}`}
+            />
+            <button onClick={() => removeOption(index)}>
+              <FaXmark size={20} />
+            </button>
+          </div>
+        ))}
 
         <button
           onClick={addOption}
-          className={`px-8 w-full py-2 rounded-lg bg-blue-600 text-white font-bold`}
+          className="px-8 w-full py-2 rounded-lg bg-blue-600 text-white font-bold mt-4"
         >
-          Add Options
+          Add Option
         </button>
         <button
           disabled={isLoading}
