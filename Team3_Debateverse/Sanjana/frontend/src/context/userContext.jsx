@@ -7,26 +7,23 @@ const UserContext = React.createContext();
 
 const UserContextProvider = ({ children }) => {
   const navigate = useNavigate();
-  const location = useLocation();
-
-  // States for user authentication and role management
   const [isAuth, setIsAuth] = useState(false);
   const [role, setRole] = useState("");
-
-  // State for managing debates created by the user
-  const [userDebates, setUserDebates] = useState([]);
-  
+  const location = useLocation();
 
   useEffect(() => {
     console.log("in context");
-
-    const noAuthRoutes = ["/", "/aboutus", "/login", "/register"];
-    if (location.pathname === "/resetpassword") return;
+    const noAuthRoutes = [
+      "/",
+      "/aboutus",
+      "/login",
+      "/register"
+    ];
+    if(location.pathname=='/resetpassword') return;
 
     const getData = async () => {
       const token = localStorage.getItem("token");
       console.log(token);
-
       if (token) {
         try {
           const res = await axios.get(
@@ -37,37 +34,24 @@ const UserContextProvider = ({ children }) => {
               },
             }
           );
-
           setIsAuth(true);
           setRole(res.data.role);
           console.log(isAuth, role);
           return;
-        } catch (err) {
-          console.error(err);
-        }
+        } catch (err) {}
       }
-
       if (!noAuthRoutes.includes(location.pathname)) {
-        toast.error("Session Expired! Please login again.");
+        toast.error("Session Expired ! Please login again");
         setIsAuth(false);
         navigate("/login");
       }
+      
     };
-
     getData();
   }, []);
 
   return (
-    <UserContext.Provider
-      value={{
-        isAuth,
-        setIsAuth,
-        role,
-        setRole,
-        userDebates,
-        setUserDebates, // Add functions to manage debates globally
-      }}
-    >
+    <UserContext.Provider value={{ isAuth, setIsAuth, role, setRole }}>
       {children}
     </UserContext.Provider>
   );
