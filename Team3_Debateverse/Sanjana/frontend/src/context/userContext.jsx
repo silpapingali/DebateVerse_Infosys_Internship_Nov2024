@@ -8,23 +8,18 @@ const UserContext = React.createContext();
 const UserContextProvider = ({ children }) => {
   const navigate = useNavigate();
   const [isAuth, setIsAuth] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [role, setRole] = useState("");
   const location = useLocation();
 
   useEffect(() => {
-    console.log("in context");
-    const noAuthRoutes = [
-      "/",
-      "/aboutus",
-      "/login",
-      "/register"
-    ];
-    if(location.pathname=='/resetpassword') return;
+    const noAuthRoutes = ["/", "/aboutus", "/login", "/register"];
+    if (location.pathname == "/resetpassword") return;
 
     const getData = async () => {
       const token = localStorage.getItem("token");
-      console.log(token);
       if (token) {
+        setIsLoading(true);
         try {
           const res = await axios.get(
             "http://localhost:3000/api/auth/authcheck",
@@ -38,20 +33,21 @@ const UserContextProvider = ({ children }) => {
           setRole(res.data.role);
           console.log(isAuth, role);
           return;
-        } catch (err) {}
+        } catch (err) {
+          if (!noAuthRoutes.includes(location.pathname)) {
+            toast.error("Session Expired ! Please login again");
+            navigate("/login");
+          }
+        } finally {
+          setIsLoading(false);
+        }
       }
-      if (!noAuthRoutes.includes(location.pathname)) {
-        toast.error("Session Expired ! Please login again");
-        setIsAuth(false);
-        navigate("/login");
-      }
-      
     };
     getData();
   }, []);
 
   return (
-    <UserContext.Provider value={{ isAuth, setIsAuth, role, setRole }}>
+    <UserContext.Provider value={{ isAuth, setIsAuth, role, setRole, isLoading }}>
       {children}
     </UserContext.Provider>
   );
