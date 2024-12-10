@@ -1,4 +1,4 @@
-const userModels = require("../models/userModels");
+const userModel = require("../models/usersModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { verifyMail, resetMail } = require("../utils/Mailer");
@@ -6,7 +6,7 @@ const { verifyMail, resetMail } = require("../utils/Mailer");
 const Login = async (req, res) => {
   const { email, password } = req.body;
   try {
-    const databaseUser = await userModels.findOne({ email });
+    const databaseUser = await userModel.findOne({ email });
     if (!databaseUser) {
       return res
         .status(400)
@@ -33,10 +33,10 @@ const Login = async (req, res) => {
         .json({ message: "Email or password is incorrect !" });
     }
     const token = jwt.sign(
-      { email, password, role: databaseUser.role },
+      { email, password, role: databaseUser.role, userId: databaseUser._id },
       process.env.JWT_SECRET,
       {
-        expiresIn: "10m",
+        expiresIn: "24h",
       }
     );
     res.status(200).json({
@@ -56,7 +56,7 @@ const Register = async (req, res) => {
   console.log({ email, password }, "in register");
 
   try {
-    const user = await userModels.findOne({ email });
+    const user = await userModel.findOne({ email });
     if (user && user.isVerified) {
       return res
         .status(200)
@@ -64,7 +64,7 @@ const Register = async (req, res) => {
     }
     if (!user) {
       const hashedPassword = await bcrypt.hash(password, 10);
-      const newUser = new userModels({
+      const newUser = new userModel({
         email,
         password: hashedPassword,
       });
@@ -90,7 +90,7 @@ const Verify = async (req, res) => {
   try {
     const decoded = await jwt.verify(token, process.env.JWT_SECRET);
     const { email } = decoded;
-    const user = await userModels.findOneAndUpdate(
+    const user = await userModel.findOneAndUpdate(
       { email },
       { isVerified: true }
     );
@@ -107,7 +107,7 @@ const ResetRequest = async (req, res) => {
   const { email } = req.body;
   console.log(email, " in request reset");
   try {
-    const user = await userModels.findOne({ email });
+    const user = await userModel.findOne({ email });
     if (!user) {
       return res.status(400).json({ message: "Email not found !" });
     }
@@ -136,7 +136,7 @@ const ResetPassword = async (req, res) => {
     console.log(decoded);
     const hashedPassword = await bcrypt.hash(password, 10);
     try {
-      const user = await userModels.updateOne(
+      const user = await userModel.updateOne(
         { email: decoded.email },
         { password: hashedPassword }
       );
