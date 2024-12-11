@@ -92,13 +92,13 @@ public class AuthController {
             return ResponseEntity.ok(new JwtResponse(token, user, "Success"));
         } catch (UsernameNotFoundException e) {
             // Handle UsernameNotFoundException (user not found)
-            throw new RuntimeException("User not found!");
+            throw new RuntimeException("User not found! Please register.");
         } catch (DisabledException e) {
             // Handle DisabledException (user is disabled)
-            throw new RuntimeException("User is disabled!");
+            throw new RuntimeException("User is disabled! Please verify your email.");
         } catch (BadCredentialsException e) {
             // Handle BadCredentialsException (invalid credentials)
-            throw new RuntimeException("Invalid credentials!");
+            throw new RuntimeException("Invalid credentials! Please try again.");
         } catch (Exception e) {
             // Catch any other exceptions
             throw new RuntimeException("An error occurred while generating token.");

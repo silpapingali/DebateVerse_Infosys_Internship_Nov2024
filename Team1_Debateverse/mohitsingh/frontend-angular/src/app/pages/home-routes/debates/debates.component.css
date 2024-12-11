@@ -1,0 +1,11 @@
+/* You may need to adjust these styles based on your global CSS setup */
+.bg-cyan-200 { background-color: #a5f3fc; }
+.bg-orange-200 { background-color: #fed7aa; }
+.bg-white { background-color: white; }
+.text-indigo-600 { color: #4f46e5; }
+.text-indigo-500 { color: #6366f1; }
+.text-red-500 { color: #ef4444; }
+.bg-orange-200 { background-color: #fed7aa; }
+.rounded { border-radius: 0.25rem; }
+.space-y-4 > * + * { margin-top: 1rem; }
+.space-y-2 > * + * { margin-top: 0.5rem; }
