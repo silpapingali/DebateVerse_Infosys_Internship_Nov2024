@@ -53,7 +53,7 @@
               <div class="flex items-center gap-4">
                 <!-- Progress Bar and Text -->
                 <div class="relative flex-grow px-4 py-2 bg-orange-100 rounded h-10 flex items-center">
-                  <div class="absolute inset-0 bg-orange-200 rounded-l" [style.width.%]="50"></div>
+                  <div class="absolute inset-0 bg-orange-200 rounded-l" [style.width.%]="(option.totalVotes*100)/debate.totalVotes"></div>
                   <span class="relative z-10 text-black font-medium">
                     {{ option.text }}
                   </span>

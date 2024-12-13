@@ -7,6 +7,7 @@ import java.util.List;
 import org.hibernate.annotations.CreationTimestamp;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -43,6 +44,7 @@ public class Option {
     private Debate debate;
 
     @OneToMany(mappedBy = "option", orphanRemoval = true, cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Vote> votes = new ArrayList<>();
 
     @Transient

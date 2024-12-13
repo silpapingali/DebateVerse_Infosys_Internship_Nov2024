@@ -8,7 +8,7 @@
         </button>
         <div class="bg-orange-200 p-4 rounded">
           <div class="relative">
-            <input [(ngModel)]="searchTerm" placeholder="Search..." class="w-full pl-3 pr-10 py-2 rounded bg-white">
+            <input placeholder="Search..." class="w-full pl-3 pr-10 py-2 rounded bg-white">
             <i class="absolute right-3 top-2.5 h-5 w-5 text-gray-400">🔍</i>
           </div>
         </div>
@@ -72,9 +72,9 @@
             </div>
             <div class="h-20 w-full">
               <div class="flex h-full items-end gap-1">
-                <div *ngFor="let height of posts[0].chart; let i = index;" class="w-8 bg-orange-200"
-                  [style.height.%]="height">
-                  <div class="text-xs text-gray-500">{{ height }}</div>
+                <div *ngFor="let option of post.options; let i = index;" class="w-8 bg-orange-200"
+                  [style.height.%]="(option.totalVotes*100)/post.totalVotes">
+                  <div class="text-xs text-gray-500">{{ option.totalVotes }}</div>
                 </div>
               </div>
             </div>

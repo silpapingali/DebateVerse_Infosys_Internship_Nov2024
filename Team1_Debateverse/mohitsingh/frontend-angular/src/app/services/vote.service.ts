@@ -15,6 +15,6 @@ export class VoteService {
   }
 
   vote(voteReq: any) {
-    return this._http.post(`${this.baseUrl}/save`, voteReq);
+    return this._http.put(`${this.baseUrl}/save`, voteReq, {responseType: 'text'});
   }
 }
