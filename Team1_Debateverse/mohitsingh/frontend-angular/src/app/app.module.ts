@@ -2,14 +2,16 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, provideHttpClient, withInterceptors } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
+import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import {
   NgxUiLoaderConfig,
   NgxUiLoaderHttpModule,
   NgxUiLoaderModule,
-  NgxUiLoaderRouterModule
+  NgxUiLoaderRouterModule,
 } from 'ngx-ui-loader';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -21,16 +23,18 @@ import { LoginComponent } from './auth/login/login.component';
 import { RegisterComponent } from './auth/register/register.component';
 import { ResetPasswordComponent } from './auth/reset-password/reset-password.component';
 import { NavbarComponent } from './components/navbar/navbar.component';
+import { authInterceptor } from './interceptors/auth/auth.interceptor';
 import { AdminDashboardComponent } from './pages/admin/admin-dashboard/admin-dashboard.component';
 import { AboutComponent } from './pages/home-routes/about/about.component';
+import { DebatePollComponent } from './pages/home-routes/debate-poll/debate-poll.component';
 import { DebatesComponent } from './pages/home-routes/debates/debates.component';
-import { HomeRoutesComponent } from './pages/home-routes/home-routes/home-routes.component';
+import { HomeRoutesComponent } from './pages/home-routes/home-routes.component';
 import { HomeComponent } from './pages/home-routes/home/home.component';
-import { UserDashboardComponent } from './pages/home-routes/user-dashboard/user-dashboard.component';
-import { MyDebatesComponent } from './pages/home-routes/user-dashboard/my-debates/my-debates.component';
-import { LikedDebatesComponent } from './pages/home-routes/user-dashboard/liked-debates/liked-debates.component';
-import { DashboardComponent } from './pages/home-routes/user-dashboard/dashboard/dashboard.component';
 import { CreateDebateComponent } from './pages/home-routes/user-dashboard/create-debate/create-debate.component';
+import { DashboardComponent } from './pages/home-routes/user-dashboard/dashboard/dashboard.component';
+import { LikedDebatesComponent } from './pages/home-routes/user-dashboard/liked-debates/liked-debates.component';
+import { MyDebatesComponent } from './pages/home-routes/user-dashboard/my-debates/my-debates.component';
+import { UserDashboardComponent } from './pages/home-routes/user-dashboard/user-dashboard.component';
 
 const ngxUiLoaderConfig: NgxUiLoaderConfig = {
   bgsColor: 'red',
@@ -73,6 +77,7 @@ const ngxUiLoaderConfig: NgxUiLoaderConfig = {
     LikedDebatesComponent,
     DashboardComponent,
     CreateDebateComponent,
+    DebatePollComponent,
   ],
   imports: [
     BrowserModule,
@@ -84,8 +89,12 @@ const ngxUiLoaderConfig: NgxUiLoaderConfig = {
     NgxUiLoaderModule.forRoot(ngxUiLoaderConfig),
     NgxUiLoaderHttpModule,
     NgxUiLoaderRouterModule,
+    MatCardModule,
+    MatIconModule
   ],
-  providers: [],
+  providers: [
+      provideHttpClient(withInterceptors([authInterceptor])),
+  ],
   bootstrap: [AppComponent],
 })
 export class AppModule {}

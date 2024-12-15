@@ -1,14 +1,13 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const Registeruser = require('./model');
+const { Registeruser, User,Debate } = require('./model');
 const jwt = require('jsonwebtoken');
 const middleware = require('./middleware');
 const cors = require('cors');
-const bcrypt = require('bcryptjs'); // Import bcrypt
+const bcrypt = require('bcryptjs');
 const app = express();
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
-const cron = require('node-cron');
 require('dotenv').config();
 
 const mongoURI = process.env.MONGO_URI;
@@ -16,7 +15,6 @@ const jwtSecret = process.env.JWT_SECRET;
 const emailUser = process.env.EMAIL_USER;
 const emailPass = process.env.EMAIL_PASS;
 const adminemail = process.env.EMAIL_ADMIN;
-
 
 mongoose.connect(mongoURI).then(
   () => console.log('DB Connection established')
@@ -33,7 +31,7 @@ app.use(cors({ origin: "*" }));
 // Register Route
 app.post('/register', async (req, res) => {
   try {
-    const { email, password, confirmpassword } = req.body;
+    const { username,email, password, confirmpassword } = req.body;
     let exist = await Registeruser.findOne({ email });
     if (exist) {
       return res.status(400).json({ error: 'User Already Exist' }); 
@@ -46,13 +44,19 @@ app.post('/register', async (req, res) => {
     
 
     let newUser = new Registeruser({
+      username,
       email,
       password: hashedPassword,
-      role: email === '213j1a4254@raghuinstech.com' ? 'admin' : 'user',
+      role: email === adminemail ? 'admin' : 'user',
       isVerified: false,
     });
 
     await newUser.save();
+
+    let newUsername = new User({
+      username
+    });
+    await newUsername.save();
 
     const verificationLink = `http://localhost:5173/verify-email?token=${newUser._id}`;;
 
@@ -83,25 +87,22 @@ app.post('/register', async (req, res) => {
 // Verify Email Route
 app.get('/verify-email', async (req, res) => {
   try {
-    const { token } = req.query; // Extract the token from the query string
+    const { token } = req.query; 
 
     if (!token) {
       return res.status(400).send({ error: 'Token is required' });
     }
 
-    // Find the user by ID (using token)
     const user = await Registeruser.findById(token);
     if (!user) {
       return res.status(400).send({ error: 'Invalid or expired verification link' });
     }
 
-    // Update the user's verification status
     if (!user.isVerified) {
       user.isVerified = true;
       await user.save();
     }
 
-    // Respond with success to let the frontend handle UI changes
     res.status(200).json({ message: 'Email successfully verified!' });
   } catch (error) {
     console.error(error);
@@ -132,13 +133,14 @@ app.post('/login', async (req, res) => {
       user: {
         id: exist.id,
         role: exist.role, 
+        username: exist.username,
       },
     };
 
     
     jwt.sign(payload, 'jwtSecret', { expiresIn: 3600000 }, (error, token) => {
       if (error) throw error;
-      return res.json({ token, role: exist.role }); 
+      return res.json({ token, role: exist.role ,username: exist.username }); 
     });
   } catch (error) {
     console.log(error);
@@ -152,18 +154,6 @@ app.post('/login', async (req, res) => {
     }
 
     return res.status(500).send('SERVER_ERROR');
-  }
-});
-
-cron.schedule('0 * * * *', async () => {
-  try {
-    const result = await Registeruser.deleteMany({
-      isVerified: false,
-      createdAt: { $lt: new Date(Date.now() - 3600000) },
-    });
-    console.log(`Deleted ${result.deletedCount} unverified users`);
-  } catch (error) {
-    console.error('Error during cleanup:', error);
   }
 });
 app.post('/request-password-reset', async (req, res) => {
@@ -210,7 +200,7 @@ app.post('/reset-password/:token', async (req, res) => {
       const { token } = req.params;
       const { newPassword } = req.body;
 
-      // Find the user with the matching reset token and check if the token has expired
+
       let user = await Registeruser.findOne({
           resetPasswordToken: token,
           resetPasswordExpires: { $gt: Date.now() }, // Ensure token has not expired
@@ -219,11 +209,8 @@ app.post('/reset-password/:token', async (req, res) => {
       if (!user) {
           return res.status(400).json({ error: 'Invalid or expired token' });
       }
-
-      // Hash the new password
       const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-      // Update the user's password and clear the reset token
       user.password = hashedPassword;
       user.resetPasswordToken = null;
       user.resetPasswordExpires = null;
@@ -296,6 +283,77 @@ app.post('/registersuccess', async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Internal Server Error' }); 
+  }
+});
+
+
+// Add a new debate
+app.post('/debates', async (req, res) => {
+  const { question, options, createdBy } = req.body;
+
+  if (!question || !options || options.length < 2 || options.length > 7) {
+    return res.status(400).json({
+      error: 'Invalid data. Question is required, and there should be 2 to 7 options.',
+    });
+  }
+
+  if (options.some(option => !option.trim())) {
+    return res.status(400).json({
+      error: 'All options must be filled out.',
+    });
+  }
+
+  try {
+    
+    const newDebate = new Debate({
+      question,
+      options,
+      createdBy,
+      createdAt: new Date(),
+    });
+    await newDebate.save();
+    res.status(201).json({
+      message: 'Debate created successfully.',
+      debate: newDebate,
+    });
+  } catch (error) {
+    console.error('Error creating debate:', error);
+    res.status(500).json({
+      error: 'Internal server error. Failed to create debate.',
+    });
+  }
+});
+
+
+//to fetch all debates
+app.get('/debates',middleware, async (req, res) => {
+  try {
+    const username = req.user.username;
+    const debates = await Debate.find({ createdBy: username });
+
+    if (debates.length === 0) {
+      return res.status(404).json({ message: 'No debates found.' });
+    }
+
+    return res.status(200).json(debates);
+  } catch (error) {
+    console.error('Error fetching debates:', error);
+    return res.status(500).json({ error: 'Failed to fetch debates.' });
+  }
+});
+
+app.get('/alldebates',middleware, async (req, res) => {
+  try {
+    const alldebates = await Debate.find();
+
+    if (alldebates.length === 0) {
+      return res.status(404).json({ message: 'No debates found.' });
+    }
+
+    return res.status(200).json(alldebates);
+  } catch (error) {
+    console.error('Error fetching debates:', error);
+    return res.status(500).json({ error: 'Failed to fetch debates.' });
   }
 });
 

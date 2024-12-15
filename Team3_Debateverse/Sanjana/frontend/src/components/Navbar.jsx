@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const { isAuth, setIsAuth, role, isRole } = useContext(UserContext);
+  const { isAuth, setIsAuth, role } = useContext(UserContext);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
@@ -38,7 +38,7 @@ const Navbar = () => {
         <div
           className={`${
             isMenuOpen ? "block" : "hidden"
-          } md:flex flex flex-col md:flex-row items-center md:justify-between gap-4 md:gap-14 absolute md:relative top-14 md:top-0 left-0 w-full bg-[#1e3a8a] md:w-auto p-4 md:p-0`}
+          } md:flex flex flex-col md:flex-row items-center md:justify-center gap-4 md:gap-14 absolute md:relative top-14 md:top-0 left-0 w-full bg-[#1e3a8a] md:w-full p-4 md:p-0`}
         >
           {isAuth && role == "user" && (
             <>
@@ -60,6 +60,7 @@ const Navbar = () => {
               >
                 All Debates
               </NavLink>
+
               <button onClick={logout}>
                 <LogOut className="text-white" />
               </button>

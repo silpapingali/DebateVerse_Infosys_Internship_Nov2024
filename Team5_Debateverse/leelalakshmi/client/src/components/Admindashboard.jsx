@@ -4,17 +4,16 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const Admindashboard = () => {
-  const [token, setToken] = useContext(store);
+  const {token, setToken}= useContext(store);
   const [data, setData] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     if (!token) {
-      navigate('/login'); // Redirect to login if there's no token
+      navigate('/login'); 
       return;
     }
 
-    // Send GET request to fetch user data
     axios
       .get('http://localhost:5000/admindashboard', {
         headers: {
@@ -23,18 +22,15 @@ const Admindashboard = () => {
       })
       .then((res) => setData(res.data))
       .catch((err) => {
-        // Handle invalid or expired token
         if (err.response && err.response.status === 401) {
-          // If token is invalid or expired, redirect to login page
-          setToken(null); // Clear the token from the context
-          navigate('/login'); // Redirect to login page
+          setToken(null); 
+          navigate('/login'); 
         } else {
-          console.error(err); // Log any other errors
+          console.error(err); 
         }
       });
   }, [token, navigate, setToken]);
 
-  // If there's no token, immediately redirect to login
   if (!token) {
     return navigate('/login');
   }
@@ -44,12 +40,6 @@ const Admindashboard = () => {
       {data && (
         <center className="font-primary text-primary">
           Welcome to Admin dashboard<br />
-          <button
-            className="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-8 rounded focus:outline-none"
-            onClick={() => setToken(null)} // Log out and clear the token
-          >
-            Logout
-          </button>
         </center>
       )}
     </div>

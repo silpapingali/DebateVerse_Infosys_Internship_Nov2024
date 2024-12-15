@@ -10,6 +10,7 @@ import { AuthServiceService } from '../../services/auth-service/auth-service.ser
 })
 export class RegisterComponent {
   user: any = {
+    name: '',
     email: '',
     password: '',
     confPass: '',
