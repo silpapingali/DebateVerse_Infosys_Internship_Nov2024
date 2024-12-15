@@ -10,6 +10,7 @@ const { v4: uuidv4 } = require('uuid');
 require('dotenv').config();
 
 
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -252,214 +253,188 @@ app.post('/check-email', (req, res) => {
     });
 });
 
-/*app.post('/debates', verifyToken, (req, res) => {
-    const { text, options, created_by, created_on } = req.body;
+app.post('/api/debates', (req, res) => {
+    const { question, options } = req.body;
   
-    if (!text || !options || options.length < 2) {
-      return res.status(400).json({ message: 'Debate text and at least 2 options are required' });
+    if (!question || !options || options.length < 2) {
+      return res.status(400).json({ message: 'Invalid input. Question and at least 2 options are required.' });
     }
   
-    
-    const debateId = uuidv4();
+    // Insert the question into the debate_questions table
+    const questionQuery = 'INSERT INTO debatequestions (question, created_at) VALUES (?, NOW())';
   
- 
-    const debateQuery = `
-      INSERT INTO debates (id, text, created_by, created_on, likes, dislikes, is_public, is_blocked) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `;
-  
-    db.query(
-      debateQuery,
-      [debateId, text, created_by, created_on, JSON.stringify([]), JSON.stringify([]), true, false],
-      (debateErr) => {
-        if (debateErr) {
-          console.error('Error inserting into debates table:', debateErr);
-          return res.status(500).json({ message: 'Failed to create debate' });
-        }
-  
-        
-        const optionsQuery = `
-          INSERT INTO options (id, debate_id, text, created_on, upvotes, downvotes) 
-          VALUES ?
-        `;
-  
-        const optionsValues = options.map((option) => [
-          uuidv4(), 
-          debateId,
-          option.text, 
-          created_on,
-          JSON.stringify([]), 
-          JSON.stringify([])  
-        ]);
-  
-        db.query(optionsQuery, [optionsValues], (optionsErr) => {
-          if (optionsErr) {
-            console.error('Error inserting into options table:', optionsErr);
-            return res.status(500).json({ message: 'Failed to create options' });
-          }
-  
-          res.status(201).json({ message: 'Debate and options created successfully' });
-        });
-      }
-    );
-  });
-
-  
-app.get('/debates', verifyToken, (req, res) => {
-    const userId = req.userId;  
-    
-    
-    const getDebatesQuery = `
-      SELECT * FROM debates WHERE created_by = ?
-    `;
-  
-    db.query(getDebatesQuery, [userId], (err, results) => {
+    db.query(questionQuery, [question], (err, results) => {
       if (err) {
-        console.error('Error fetching debates:', err);
-        return res.status(500).json({ message: 'Failed to fetch debates' });
+        console.error('Error inserting debate question:', err);
+        return res.status(500).json({ message: 'Internal server error' });
       }
-      
-      
-      const getOptionsQuery = `
-        SELECT * FROM options WHERE debate_id IN (?);
-      `;
-      
-      db.query(getOptionsQuery, [results.map(debate => debate.id)], (optionsErr, optionsResults) => {
-        if (optionsErr) {
-          console.error('Error fetching options:', optionsErr);
-          return res.status(500).json({ message: 'Failed to fetch options' });
+  
+      const questionId = results.insertId;
+  
+      // Insert options into the debate_options table
+      const optionQuery = 'INSERT INTO debate_options (question_id, option_text, created_at) VALUES ?';
+      const optionValues = options.map((option) => [questionId, option, new Date()]);
+  
+      db.query(optionQuery, [optionValues], (err) => {
+        if (err) {
+          console.error('Error inserting debate options:', err);
+          return res.status(500).json({ message: 'Internal server error' });
         }
-        
-        
-        const debatesWithOptions = results.map(debate => {
-          const options = optionsResults.filter(option => option.debate_id === debate.id);
-          return { ...debate, options };
-        });
-        
-        res.status(200).json(debatesWithOptions);
+  
+        res.status(201).json({ message: 'Debate created successfully', questionId });
       });
     });
   });
-
-  app.post('/debates/:id/reactions', verifyToken, (req, res) => {
-    const { id } = req.params; 
-    const { action, userId } = req.body; 
-
-    if (action !== 'like') {
-        return res.status(400).json({ message: 'Only "like" action is supported at this time' });
-    }
-
   
-    db.query('SELECT likes FROM debates WHERE id = ?', [id], (err, results) => {
-        if (err) {
-            console.error('Error fetching likes:', err);
-            return res.status(500).json({ message: 'Error fetching likes' });
-        }
-
-        if (results.length === 0) {
-            return res.status(404).json({ message: 'Debate not found' });
-        }
-
-        const currentLikes = JSON.parse(results[0].likes || '[]');
-        if (!currentLikes.includes(userId)) {
-            currentLikes.push(userId);
-        }
-
-        
-        db.query(
-            'UPDATE debates SET likes = ? WHERE id = ?',
-            [JSON.stringify(currentLikes), id],
-            (updateErr) => {
-                if (updateErr) {
-                    console.error('Error updating likes:', updateErr);
-                    return res.status(500).json({ message: 'Error updating likes' });
-                }
-
-                res.status(200).json({ likes: currentLikes }); 
-            }
-        );
-    });
-});
-
-app.post('/options/:optionId/upvote', verifyToken, (req, res) => {
-    const { optionId } = req.params; 
-    const { userId } = req.body;     
-
-    if (!userId) {
-        return res.status(400).json({ message: 'User ID is required' });
-    }
-
-  
-    db.query('SELECT upvotes FROM options WHERE id = ?', [optionId], (err, results) => {
-        if (err) {
-            console.error('Error fetching upvotes:', err);
-            return res.status(500).json({ message: 'Error fetching upvotes' });
-        }
-
-        if (results.length === 0) {
-            return res.status(404).json({ message: 'Option not found' });
-        }
-
-        
-        const currentUpvotes = JSON.parse(results[0].upvotes || '[]');
-        if (!currentUpvotes.includes(userId)) {
-            currentUpvotes.push(userId);
-        } else {
-            return res.status(400).json({ message: 'User has already upvoted this option' });
-        }
-
-        
-        db.query(
-            'UPDATE options SET upvotes = ? WHERE id = ?',
-            [JSON.stringify(currentUpvotes), optionId],
-            (updateErr) => {
-                if (updateErr) {
-                    console.error('Error updating upvotes:', updateErr);
-                    return res.status(500).json({ message: 'Error updating upvotes' });
-                }
-
-                res.status(200).json({ upvotes: currentUpvotes }); 
-            }
-        );
-    });
-});
-
-app.get('/alldebates', verifyToken, (req, res) => {
-    
-    const getDebatesQuery = `
-        SELECT * FROM debates;
+  app.get('/alldebates', (req, res) => {
+    const query = `
+      SELECT dq.id AS debate_id, dq.question, dq.created_at, 
+             o.id AS option_id, o.option_text, o.created_at AS option_created_at, 
+             COUNT(v.id) AS upvotes, 
+             COUNT(r.id) AS likes 
+      FROM debatequestions dq
+      LEFT JOIN debate_options o ON dq.id = o.question_id
+      LEFT JOIN votes v ON o.id = v.option_id
+      LEFT JOIN reactions r ON dq.id = r.debate_id AND r.action = 'like'
+      GROUP BY dq.id, o.id
     `;
-
-    db.query(getDebatesQuery, (err, results) => {
-        if (err) {
-            console.error('Error fetching debates:', err);
-            return res.status(500).json({ message: 'Failed to fetch debates' });
+  
+    db.query(query, (err, results) => {
+      if (err) {
+        console.error('Error fetching debates:', err);
+        return res.status(500).send('Server error');
+      }
+  
+      const formattedDebates = results.reduce((acc, row) => {
+        const { debate_id, question, created_at, option_id, option_text, option_created_at, upvotes, likes } = row;
+  
+        let debate = acc.find(d => d.id === debate_id);
+        if (!debate) {
+          debate = {
+            id: debate_id,
+            text: question,
+            created_on: created_at,
+            options: [],
+            likes: likes || 0,
+          };
+          acc.push(debate);
         }
-
-        
-        const getOptionsQuery = `
-            SELECT * FROM options WHERE debate_id IN (?);
-        `;
-
-        db.query(getOptionsQuery, [results.map(debate => debate.id)], (optionsErr, optionsResults) => {
-            if (optionsErr) {
-                console.error('Error fetching options:', optionsErr);
-                return res.status(500).json({ message: 'Failed to fetch options' });
-            }
-
-            
-            const debatesWithOptions = results.map(debate => {
-                const options = optionsResults.filter(option => option.debate_id === debate.id);
-                return { ...debate, options };
-            });
-
-            res.status(200).json(debatesWithOptions);
+  
+        debate.options.push({
+          id: option_id,
+          text: option_text,
+          created_at: option_created_at,
+          upvotes: upvotes || 0,
         });
+  
+        return acc;
+      }, []);
+  
+      res.json(formattedDebates);
     });
-});*/
+  });
 
-
-
+  // Handle reactions (likes)
+app.post('/debateList/:debateId/reactions', (req, res) => {
+    const { debateId } = req.params;
+    const { action } = req.body; // e.g., 'like'
+    const userId = req.user?.id; // Ensure `req.user` is populated by an auth middleware.
+  
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized. Please log in.' });
+    }
+  
+    if (action !== 'like') {
+      return res.status(400).json({ error: 'Invalid action.' });
+    }
+  
+    // Check if the user has already liked this debate
+    const checkQuery = `
+      SELECT id FROM reactions WHERE debate_id = ? AND user_id = ? AND action = 'like'
+    `;
+    db.query(checkQuery, [debateId, userId], (checkErr, checkResult) => {
+      if (checkErr) {
+        console.error('Error checking existing reaction:', checkErr);
+        return res.status(500).json({ error: 'Server error' });
+      }
+  
+      if (checkResult.length > 0) {
+        // User already liked this debate
+        return res.status(409).json({ error: 'Already liked.' });
+      }
+  
+      // Insert the like
+      const query = `INSERT INTO reactions (debate_id, user_id, action) VALUES (?, ?, ?)`;
+      db.query(query, [debateId, userId, action], (err, result) => {
+        if (err) {
+          console.error('Error inserting like:', err);
+          return res.status(500).json({ error: 'Server error' });
+        }
+  
+        // Get the updated like count
+        const likeCountQuery = `
+          SELECT COUNT(id) AS like_count FROM reactions WHERE debate_id = ? AND action = 'like'
+        `;
+        db.query(likeCountQuery, [debateId], (countErr, countResult) => {
+          if (countErr) {
+            console.error('Error fetching like count:', countErr);
+            return res.status(500).json({ error: 'Server error' });
+          }
+  
+          res.status(200).json({ likes: countResult[0].like_count });
+        });
+      });
+    });
+  });
+  
+  // Handle upvotes
+  app.post('/options/:optionId/upvote', (req, res) => {
+    const { optionId } = req.params;
+    const userId = req.user?.id; // Ensure `req.user` is populated by an auth middleware.
+  
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized. Please log in.' });
+    }
+  
+    // Check if the user has already upvoted this option
+    const checkQuery = `
+      SELECT id FROM votes WHERE option_id = ? AND user_id = ?
+    `;
+    db.query(checkQuery, [optionId, userId], (checkErr, checkResult) => {
+      if (checkErr) {
+        console.error('Error checking existing upvote:', checkErr);
+        return res.status(500).json({ error: 'Server error' });
+      }
+  
+      if (checkResult.length > 0) {
+        // User already upvoted this option
+        return res.status(409).json({ error: 'Already upvoted.' });
+      }
+  
+      // Insert the upvote
+      const query = `INSERT INTO votes (option_id, user_id) VALUES (?, ?)`;
+      db.query(query, [optionId, userId], (err, result) => {
+        if (err) {
+          console.error('Error inserting upvote:', err);
+          return res.status(500).json({ error: 'Server error' });
+        }
+  
+        // Get the updated upvote count
+        const upvoteCountQuery = `
+          SELECT COUNT(id) AS upvote_count FROM votes WHERE option_id = ?
+        `;
+        db.query(upvoteCountQuery, [optionId], (countErr, countResult) => {
+          if (countErr) {
+            console.error('Error fetching upvote count:', countErr);
+            return res.status(500).json({ error: 'Server error' });
+          }
+  
+          res.status(200).json({ upvotes: countResult[0].upvote_count });
+        });
+      });
+    });
+  });
+  
 // Start the server
 const PORT = 8081;
 app.listen(PORT, () => {
