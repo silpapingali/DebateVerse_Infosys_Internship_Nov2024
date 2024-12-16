@@ -1,111 +1,104 @@
 import React, { useState, useEffect } from 'react';
+import Navbar from './Navbar'; 
 import axios from 'axios'; 
 import { useNavigate } from 'react-router-dom'; 
-import { jwtDecode } from 'jwt-decode'; 
+import { faker } from '@faker-js/faker'; 
 
-function Home() {
+function Debates() {
   const [debates, setDebates] = useState([]);
   const navigate = useNavigate(); 
 
   
   useEffect(() => {
-    axios.get('http://localhost:8080/debatetopic', {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
-      },
-    })
-    .then(response => setDebates(response.data))
-    .catch(error => console.error("Error fetching debates:", error));
+    axios
+      .get('http://localhost:8080/alldebates', {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      })
+      .then((response) => {
+        
+        const debatesWithNames = response.data.map((debate) => ({
+          ...debate,
+          created_by: faker.name.fullName(),
+        }));
+        setDebates(debatesWithNames);
+      })
+      .catch((error) => console.error('Error fetching debates:', error));
   }, []);
 
   const handleLike = (debateId) => {
     const token = localStorage.getItem('token');
     if (!token) {
-      console.error("No token found");
+      console.error('No token found');
       return;
     }
 
-    
-    const decodedToken = jwtDecode(token);
-    const userId = decodedToken.id;
-
-    axios.post(
-      `http://localhost:8080/debatetopic/${debateId}/reactions`,
-      { action: 'like', userId },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    )
-    .then((response) => {
-      setDebates(prevDebates =>
-        prevDebates.map(debate =>
-          debate.id === debateId
-            ? { ...debate, likes: response.data.likes.length }
-            : debate
-        )
-      );
-    })
-    .catch(error => console.error("Error liking debate:", error));
+    axios
+      .post(
+        `http://localhost:8080/debatetopic/${debateId}/reactions`,
+        { action: 'like' },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+      .then((response) => {
+        setDebates((prevDebates) =>
+          prevDebates.map((debate) =>
+            debate.id === debateId
+              ? { ...debate, likes: response.data.likes.length }
+              : debate
+          )
+        );
+      })
+      .catch((error) => console.error('Error liking debate:', error));
   };
 
   const handleUpvoteOption = (debateId, optionId) => {
     const token = localStorage.getItem('token');
-    console.log("Handle upvote",token)
     if (!token) {
-      console.error("No token found");
+      console.error('No token found');
       return;
     }
 
-    
-    const decodedToken = jwtDecode(token);
-    const userId = decodedToken.id;
-    console.log('handle upvote userid',userId)
-
-    axios.post(
-      `http://localhost:8080/options/${optionId}/upvote`,
-      { userId },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    )
-    
-    .then((response) => {
-      setDebates(prevDebates =>
-        prevDebates.map(debate =>
-          debate.id === debateId
-            ? {
-                ...debate,
-                options: debate.options.map(option =>
-                  option.id === optionId
-                    ? { ...option, upvotes: response.data.upvotes }
-                    : option
-                ),
-              }
-            : debate
-        )
-      );
-    })
-    .catch(error => console.error("Error upvoting option:", error));
+    axios
+      .post(
+        `http://localhost:8080/options/${optionId}/upvote`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+      .then((response) => {
+        setDebates((prevDebates) =>
+          prevDebates.map((debate) =>
+            debate.id === debateId
+              ? {
+                  ...debate,
+                  options: debate.options.map((option) =>
+                    option.id === optionId
+                      ? { ...option, upvotes: response.data.upvotes }
+                      : option
+                  ),
+                }
+              : debate
+          )
+        );
+      })
+      .catch((error) => console.error('Error upvoting option:', error));
   };
 
   return (
     <div>
-      <button
-        className="btn btn-primary ms-auto"
-        type="button"
-        onClick={() => navigate('/CreateDebate')}
-        style={{ position: 'relative', top: '50px', left: '1250px', marginTop:'50px', }}
-      >
-        Create Debate
-      </button>
-      <h2 style={{ marginLeft: '60px', }}>My Debates</h2>
+      <Navbar />
+      <h2 style={{ marginLeft: '60px' }}>All Debates</h2>
       <div style={{ marginLeft: '60px' }}>
         {debates.length > 0 ? (
-          debates.map(debate => (
+          debates.map((debate) => (
             <div
               key={debate.id}
               style={{
@@ -145,6 +138,7 @@ function Home() {
               </div>
 
               <h4>{debate.text}</h4>
+              <p>Created by: {debate.created_by}</p>
               <p>Created on: {debate.created_on}</p>
 
               <div style={{ display: 'flex' }}>
@@ -216,4 +210,4 @@ function Home() {
   );
 }
 
-export default Home;
+export default Debates;

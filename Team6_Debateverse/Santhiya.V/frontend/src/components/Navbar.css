@@ -1,0 +1,51 @@
+nav {
+  position: relative; /* Changed from fixed to relative */
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: white;
+  padding: 10px 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+nav h1 {
+  margin: 0;
+  font-size: 24px;
+  color: brown;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+}
+
+nav a {
+  margin-left: 20px;
+  color: brown;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+nav a:hover {
+  color: darkorange;
+}
+
+nav button {
+  margin-left: 20px;
+  background-color: white;
+  color: brown;
+  border: 1px solid brown;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+nav button:hover {
+  background-color: brown;
+  color: white;
+}
