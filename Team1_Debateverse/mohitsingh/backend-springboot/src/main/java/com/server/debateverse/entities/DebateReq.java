@@ -1,4 +1,4 @@
-package com.server.debateverse.dto;
+package com.server.debateverse.entities;
 
 import java.util.List;
 
@@ -9,8 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserDTO {
-    private Long id;
-    private String email;
-    private List<DebateDTO> createdDebates;
+public class DebateReq {
+    private Debate debate;
+    private List<Option> options;
 }

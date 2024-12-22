@@ -28,6 +28,7 @@ public class DebateverseApplication implements CommandLineRunner {
 	public void run(String... args) {
 		if (!userRepo.findByEmail("admin@gmail.com").isPresent()) {
 			User admin = new User();
+			admin.setName("admin");
 			admin.setEmail("admin@gmail.com");
 			admin.setPassword(passwordEncoder.encode("admin"));
 			admin.setRole(User.Role.ADMIN);

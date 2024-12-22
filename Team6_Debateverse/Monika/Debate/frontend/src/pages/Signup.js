@@ -5,14 +5,13 @@ import axios from 'axios';
 
 export default function Signup() {
     const [values, setValues] = useState({
-        name: '',
         email: '',
         password: '',
-        role: 'user', // Default role is 'user'
+        confirmPassword: '' // Added confirmPassword field
     });
     const navigate = useNavigate();
     const [errors, setErrors] = useState({});
-    
+
     const handleInput = (event) => {
         setValues(prev => ({ ...prev, [event.target.name]: event.target.value }));
     };
@@ -23,9 +22,12 @@ export default function Signup() {
         setErrors(validationErrors);
 
         // Check if there are no validation errors
-        if (!validationErrors.name && !validationErrors.email && !validationErrors.password) {
-            // Send the role along with the other data to the backend
-            axios.post('http://localhost:8081/signup', values)
+        if (!validationErrors.email && !validationErrors.password && !validationErrors.confirmPassword) {
+            // Send the data to the backend
+            axios.post('http://localhost:8081/signup', {
+                email: values.email,
+                password: values.password
+            })
                 .then(res => {
                     navigate('/');
                 })
@@ -53,53 +55,41 @@ export default function Signup() {
                 <h2 className="text-center">Sign-up</h2>
                 <form onSubmit={handleSubmit}>
                     <div className='mb-3'>
-                        <label htmlFor="name"><strong>Name</strong></label>
-                        <input 
-                            type="text" 
-                            placeholder='Enter Name' 
-                            name='name'
-                            onChange={handleInput} 
-                            className='form-control rounded-0'/>
-                        {errors.name && <span className='text-danger'>{errors.name}</span>}
-                    </div>
-                    <div className='mb-3'>
                         <label htmlFor="email"><strong>Email</strong></label>
-                        <input 
-                            type="email" 
-                            placeholder='Enter Email' 
+                        <input
+                            type="email"
+                            placeholder='Enter Email'
                             name='email'
-                            onChange={handleInput} 
+                            onChange={handleInput}
                             className='form-control rounded-0'
                         />
                         {errors.email && <span className='text-danger'>{errors.email}</span>}
                     </div>
                     <div className='mb-3'>
                         <label htmlFor="password"><strong>Password</strong></label>
-                        <input 
-                            type="password" 
-                            placeholder='Enter Password' 
+                        <input
+                            type="password"
+                            placeholder='Enter Password'
                             name='password'
-                            onChange={handleInput} 
+                            onChange={handleInput}
                             className='form-control rounded-0'
                         />
                         {errors.password && <span className='text-danger'>{errors.password}</span>}
                     </div>
                     <div className='mb-3'>
-                        <label htmlFor="role"><strong>Role</strong></label>
-                        <select 
-                            name='role' 
-                            value={values.role} 
-                            onChange={handleInput} 
+                        <label htmlFor="confirmPassword"><strong>Confirm Password</strong></label>
+                        <input
+                            type="password"
+                            placeholder='Confirm Password'
+                            name='confirmPassword'
+                            onChange={handleInput}
                             className='form-control rounded-0'
-                        >
-                            <option value="user">User</option>
-                            <option value="admin">Admin</option>
-                        </select>
+                        />
+                        {errors.confirmPassword && <span className='text-danger'>{errors.confirmPassword}</span>}
                     </div>
-                    
-                    <button 
+                    <button
                         type="submit"
-                        style={{ backgroundColor: '#28a745', color: '#fff' }} 
+                        style={{ backgroundColor: '#28a745', color: '#fff' }}
                         className='btn btn-success w-100 rounded-0'
                     >
                         <strong>Signup</strong>

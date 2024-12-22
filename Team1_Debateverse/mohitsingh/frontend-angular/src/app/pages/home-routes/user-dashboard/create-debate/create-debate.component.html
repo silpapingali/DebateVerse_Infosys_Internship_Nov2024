@@ -1,1 +1,58 @@
-<p>create-debate works!</p>
+<div class="min-h-screen">
+  <div class="container mx-auto bg-white rounded-lg shadow-md p-6">
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-xl font-semibold text-purple-800">New Debate</h2>
+      <button class="bg-orange-400 text-white px-4 py-2 rounded hover:bg-orange-500 flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+        Go Back
+      </button>
+    </div>
+
+    <div class="space-y-6">
+      <div class="space-y-2">
+        <label class="text-purple-800 font-medium">Question:</label>
+        <input
+          type="text"
+          [(ngModel)]="debateReq.debate.text"
+          class="w-full p-2 bg-orange-100 rounded border-none"
+        />
+      </div>
+
+      <div *ngFor="let option of debateReq.options; let i = index" class="flex items-center gap-3">
+        <div class="flex-shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+          </svg>
+        </div>
+        <input
+          type="text"
+          [(ngModel)]="debateReq.options[i].text"
+          class="flex-grow p-2 bg-orange-100 rounded border-none"
+        />
+        <div *ngIf="i === debateReq.options.length - 1" class="flex gap-1">
+          <button (click)="addOption()" class="h-8 w-8 bg-purple-800 text-white rounded hover:bg-purple-900 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+          </button>
+          <button (click)="removeOption()" class="h-8 w-8 bg-purple-800 text-white rounded hover:bg-purple-900 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="flex justify-end">
+        <button (click)="postDebate()" class="bg-orange-400 text-white px-4 py-2 rounded hover:bg-orange-500 flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+          </svg>
+          Post
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

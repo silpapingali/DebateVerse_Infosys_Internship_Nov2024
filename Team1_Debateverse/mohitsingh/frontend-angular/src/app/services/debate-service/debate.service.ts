@@ -2,31 +2,46 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class DebateService {
+  constructor(private _http: HttpClient) {}
 
-  constructor(private _http:HttpClient) { }
+  baseUrl: string = 'http://localhost:8080/api/debates';
 
-  baseUrl: string = "http://localhost:8080/api/debates";
-
-  getPublicDebates(){
+  getPublicDebates() {
     return this._http.get(`${this.baseUrl}/public`);
   }
 
-  createDebate(debate: any, userId: any){
-    return this._http.post(`${this.baseUrl}/${userId}`, debate);
+  createDebate(debateReq: any, userId: any) {
+    return this._http.post(`${this.baseUrl}/${userId}`, debateReq);
   }
 
-  getDebate(debateId: any){
+  getDebate(debateId: any) {
     return this._http.get(`${this.baseUrl}/${debateId}`);
   }
 
-  getDebatesByUser(userId: any){
+  getDebatesByUser(userId: any) {
     return this._http.get(`${this.baseUrl}/user/${userId}`);
   }
 
-  getAllDebates(){
+  getAllDebatesExceptUser() {
     return this._http.get(`${this.baseUrl}`);
+  }
+
+  likeDebate(debateId: any, userId: any) {
+    return this._http.post(`${this.baseUrl}/${debateId}/like`, null, {
+      params: { userId },
+    });
+  }
+
+  dislikeDebate(debateId: any, userId: any) {
+    return this._http.post(`${this.baseUrl}/${debateId}/dislike`, null, {
+      params: { userId },
+    });
+  }
+
+  getLikedDebatesByUser(userId: any) {
+    return this._http.get(`${this.baseUrl}/liked`, { params: { userId } });
   }
 }

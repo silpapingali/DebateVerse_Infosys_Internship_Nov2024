@@ -47,17 +47,17 @@ const UserAllDebates = () => {
             {debates[currPage].map((deb, ind) => (
               <div
                 key={ind}
-                className="cursor-pointer p-5 rounded-lg bg-white shadow-md flex flex-col gap-2"
+                className="cursor-pointer p-5 rounded-lg bg-orange-500 shadow-md flex flex-col gap-2"
                 onClick={() => handleNavigate(deb._id)} // Navigate to DebateCard
               >
                 <h1 className="text-lg font-bold">{deb.question}</h1>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-white">
                   Posted by <span className="text-blue-600">{deb.createdBy}</span> on{" "}
                   {new Date(deb.createdOn).toLocaleDateString()}
                 </p>
-                <div className="flex justify-end items-center text-gray-600">
+                <div className="flex justify-end items-center text-white">
                   <span className="flex items-center gap-2">
-                    <span className="text-red-500 font-bold">{deb.totalLikes}</span> Likes
+                    <span className="text-emerald-500 font-bold">{deb.totalLikes}</span> Likes
                   </span>
                 </div>
               </div>

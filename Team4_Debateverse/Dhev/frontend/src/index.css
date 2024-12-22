@@ -1,3 +1,29 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    @font-face {
+      font-family: 'Comic Sans MS';
+      src: local('Comic Sans MS');
+    }
+    
+    .font-comic {
+      font-family: 'Comic Sans MS', cursive;
+    }
+  
+    input, textarea {
+      @apply border rounded-md px-3 py-2;
+    }
+    
+    button {
+      @apply transition-colors duration-200;
+    }
+  }
+  
+  @layer components {
+    .graph-bar {
+      @apply w-full bg-gradient-to-t from-orange-200 to-orange-100 rounded-t-lg 
+        shadow-inner transition-all duration-300;
+    }
+  }

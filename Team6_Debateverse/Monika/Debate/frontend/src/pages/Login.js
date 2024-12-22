@@ -39,9 +39,9 @@ export default function Login() {
 
                         // Navigate based on the role
                         if (role === 'admin') {
-                            navigate('/admin');
-                        } else {
-                            navigate('/home');
+                            navigate('/admin-dashboard');  // Admin dashboard
+                        } else if (role === 'user') {
+                            navigate('/user-dashboard');  // User dashboard
                         }
                     }
                 })

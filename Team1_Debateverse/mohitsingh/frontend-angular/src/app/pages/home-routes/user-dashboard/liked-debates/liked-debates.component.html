@@ -1,1 +1,44 @@
-<p>liked-debates works!</p>
+<div class="min-h-screen">
+  <main class="container mx-auto p-4">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-xl font-mono">My Liked Debates ({{debates.length}})</h2>
+      <button class="bg-orange-400 hover:bg-orange-500 px-4 py-2 text-white">
+        Create New
+        <span class="ml-2">📝</span>
+      </button>
+    </div>
+    <div *ngFor="let debate of debates">
+      <div class="bg-white border-2 border-blue-900 p-6 mb-5">
+        <div class="flex justify-between items-start mb-4">
+          <div>
+            <p class="text-sm text-gray-500">Asked on: {{debate.createdOn | date}} | Posted By: <span class="text-blue-400 underline">{{debate.createdBy.name}}</span></p>
+            <h3 class="text-xl font-mono mt-2">
+              {{debate.text}}
+            </h3>
+          </div>
+          <div class="flex items-center gap-2">
+            <span>{{debate.totalLikes}}</span>
+            <span class="text-red-500">❤️</span>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <div *ngFor="let option of debate.options" class="relative">
+            <div class="flex justify-between mb-1">
+              <span class="font-mono">{{ option.text }}</span>
+              <div class="space-x-4">
+                <span class="text-green-600">{{option.totalVotes}}</span>
+                <span class="text-gray-500">0</span>
+              </div>
+            </div>
+            <div class="h-8 bg-gray-100 rounded-sm">
+              <div class="h-full bg-orange-400 rounded-sm transition-all" [style.width.%]="(option.totalVotes*100)/debate.totalVotes">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<!-- {{myDebates | json}} -->

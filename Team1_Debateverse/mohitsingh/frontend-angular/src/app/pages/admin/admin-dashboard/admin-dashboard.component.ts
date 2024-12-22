@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { AuthServiceService } from '../../../services/auth-service/auth-service.service';
 
@@ -9,10 +10,13 @@ import { AuthServiceService } from '../../../services/auth-service/auth-service.
 })
 export class AdminDashboardComponent {
 
-  constructor(private _auth:AuthServiceService, private _router: Router) {
+  constructor(private _auth:AuthServiceService, private _router: Router, private _snack: MatSnackBar) {
     this._auth.isLoggedIn$.subscribe((res) => {
       if (!res) {
         this._router.navigate(['/login']);
+        this._snack.open('Please login to continue', 'Close', {
+          duration: 3000,
+        });
       }
     });
   }
