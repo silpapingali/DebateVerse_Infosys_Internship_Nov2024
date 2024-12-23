@@ -192,17 +192,19 @@ const reactions = (req, res) => {
 };
 
 const searchDebate = (req, res) => {
-    const { keyword } = req.query;
+    const { keyword, page = 1, limit = 10 } = req.query;
 
+    // Validate input
     if (!keyword || typeof keyword !== 'string') {
         return res.status(400).json({ message: 'Keyword is required for search.' });
     }
 
     const trimmedKeyword = keyword.trim();
-
     if (!trimmedKeyword) {
         return res.status(400).json({ message: 'Keyword must not be empty.' });
     }
+
+    const offset = (page - 1) * limit;
 
     const query = `
         SELECT dq.id AS debate_id, dq.question, dq.created_at,
@@ -215,15 +217,20 @@ const searchDebate = (req, res) => {
         LEFT JOIN reactions r ON dq.id = r.debate_id AND r.action = 'like'
         WHERE dq.question LIKE ?
         GROUP BY dq.id, o.id
-        ORDER BY dq.created_at DESC;
+        ORDER BY dq.created_at DESC
+        LIMIT ? OFFSET ?;
     `;
 
-    db.query(query, [`%${trimmedKeyword}%`], (err, results) => {
+    const searchParam = `%${trimmedKeyword}%`;
+
+    // Execute query
+    db.query(query, [searchParam, parseInt(limit), parseInt(offset)], (err, results) => {
         if (err) {
             console.error('Error fetching search results:', err);
             return res.status(500).json({ message: 'Server error while searching for debates.' });
         }
 
+        // Format debates
         const formattedDebates = results.reduce((acc, row) => {
             const { debate_id, question, created_at, option_id, option_text, option_created_at, upvotes, likes } = row;
 
@@ -254,6 +261,7 @@ const searchDebate = (req, res) => {
         res.status(200).json({ debates: formattedDebates });
     });
 };
+
 
 const upvote = (req, res) => {
     const { debateId, optionId } = req.params;
