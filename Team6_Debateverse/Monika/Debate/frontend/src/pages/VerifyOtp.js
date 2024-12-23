@@ -25,7 +25,7 @@ export default function VerifyOtp() {
 
         setError('');
         axios
-            .post('http://localhost:8081/verify-otp', { email, otp })
+            .post('http://localhost:8081/api/auth/verifyOtp', { email, otp })
             .then((response) => {
                 setMessage(response.data.message);
                 navigate(`/reset-password?token=${response.data.token}`);

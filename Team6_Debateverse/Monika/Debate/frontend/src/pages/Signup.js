@@ -20,20 +20,28 @@ export default function Signup() {
         event.preventDefault();
         const validationErrors = SignupValidation(values);
         setErrors(validationErrors);
-
+    
         // Check if there are no validation errors
         if (!validationErrors.email && !validationErrors.password && !validationErrors.confirmPassword) {
             // Send the data to the backend
-            axios.post('http://localhost:8081/signup', {
+            axios.post('http://localhost:8081/api/auth/signup', { // Correct backend route
                 email: values.email,
                 password: values.password
             })
                 .then(res => {
-                    navigate('/');
+                    console.log(res.data.message); // Optional: Log success message
+                    navigate('/'); // Redirect to login page
                 })
-                .catch(err => console.log(err));
+                .catch(err => {
+                    if (err.response) {
+                        console.log(err.response.data.message); // Log error message from backend
+                    } else {
+                        console.log('Error:', err.message); // Log other errors
+                    }
+                });
         }
     };
+    
 
     return (
         <div className="d-flex justify-content-center align-items-center bg-primary vh-100">

@@ -22,11 +22,12 @@ export default function ForgotPassword() {
 
         setError('');
         axios
-            .post('http://localhost:8081/forgot-password', { email })
+            .post('http://localhost:8081/api/auth/forgotPassword', { email })
             .then((response) => {
                 setMessage(response.data.message);
                 console.log(response.data);
-                navigate(`/verify-otp?email=${encodeURIComponent(email)}`);
+                /*navigate('/VerifyOtp');*/
+                navigate(`/VerifyOtp?email=${encodeURIComponent(email)}`);
             })
             .catch((err) => {
                 console.error(err);

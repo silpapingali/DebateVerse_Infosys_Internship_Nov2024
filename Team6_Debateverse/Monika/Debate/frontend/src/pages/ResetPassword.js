@@ -22,7 +22,7 @@ export default function ResetPassword() {
 
         setError('');
         axios
-            .post('http://localhost:8081/reset-password', { password, token })
+            .post('http://localhost:8081/api/auth/resetPassword', { password, token })
             .then((response) => {
                 setMessage(response.data.message);
                 navigate('/');
