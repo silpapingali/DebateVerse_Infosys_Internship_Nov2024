@@ -1,6 +1,6 @@
 const allDebates = async (req, res) => {
-    const limit = parseInt(req.query.limit) || 10; // Pagination limit
-    const offset = parseInt(req.query.offset) || 0; // Pagination offset
+    const limit = parseInt(req.query.limit) || 10; 
+    const offset = parseInt(req.query.offset) || 0; 
 
     const query = `
       SELECT 
@@ -27,7 +27,7 @@ const allDebates = async (req, res) => {
             return res.status(500).json({ error: 'Failed to fetch debates' });
         }
 
-        // Format the debates with nested options
+        
         const formattedDebates = results.reduce((acc, row) => {
             const {
                 debate_id, question, created_at, 
@@ -47,7 +47,7 @@ const allDebates = async (req, res) => {
                 acc.push(debate);
             }
 
-            if (option_id) { // Only push options if they exist
+            if (option_id) { 
                 debate.options.push({
                     id: option_id,
                     text: option_text,
