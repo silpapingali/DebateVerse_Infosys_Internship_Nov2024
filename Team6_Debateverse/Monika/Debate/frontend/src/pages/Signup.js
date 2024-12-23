@@ -21,22 +21,22 @@ export default function Signup() {
         const validationErrors = SignupValidation(values);
         setErrors(validationErrors);
     
-        // Check if there are no validation errors
+        
         if (!validationErrors.email && !validationErrors.password && !validationErrors.confirmPassword) {
-            // Send the data to the backend
-            axios.post('http://localhost:8081/api/auth/signup', { // Correct backend route
+            
+            axios.post('http://localhost:8081/api/auth/signup', { 
                 email: values.email,
                 password: values.password
             })
                 .then(res => {
-                    console.log(res.data.message); // Optional: Log success message
-                    navigate('/'); // Redirect to login page
+                    console.log(res.data.message); 
+                    navigate('/'); 
                 })
                 .catch(err => {
                     if (err.response) {
-                        console.log(err.response.data.message); // Log error message from backend
+                        console.log(err.response.data.message); 
                     } else {
-                        console.log('Error:', err.message); // Log other errors
+                        console.log('Error:', err.message); 
                     }
                 });
         }

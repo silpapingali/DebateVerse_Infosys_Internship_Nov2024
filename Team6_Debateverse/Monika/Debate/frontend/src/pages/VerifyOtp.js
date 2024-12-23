@@ -39,7 +39,7 @@ export default function VerifyOtp() {
     return (
         <div
         className="d-flex justify-content-center align-items-center vh-100 position-relative"
-        style={{ backgroundColor: '#007BFF' }} // Light grey background color
+        style={{ backgroundColor: '#007BFF' }} 
     >
             <div className="bg-white p-4 rounded w-25">
                 <h2 className="text-center">Verify OTP</h2>

@@ -26,7 +26,7 @@ export default function ForgotPassword() {
             .then((response) => {
                 setMessage(response.data.message);
                 console.log(response.data);
-                /*navigate('/VerifyOtp');*/
+               
                 navigate(`/VerifyOtp?email=${encodeURIComponent(email)}`);
             })
             .catch((err) => {
@@ -38,7 +38,7 @@ export default function ForgotPassword() {
     return (
         <div
         className="d-flex justify-content-center align-items-center vh-100 position-relative"
-        style={{ backgroundColor: '#007BFF' }} // Light grey background color
+        style={{ backgroundColor: '#007BFF' }} 
     >
             <div className="bg-white p-3 rounded w-25">
                 <h2 className="text-center">Forgot Password</h2>
