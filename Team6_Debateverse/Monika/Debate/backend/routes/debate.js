@@ -9,14 +9,13 @@ const {
     upvote
 } = require('../controllers/debateController');
 
-// Route to create a debate
+
 DebateRouter.post('/createDebate', createDebate);
 DebateRouter.get('/alldebates', allDebates);
 DebateRouter.get('/reactions', reactions);
-/*DebateRouter.post('/upvote', upvote);*/
 DebateRouter.post('/getDebateDetails', getDebateDetails);
-DebateRouter.get('/debates/search', searchDebate);
-DebateRouter.post('/debate/:debateId/option/:optionId/vote', upvote); // Voting on options
+DebateRouter.get('api/debate/searchDebate', searchDebate);
+DebateRouter.post('/debate/:debateId/option/:optionId/vote', upvote); 
 
 
 module.exports = DebateRouter;
