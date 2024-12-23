@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { faker } from '@faker-js/faker';
 import { Bar } from 'react-chartjs-2';
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -24,7 +25,7 @@ function DebateList() {
   useEffect(() => {
     // Fetch debates from backend and add dummy created_by names using faker
     axios
-      .get('http://localhost:8081/alldebates', {
+      .get('http://localhost:8081/api/debate/alldebates', {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
@@ -48,7 +49,7 @@ function DebateList() {
 
     axios
       .post(
-        `http://localhost:8081/debateList/${debateId}/reactions`,
+        `http://localhost:8081/api/debate/allDebates/${debateId}/reactions`,
         { action: 'like' },
         {
           headers: {
@@ -108,7 +109,9 @@ function DebateList() {
 
   const generateBarChartData = (options) => {
     const labels = options.map((option) => option.text);
-    const upvotes = options.map((option) => option.upvotes ? option.upvotes.length : 0);
+    const upvotes = options.map((option) =>
+      option.upvotes ? option.upvotes.length : 0
+    );
 
     return {
       labels,
@@ -125,7 +128,14 @@ function DebateList() {
   };
 
   return (
-    <div>
+    <div
+      style={{
+        background: '#1e1e1e',
+        minHeight: '100vh',
+        padding: '20px',
+        color: 'white',
+      }}
+    >
       <Navbar />
       <h2 style={{ marginLeft: '60px' }}>All Debates</h2>
       <div style={{ marginLeft: '60px' }}>
@@ -141,6 +151,8 @@ function DebateList() {
                 position: 'relative',
                 borderRadius: '10px',
                 boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+                backgroundColor: 'white',
+                color: 'black',
               }}
             >
               <div
@@ -152,7 +164,13 @@ function DebateList() {
                   alignItems: 'center',
                 }}
               >
-                <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#555' }}>
+                <span
+                  style={{
+                    fontSize: '14px',
+                    fontWeight: 'bold',
+                    color: '#555',
+                  }}
+                >
                   {debate.likes} likes
                 </span>
                 <button
@@ -174,7 +192,13 @@ function DebateList() {
               <h4>{debate.text}</h4>
               <p>Created on: {debate.created_on}</p>
 
-              <div style={{ display: 'flex', marginTop: '20px', justifyContent: 'space-between' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  marginTop: '20px',
+                  justifyContent: 'space-between',
+                }}
+              >
                 <div style={{ flex: 1 }}>
                   <h5>Options:</h5>
                   {debate.options && debate.options.length > 0 ? (
@@ -203,7 +227,8 @@ function DebateList() {
                             cursor: 'pointer',
                           }}
                         >
-                          Upvote ({option.upvotes ? option.upvotes.length : 0})
+                          Upvote (
+                          {option.upvotes ? option.upvotes.length : 0})
                         </button>
                       </div>
                     ))

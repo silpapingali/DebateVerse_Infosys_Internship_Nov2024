@@ -79,7 +79,7 @@ const CreateDebate = () => {
 
     if (question.trim() && options.every((opt) => opt.trim())) {
       try {
-        const response = await fetch("http://localhost:8081/api/debates", {
+        const response = await fetch("http://localhost:8081/api/debate/createdebate", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

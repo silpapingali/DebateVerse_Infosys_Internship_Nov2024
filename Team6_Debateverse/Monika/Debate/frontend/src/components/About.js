@@ -58,11 +58,14 @@ const styles = {
   container: {
     textAlign: 'center',
     padding: '20px',
+    background: '#1e1e1e', // Simple dark background (pitch-like)
+    color: 'white', // Ensures text is visible on dark background
+    minHeight: '100vh', // Full height for proper gradient coverage
   },
   header: {
     fontSize: '2rem',
     fontWeight: 'bold',
-    color: '#333',
+    marginBottom: '20px',
   },
   image: {
     width: '50%',
@@ -70,17 +73,17 @@ const styles = {
     borderRadius: '4px',
     marginTop: '20px',
     marginBottom: '20px',
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)', // Optional shadow for the image
   },
   text: {
     fontSize: '1.1rem',
-    color: '#555',
     lineHeight: '1.6',
     marginBottom: '20px',
   },
   createButton: {
     padding: '10px 20px',
     fontSize: '1rem',
-    backgroundColor: '#007bff',
+    backgroundColor: '#007bff', // Simple blue button
     color: 'white',
     border: 'none',
     borderRadius: '4px',
@@ -93,7 +96,7 @@ const styles = {
     left: '0',
     bottom: '0',
     width: '100%',
-    backgroundColor: '#333',
+    backgroundColor: '#333', // Dark footer
     color: 'white',
     textAlign: 'center',
     padding: '10px',
@@ -102,5 +105,4 @@ const styles = {
     fontSize: '1rem',
   },
 };
-
 export default About;
