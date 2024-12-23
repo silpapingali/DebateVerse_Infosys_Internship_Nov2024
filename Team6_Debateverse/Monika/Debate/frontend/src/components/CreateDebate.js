@@ -97,7 +97,7 @@ const CreateDebate = () => {
           setOptions(["", ""]);
           setMessage("Debate successfully created!");
 
-          // Delay navigation by 2 seconds to show the success message
+          
           setTimeout(() => {
             navigate("/debatelist");
           }, 2000);

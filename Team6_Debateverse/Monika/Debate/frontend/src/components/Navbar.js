@@ -23,7 +23,7 @@ const Navbar = ({ role }) => {
     <div style={navbarStyle}>
       <span style={{ fontWeight: "bold", fontSize: "20px" }}>DebateVerse</span>
       <div>
-        {/* Links for All Users */}
+       
         <Link to="/about" style={linkStyle}>
           About
         </Link>
@@ -34,7 +34,7 @@ const Navbar = ({ role }) => {
           Debate
         </Link>
 
-        {/* Additional Links for Admin */}
+       
         {role === 'admin' && (
           <>
             <Link to="/usermanagement" style={linkStyle}>
@@ -46,7 +46,7 @@ const Navbar = ({ role }) => {
           </>
         )}
 
-        {/* Logout Link */}
+
         <Link to="/logout" style={linkStyle}>
           Logout
         </Link>

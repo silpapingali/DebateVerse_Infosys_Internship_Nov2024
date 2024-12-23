@@ -3,14 +3,15 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import Navbar from "./Navbar";
+import DebateCard from "./DebateCard";
 
 function DebateDetail() {
-  const { id } = useParams(); // Get debate ID from the URL
+  const { id } = useParams(); 
   const [debate, setDebate] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Fetch specific debate details from the backend
+    
     axios
       .get(`http://localhost:8081/api/debate/debatedetail/${id}`, {
         headers: {

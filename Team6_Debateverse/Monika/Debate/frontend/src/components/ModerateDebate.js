@@ -4,11 +4,11 @@ import axios from 'axios';
 import Navbar from './Navbar';
 
 const ModerateDebate = () => {
-    const { id } = useParams(); // Get debate ID from URL
+    const { id } = useParams(); 
     const [debate, setDebate] = useState(null);
 
     useEffect(() => {
-        // Fetch specific debate details
+        
         axios
             .get(`http://localhost:5000/api/admin/debate/${id}`)
             .then((response) => {
@@ -40,11 +40,11 @@ const ModerateDebate = () => {
                         ))}
                     </ul>
                 </div>
-                {/* Add moderation controls here */}
+                
                 <div>
                     <button
                         onClick={() => {
-                            // Example action: Delete debate
+                            
                             axios
                                 .delete(`http://localhost:5000/api/admin/debate/${id}`)
                                 .then(() => {

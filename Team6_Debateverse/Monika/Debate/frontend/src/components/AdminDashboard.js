@@ -6,12 +6,12 @@ import Navbar from './Navbar';
 
 const App = () => {
     const [debates, setDebates] = useState([]);
-    const navigate = useNavigate(); // Hook for navigation
+    const navigate = useNavigate(); 
 
     useEffect(() => {
-        // Fetch debates from the backend API
+        
         axios
-            .get('http://localhost:5000/api/admin/allDebates?limit=5')
+            .get('http://localhost:8081/api/admin/recentDebates')
             .then((response) => {
                 setDebates(response.data);
             })
@@ -20,7 +20,7 @@ const App = () => {
             });
     }, []);
 
-    // Navigate to the Moderate Debate page
+    
     const handleDebateClick = (debateId) => {
         navigate(`/moderate/${debateId}`);
     };
@@ -36,8 +36,8 @@ const App = () => {
                     <div
                         key={index}
                         className="debate-card"
-                        onClick={() => handleDebateClick(debate.id)} // Handle click
-                        style={{ cursor: 'pointer' }} // Indicate clickable card
+                        onClick={() => handleDebateClick(debate.id)} 
+                        style={{ cursor: 'pointer' }} 
                     >
                         <h3>{debate.text}</h3>
                         <p>Asked on: {new Date(debate.created_on).toLocaleDateString()}</p>
