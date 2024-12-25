@@ -1,18 +1,86 @@
-<div class="min-h-full bg-gray-100">
-  <main>
-    <div *ngIf="debates.length>0; else noDebates" class="mx-auto max-w-7xl px-4 py-6 sm:px-6">
-      <!-- {{debates | json}} -->
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        <ng-container *ngFor="let debate of debates">
-          <div class="bg-white shadow-lg rounded-lg p-6">
-            <h3 class="text-2xl font-semibold text-gray-800">{{debate.text}}</h3>
-            <a href="#" class="text-blue-500 hover:underline mt-4 inline-block">Join the Debate</a>
+<div class="bg-gray-100">
+  <div class="min-h-screen mx-auto max-w-7xl p-4">
+    <div class="grid gap-4 md:grid-cols-[300px_1fr]">
+      <!-- Left Sidebar -->
+      <div class="space-y-4">
+        <button class="w-full justify-start bg-orange-200 hover:bg-orange-300 text-black font-bold p-2 rounded">
+          Back to Dashboard
+        </button>
+        <div class="bg-orange-200 p-4 rounded">
+          <div class="relative">
+            <input placeholder="Search..." class="w-full pl-3 pr-10 py-2 rounded bg-white">
+            <i class="absolute right-3 top-2.5 h-5 w-5 text-gray-400">🔍</i>
           </div>
-        </ng-container>
+        </div>
+        <div class="bg-white p-4 space-y-6 rounded">
+          <div class="space-y-2">
+            <div class="flex items-center space-x-2">
+              <input type="checkbox" id="exact">
+              <label for="exact" class="text-sm font-medium leading-none">
+                Exact Match
+              </label>
+            </div>
+          </div>
+          <div class="space-y-4">
+            <div class="space-y-2">
+              <label class="text-sm font-medium">Likes greater than</label>
+              <div class="flex items-center gap-4">
+                <span class="text-sm">0</span>
+                <div class="flex-1 h-1 bg-gray-200 rounded-full">
+                  <div class="h-full w-1/4 bg-blue-500 rounded-full relative">
+                    <div class="absolute -right-2 -top-1.5 w-4 h-4 bg-blue-500 rounded-full"></div>
+                  </div>
+                </div>
+                <span class="text-sm">10k+</span>
+              </div>
+            </div>
+            <div class="space-y-2">
+              <label class="text-sm font-medium">Votes greater than</label>
+              <div class="flex items-center gap-4">
+                <span class="text-sm">0</span>
+                <div class="flex-1 h-1 bg-gray-200 rounded-full">
+                  <div class="h-full w-1/4 bg-blue-500 rounded-full relative">
+                    <div class="absolute -right-2 -top-1.5 w-4 h-4 bg-blue-500 rounded-full"></div>
+                  </div>
+                </div>
+                <span class="text-sm">25k+</span>
+              </div>
+            </div>
+          </div>
+          <div class="space-y-2">
+            <label class="text-sm font-medium">Posted After</label>
+            <button class="w-full justify-start text-left font-normal border p-2 rounded">
+              Pick a date
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="space-y-4">
+        <div *ngFor="let post of allDebates" class="bg-white p-4 rounded">
+          <div class="space-y-2">
+            <a href="#" [routerLink]="['/debate/',post.id]" ><p class="text-indigo-600 hover:underline">{{ post.text }}</p></a>
+            <div class="flex items-center justify-between text-sm text-gray-500">
+              <div>
+                Posted by <span class="text-indigo-500 underline">{{ post.createdBy.name }}</span> on {{ post.createdOn | date }}
+              </div>
+              <div class="flex items-center gap-1">
+                <i class="text-red-500">❤️</i>
+                <span class="text-red-500">{{post.totalLikes}}</span>
+              </div>
+            </div>
+            <div class="h-20 w-full">
+              <div class="flex h-full items-end gap-1">
+                <div *ngFor="let option of post.options; let i = index;" class="w-8 bg-orange-200"
+                  [style.height.%]="(option.totalVotes*100)/post.totalVotes">
+                  <div class="text-xs text-gray-500">{{ option.totalVotes }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-    <ng-template #noDebates>
-      <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6"><p>No debates available / Service Unavailable.</p></div>
-    </ng-template>
-  </main>
+  </div>
 </div>

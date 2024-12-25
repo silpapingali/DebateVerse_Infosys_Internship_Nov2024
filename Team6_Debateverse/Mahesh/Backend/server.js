@@ -4,12 +4,14 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const nodemailer = require("nodemailer");
+const bodyParser = require('body-parser');
+const { v4: uuidv4 } = require('uuid');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Database connection
+
 const db = mysql.createConnection({
     host: "localhost",
     user: "root",
@@ -17,7 +19,7 @@ const db = mysql.createConnection({
     database: "signup"
 });
 
-// Check database connection
+
 db.connect((err) => {
     if (err) {
         console.error('Database connection failed:', err.stack);
@@ -26,7 +28,7 @@ db.connect((err) => {
     console.log('Connected to the database.');
 });
 
-// Login route
+
 app.post('/login', (req, res) => {
     const { email, password } = req.body;
 
@@ -54,9 +56,9 @@ app.post('/login', (req, res) => {
 
             
             if (data[0].status === 'confirmed') {
-                // Generate JWT token
+                
                 const token = jwt.sign(
-                    { email: data[0].email, role: data[0].role },
+                    { id: data[0].id, email: data[0].email, role: data[0].role },
                     'A2pE@R#7%L08w!9XgM!zT$JtQ1yY#1j', 
                     { expiresIn: '1h' }
                 );
@@ -277,7 +279,238 @@ app.post('/reset-password', (req, res) => {
 });
 
 
-// Start server
+
+
+const verifyToken = (req, res, next) => {
+    const authHeader = req.headers.authorization;
+    console.log('Authorization header:', authHeader); 
+
+    if (!authHeader) {
+        console.error('Authorization header is missing');
+        return res.status(403).json({ message: 'Token missing in request' });
+    }
+
+    const token = authHeader.split(' ')[1];
+    jwt.verify(token, 'A2pE@R#7%L08w!9XgM!zT$JtQ1yY#1j', (err, decoded) => {
+        if (err) {
+            console.error('JWT verification error:', err);
+            return res.status(403).json({ message: 'Invalid or expired token' });
+        }
+        req.userId = decoded.id;
+        next();
+    });
+};
+
+
+app.post('/debates', verifyToken, (req, res) => {
+    const { text, options, created_by, created_on } = req.body;
+  
+    if (!text || !options || options.length < 2) {
+      return res.status(400).json({ message: 'Debate text and at least 2 options are required' });
+    }
+  
+    
+    const debateId = uuidv4();
+  
+ 
+    const debateQuery = `
+      INSERT INTO debates (id, text, created_by, created_on, likes, dislikes, is_public, is_blocked) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+  
+    db.query(
+      debateQuery,
+      [debateId, text, created_by, created_on, JSON.stringify([]), JSON.stringify([]), true, false],
+      (debateErr) => {
+        if (debateErr) {
+          console.error('Error inserting into debates table:', debateErr);
+          return res.status(500).json({ message: 'Failed to create debate' });
+        }
+  
+        
+        const optionsQuery = `
+          INSERT INTO options (id, debate_id, text, created_on, upvotes, downvotes) 
+          VALUES ?
+        `;
+  
+        const optionsValues = options.map((option) => [
+          uuidv4(), 
+          debateId,
+          option.text, 
+          created_on,
+          JSON.stringify([]), 
+          JSON.stringify([])  
+        ]);
+  
+        db.query(optionsQuery, [optionsValues], (optionsErr) => {
+          if (optionsErr) {
+            console.error('Error inserting into options table:', optionsErr);
+            return res.status(500).json({ message: 'Failed to create options' });
+          }
+  
+          res.status(201).json({ message: 'Debate and options created successfully' });
+        });
+      }
+    );
+  });
+
+  
+app.get('/debates', verifyToken, (req, res) => {
+    const userId = req.userId;  
+    
+    
+    const getDebatesQuery = `
+      SELECT * FROM debates WHERE created_by = ?
+    `;
+  
+    db.query(getDebatesQuery, [userId], (err, results) => {
+      if (err) {
+        console.error('Error fetching debates:', err);
+        return res.status(500).json({ message: 'Failed to fetch debates' });
+      }
+      
+      
+      const getOptionsQuery = `
+        SELECT * FROM options WHERE debate_id IN (?);
+      `;
+      
+      db.query(getOptionsQuery, [results.map(debate => debate.id)], (optionsErr, optionsResults) => {
+        if (optionsErr) {
+          console.error('Error fetching options:', optionsErr);
+          return res.status(500).json({ message: 'Failed to fetch options' });
+        }
+        
+        
+        const debatesWithOptions = results.map(debate => {
+          const options = optionsResults.filter(option => option.debate_id === debate.id);
+          return { ...debate, options };
+        });
+        
+        res.status(200).json(debatesWithOptions);
+      });
+    });
+  });
+
+  app.post('/debates/:id/reactions', verifyToken, (req, res) => {
+    const { id } = req.params; 
+    const { action, userId } = req.body; 
+
+    if (action !== 'like') {
+        return res.status(400).json({ message: 'Only "like" action is supported at this time' });
+    }
+
+  
+    db.query('SELECT likes FROM debates WHERE id = ?', [id], (err, results) => {
+        if (err) {
+            console.error('Error fetching likes:', err);
+            return res.status(500).json({ message: 'Error fetching likes' });
+        }
+
+        if (results.length === 0) {
+            return res.status(404).json({ message: 'Debate not found' });
+        }
+
+        const currentLikes = JSON.parse(results[0].likes || '[]');
+        if (!currentLikes.includes(userId)) {
+            currentLikes.push(userId);
+        }
+
+        
+        db.query(
+            'UPDATE debates SET likes = ? WHERE id = ?',
+            [JSON.stringify(currentLikes), id],
+            (updateErr) => {
+                if (updateErr) {
+                    console.error('Error updating likes:', updateErr);
+                    return res.status(500).json({ message: 'Error updating likes' });
+                }
+
+                res.status(200).json({ likes: currentLikes }); 
+            }
+        );
+    });
+});
+
+app.post('/options/:optionId/upvote', verifyToken, (req, res) => {
+    const { optionId } = req.params; 
+    const { userId } = req.body;     
+
+    if (!userId) {
+        return res.status(400).json({ message: 'User ID is required' });
+    }
+
+  
+    db.query('SELECT upvotes FROM options WHERE id = ?', [optionId], (err, results) => {
+        if (err) {
+            console.error('Error fetching upvotes:', err);
+            return res.status(500).json({ message: 'Error fetching upvotes' });
+        }
+
+        if (results.length === 0) {
+            return res.status(404).json({ message: 'Option not found' });
+        }
+
+        
+        const currentUpvotes = JSON.parse(results[0].upvotes || '[]');
+        if (!currentUpvotes.includes(userId)) {
+            currentUpvotes.push(userId);
+        } else {
+            return res.status(400).json({ message: 'User has already upvoted this option' });
+        }
+
+        
+        db.query(
+            'UPDATE options SET upvotes = ? WHERE id = ?',
+            [JSON.stringify(currentUpvotes), optionId],
+            (updateErr) => {
+                if (updateErr) {
+                    console.error('Error updating upvotes:', updateErr);
+                    return res.status(500).json({ message: 'Error updating upvotes' });
+                }
+
+                res.status(200).json({ upvotes: currentUpvotes }); 
+            }
+        );
+    });
+});
+
+app.get('/alldebates', verifyToken, (req, res) => {
+    
+    const getDebatesQuery = `
+        SELECT * FROM debates;
+    `;
+
+    db.query(getDebatesQuery, (err, results) => {
+        if (err) {
+            console.error('Error fetching debates:', err);
+            return res.status(500).json({ message: 'Failed to fetch debates' });
+        }
+
+        
+        const getOptionsQuery = `
+            SELECT * FROM options WHERE debate_id IN (?);
+        `;
+
+        db.query(getOptionsQuery, [results.map(debate => debate.id)], (optionsErr, optionsResults) => {
+            if (optionsErr) {
+                console.error('Error fetching options:', optionsErr);
+                return res.status(500).json({ message: 'Failed to fetch options' });
+            }
+
+            
+            const debatesWithOptions = results.map(debate => {
+                const options = optionsResults.filter(option => option.debate_id === debate.id);
+                return { ...debate, options };
+            });
+
+            res.status(200).json(debatesWithOptions);
+        });
+    });
+});
+
+
+
+
 app.listen(8081, () => {
     console.log("Server is running on port 8081.");
 });
