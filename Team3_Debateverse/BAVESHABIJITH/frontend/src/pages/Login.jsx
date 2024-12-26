@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Eye, EyeOff } from "lucide-react";
-import Resetpopup from "../components/Resetpopup";
+import ResetPopup from "../components/ResetPopup";
+import { UserContext } from "../context/UserContext";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -11,9 +12,20 @@ const Login = () => {
     email: "",
     password: "",
   });
-  const [loading, setLoading] = useState(false); // Loading state
-  const [showResetPopup, setShowResetPopup] = useState(false); // State to manage the visibility of the ResetPopup
+  const [loading, setLoading] = useState(false);
+  const [showResetPopup, setShowResetPopup] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const { setIsAuth, setRole } = useContext(UserContext);
+  const [params] = useSearchParams();
+  const status = params.get("status");
+  if (status) {
+    status == "true"
+      ? toast.success("Congratulations! You are Verified Please login")
+      : toast.error("Invalid URL ! Login to receive verification link again");
+    setTimeout(() => {
+      navigate("/login");
+    }, 500);
+  }
 
   const handleChange = (e) => {
     setLoginData({
@@ -34,13 +46,13 @@ const Login = () => {
         "http://localhost:3000/api/auth/login",
         loginData
       );
-      if (res.status === 200) {
-        localStorage.setItem("token", res.data.token);
-        toast.success(res.data.message);
-        navigate("/");
-      } else {
-        toast.error(res.data.message);
-      }
+      localStorage.setItem("token", res.data.token);
+      setIsAuth(true);
+      setRole(res.data.role);
+      toast.success(res.data.message);
+      res.data.role == "user"
+        ? navigate("/userdashboard")
+        : navigate("/admindashboard");
     } catch (err) {
       console.log(err);
       if (err?.response?.data?.inputerrors) {
@@ -58,7 +70,7 @@ const Login = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+    <div className="pt-16 flex items-center justify-center min-h-screen bg-gradient-to-r from-indigo-300 via-indigo-400 to-indigo-500">
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
         <h1 className="text-2xl font-bold text-center text-gray-700">Login</h1>
 
@@ -140,7 +152,7 @@ const Login = () => {
         </div>
       </div>
       {showResetPopup && (
-        <Resetpopup onClose={() => setShowResetPopup(false)} />
+        <ResetPopup onClose={() => setShowResetPopup(false)} />
       )}
     </div>
   );

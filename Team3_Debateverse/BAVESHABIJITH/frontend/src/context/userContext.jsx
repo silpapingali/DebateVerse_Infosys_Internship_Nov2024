@@ -1,51 +1,53 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import axios from "axios";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const UserContext = React.createContext();
 
 const UserContextProvider = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();  // Get the current route
+  const [isAuth, setIsAuth] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [role, setRole] = useState("");
+  const location = useLocation();
 
   useEffect(() => {
-    const noAuthRequiredRoutes = ["/login", "/register", "/resetpassword"];
-    if (noAuthRequiredRoutes.includes(location.pathname)) {
-      return;
-    }
+    const noAuthRoutes = ["/", "/aboutus", "/login", "/register"];
+    if (location.pathname == "/resetpassword") return;
+
     const getData = async () => {
       const token = localStorage.getItem("token");
-      console.log(token);
-      if (!token) {
-        setIsAuthenticated(false);
-        toast.error("You are not logged in!");
-        navigate("/login");
-        return;
-      }
-      try {
-        const res = await axios.get("http://localhost:3000/api/debates/list", {
-          headers: {
-            Authorization: `Bearer ${token}`,
+      if (token) {
+        setIsLoading(true);
+        try {
+          const res = await axios.get(
+            "http://localhost:3000/api/auth/authcheck",
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          setIsAuth(true);
+          setRole(res.data.role);
+          console.log(isAuth, role);
+          return;
+        } catch (err) {
+          if (!noAuthRoutes.includes(location.pathname)) {
+            toast.error("Session Expired ! Please login again");
+            navigate("/login");
           }
-        });
-        setIsAuthenticated(true);
-      } catch (err) {
-        setIsAuthenticated(false);
-        if (err.response?.data?.message) {
-          toast.error(err.response.data.message);
-        } else {
-          toast.error(err.message);
+        } finally {
+          setIsLoading(false);
         }
-        navigate("/login")
       }
     };
     getData();
-  }, [location.pathname]);
+  }, []);
 
   return (
-    <UserContext.Provider value={{ isAuthenticated, setIsAuthenticated }}>
+    <UserContext.Provider value={{ isAuth, setIsAuth, role, setRole, isLoading }}>
       {children}
     </UserContext.Provider>
   );

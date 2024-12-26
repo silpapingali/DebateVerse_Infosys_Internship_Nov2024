@@ -68,6 +68,15 @@ const Navbar = () => {
           )}
           {isAuth && role == "admin" && (
             <>
+              {/* <NavLink
+                to="/admindashboard"
+                className={({ isActive }) =>
+                  isActive ? "bg-white rounded-xl px-3" : "text-white"
+                }
+                onClick={toggleMenu}
+              >
+                Admin Dashboard
+              </NavLink> */}
               <NavLink
                 to="/admindashboard"
                 className={({ isActive }) =>
@@ -76,6 +85,15 @@ const Navbar = () => {
                 onClick={toggleMenu}
               >
                 Admin Dashboard
+              </NavLink>
+              <NavLink
+                to="/adminusersmanagement"
+                className={({ isActive }) =>
+                  isActive ? "bg-white rounded-xl px-3" : "text-white"
+                }
+                onClick={toggleMenu}
+              >
+                Users Management
               </NavLink>
               <button onClick={logout}>
                 <LogOut className="text-white" />
