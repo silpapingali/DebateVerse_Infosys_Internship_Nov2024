@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "./Navbar";
+
 
 const CreateDebate = () => {
   const [question, setQuestion] = useState("");
@@ -114,7 +114,7 @@ const CreateDebate = () => {
 
   return (
     <div>
-      <Navbar />
+      
       <div style={{ ...formStyle, marginBottom: "8px" }}>
         <h2>New Debate</h2>
         {message && (

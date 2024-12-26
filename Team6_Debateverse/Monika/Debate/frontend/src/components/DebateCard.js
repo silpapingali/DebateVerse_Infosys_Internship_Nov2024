@@ -2,11 +2,25 @@ import React, { useState } from "react";
 import { format } from "date-fns";
 import { FaHeart, FaThumbsUp, FaComment } from "react-icons/fa";
 
-const DebateCard = ({ debate, liked = false, Qno, isMine = false, date }) => {
+const DebateCard = ({ debate, liked = false, Qno, isMine = false, date, onLike }) => {
   const [isVotePopup, setIsVotePopup] = useState(false);
+  const [localLiked, setLocalLiked] = useState(liked); // Track like state locally
+  const [voteCounts, setVoteCounts] = useState(debate.options?.map(option => option.votes || 0)); // Track vote counts for each option
 
   const handleLike = () => {
-    console.log("Like clicked!");
+    // Toggle like state locally and trigger callback to update the database
+    setLocalLiked(!localLiked);
+    if (onLike) onLike(!localLiked); // Assuming onLike function is passed as prop to handle like in the parent component
+  };
+
+  const handleVote = (index) => {
+    // Increment vote count for selected option
+    const newVotes = [...voteCounts];
+    newVotes[index] += 1;
+    setVoteCounts(newVotes);
+
+    // Logic to update the votes in your database or send it to the parent component
+    // Example: onVote(index, newVotes); (if necessary)
   };
 
   const formattedDate =
@@ -21,9 +35,7 @@ const DebateCard = ({ debate, liked = false, Qno, isMine = false, date }) => {
 
   return (
     <div
-      className={`rounded-lg p-5 w-full text-white ${
-        isMine ? "bg-blue-600" : "bg-indigo-600"
-      }`}
+      className={`rounded-lg p-5 w-full text-white ${isMine ? "bg-blue-600" : "bg-indigo-600"}`}
     >
       <div className="flex justify-between items-center">
         <h1 className="font-semibold text-sm">
@@ -33,11 +45,9 @@ const DebateCard = ({ debate, liked = false, Qno, isMine = false, date }) => {
         </h1>
         <button
           onClick={handleLike}
-          className={`flex items-center gap-2 font-bold ${
-            liked ? "text-red-500" : ""
-          }`}
+          className={`flex items-center gap-2 font-bold ${localLiked ? "text-red-500" : ""}`}
         >
-          <FaHeart fill={liked ? "red" : "white"} /> {debate.totalLikes || 0}
+          <FaHeart fill={localLiked ? "red" : "white"} /> {debate.totalLikes || 0}
         </button>
       </div>
 
@@ -55,14 +65,22 @@ const DebateCard = ({ debate, liked = false, Qno, isMine = false, date }) => {
         <div className="options w-full">
           {debate.options && debate.options.length > 0 ? (
             debate.options.map((option, index) => (
-              <div
-                key={index}
-                className="flex items-center gap-3 py-2 font-bold"
-              >
+              <div key={index} className="flex items-center gap-3 py-2 font-bold">
                 <span>{`${index + 1}. ${option.answer || "No answer"}`}</span>
-                <button className="flex items-center gap-2">
-                  <FaThumbsUp /> {option.votes || 0}
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    className="flex items-center gap-2"
+                    onClick={() => handleVote(index)}
+                  >
+                    <FaThumbsUp /> {voteCounts[index] || 0}
+                  </button>
+                  <div
+                    className="w-full h-2 bg-gray-400 rounded-full"
+                    style={{
+                      width: `${(voteCounts[index] / Math.max(...voteCounts, 1)) * 100}%`, // Bar length based on votes
+                    }}
+                  ></div>
+                </div>
               </div>
             ))
           ) : (
