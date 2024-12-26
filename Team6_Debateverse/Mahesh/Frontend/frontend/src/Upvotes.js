@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
-import Navbar from "./Navbar"; // Ensure you import your Navbar component
+import Navbar from "./Navbar"; 
 
 function Upvotes() {
   const location = useLocation();
@@ -9,7 +9,7 @@ function Upvotes() {
   const { debateId } = location.state || {};
   const [debate, setDebate] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [remainingVotes, setRemainingVotes] = useState(10); // Initialize with 10 votes
+  const [remainingVotes, setRemainingVotes] = useState(10); 
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -94,7 +94,7 @@ function Upvotes() {
       })
       .then((response) => {
         alert("Votes submitted successfully!");
-        navigate('/debates'); // Navigate back to the debates page
+        navigate('/debates'); 
       })
       .catch((error) => {
         console.error("Error submitting votes:", error);
@@ -169,7 +169,7 @@ const styles = {
     marginBottom: "20px",
     fontSize: "24px",
     fontWeight: "bold",
-    textAlign: "left", // Align title to the left
+    textAlign: "left", 
   },
   optionsContainer: {
     marginBottom: "20px",
@@ -191,9 +191,9 @@ const styles = {
   },
   voteButtons: {
     display: "flex",
-    flexDirection: "row", // Align buttons horizontally
+    flexDirection: "row", 
     alignItems: "center",
-    gap: "10px", // Add space between buttons
+    gap: "10px", 
   },
   voteButton: {
     backgroundColor: "#4caf50",
@@ -210,7 +210,7 @@ const styles = {
     border: "none",
     borderRadius: "5px",
     cursor: "pointer",
-    marginRight: "10px", // Add margin to separate from the submit button
+    marginRight: "10px", 
   },
   submitButton: {
     backgroundColor: "#2196F3",
@@ -222,8 +222,8 @@ const styles = {
   },
   buttonContainer: {
     display: "flex",
-    justifyContent: "flex-start", // Align buttons to the left
-    marginTop: "20px", // Add margin to separate from the options
+    justifyContent: "flex-start", 
+    marginTop: "20px", 
   },
 };
 

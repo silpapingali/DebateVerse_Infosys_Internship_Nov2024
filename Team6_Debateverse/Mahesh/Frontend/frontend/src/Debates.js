@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Bar } from "react-chartjs-2"; // Import Bar chart
-import Navbar from "./Navbar"; // Ensure you import your Navbar component
+import { Bar } from "react-chartjs-2"; 
+import Navbar from "./Navbar"; 
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
 import { jwtDecode } from 'jwt-decode';
-import { faker } from '@faker-js/faker'; // Import faker
+import { faker } from '@faker-js/faker'; 
 
-// Register the necessary components for Chart.js
+
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 function Debates() {
@@ -17,7 +17,7 @@ function Debates() {
   const [votesGreaterThan, setVotesGreaterThan] = useState(0);
   const [exactMatch, setExactMatch] = useState(false);
   const [postedAfter, setPostedAfter] = useState(null);
-  const [showMore, setShowMore] = useState(false); // State to control showing more debates
+  const [showMore, setShowMore] = useState(false); 
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -29,10 +29,10 @@ function Debates() {
         },
       })
       .then((response) => {
-        // Map through the debates to add random names
+        
         const debatesWithRandomNames = response.data.map(debate => ({
           ...debate,
-          created_by: faker.name.fullName(), // Generate a random name
+          created_by: faker.name.fullName(), 
         }));
         setDebates(debatesWithRandomNames);
       })
@@ -40,10 +40,9 @@ function Debates() {
   }, []);
 
   useEffect(() => {
-    // Fetch debates on component mount
+   
     fetchDebates();
-  }, [likesGreaterThan, votesGreaterThan, exactMatch, postedAfter, searchTerm]); // Add dependencies for filtering
-
+  }, [likesGreaterThan, votesGreaterThan, exactMatch, postedAfter, searchTerm]); 
   const fetchDebates = async () => {
     try {
       const response = await axios.get(

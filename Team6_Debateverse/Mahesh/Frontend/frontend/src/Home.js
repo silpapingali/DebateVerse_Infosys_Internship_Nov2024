@@ -117,18 +117,18 @@ function Home() {
                 }}
               >
                 <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#555' }}>
-                  {debate.likes} likes {/* Updated to display likes as a number */}
+                  {debate.likes} likes 
                 </span>
                 <button
                   className="btn btn-light"
-                  // The button is disabled to prevent any action
+                  n
                   disabled
                   style={{
                     fontSize: '30px',
                     color: 'red',
                     border: 'none',
                     background: 'none',
-                    cursor: 'not-allowed', // Change cursor to indicate it's not clickable
+                    cursor: 'not-allowed', 
                     marginRight: '5px',
                   }}
                 >
@@ -153,7 +153,7 @@ function Home() {
                         }}
                       >
                         <strong>{index + 1}. </strong>
-                        {option.text} - {option.upvotes || 0} votes {/* Display total votes */}
+                        {option.text} - {option.upvotes || 0} votes 
                       </div>
                     ))
                   ) : (
@@ -165,7 +165,7 @@ function Home() {
                     {debate.options && debate.options.length > 0 ? (
                       <Bar
                         data={{
-                          labels: debate.options.map((_, index) => (index + 1).toString()), // Use indices as labels
+                          labels: debate.options.map((_, index) => (index + 1).toString()), 
                           datasets: [
                             {
                               label: 'Vote Distribution',
@@ -176,14 +176,14 @@ function Home() {
                         }}
                         options={{
                           responsive: true,
-                          maintainAspectRatio: false, // Allow the graph to fill the container
+                          maintainAspectRatio: false, 
                           scales: {
                             y: {
                               beginAtZero: true,
                             },
                           },
                         }}
-                        style={{ width: '100%', height: '150px' }} // Set width and height for the bar graph
+                        style={{ width: '100%', height: '150px' }} 
                       />
                     ) : (
                       <p>No options available for bar graph.</p>
