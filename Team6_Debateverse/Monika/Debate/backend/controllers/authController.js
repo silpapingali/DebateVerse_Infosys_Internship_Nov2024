@@ -1,7 +1,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const db = require('../config/db');
-const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
+
 const dotenv = require('dotenv');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
@@ -9,105 +9,121 @@ const crypto = require('crypto');
 
 dotenv.config();
 
+JWT_SECRET_KEY="f53164bbd2e0ba3c94646afeffcbf2a1451cac38305c5d0ed9433d43ba02e326f6a62bef0c1fab65d07deb961677033dc0b26e4e79626e86220ab8561a1c75f5";
 
-// Signup Logic
+
+
+
 exports.signup = async (req, res) => {
-    const { email, password } = req.body;
+  const { username, email, password } = req.body;
 
-    db.query('SELECT * FROM users WHERE email = ?', [email], async (err, results) => {
-        if (err) return res.status(500).json({ message: 'Database error' });
-
-        if (results.length > 0)
-            return res.status(400).json({ message: 'Email already exists' });
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        db.query(
-            'INSERT INTO users (email, password) VALUES (?, ?)',
-            [email, hashedPassword],
-            (err) => {
-                if (err)
-                    return res.status(500).json({ message: 'Error inserting user' });
-                res.status(201).json({ message: 'User registered successfully' });
-            }
-        );
-    });
-};
-
-// Login Logic
-exports.login = (req, res) => {
-    const { email, password } = req.body;
-
-    // Validate email and password presence
-  if (!email || !password) {
-    return res.status(400).json({ message: 'Email and password are required' });
-  }
-
-  // Query to find the user by email
-  db.query('SELECT * FROM users WHERE email = ?', [email], (err, results) => {
-    if (err) {
-      return res.status(500).json({ message: 'Database error' });
-    }
-
-    if (results.length === 0) {
-      return res.status(400).json({ message: 'Invalid email or password' });
-    }
-
-    const user = results[0];
-
-    // Compare the entered password with the hashed password in the database
-    bcrypt.compare(password, user.password, (err, isMatch) => {
+  
+  db.query('SELECT * FROM users WHERE email = ?', [email], async (err, results) => {
       if (err) {
-        return res.status(500).json({ message: 'Error comparing passwords' });
+          return res.status(500).json({ message: 'Database error' });
       }
 
-      if (!isMatch) {
-        return res.status(400).json({ message: 'Invalid email or password' });
+      if (results.length > 0) {
+          return res.status(400).json({ message: 'Email already exists' });
       }
 
-      // Password is correct, generate JWT token
-      const token = jwt.sign(
-        { id: user.id, email: user.email, role: user.role },
-        JWT_SECRET_KEY,
-        { expiresIn: '1h' }
-      );
+      try {
+          
+          const hashedPassword = await bcrypt.hash(password, 10);
 
-      // Send back the token
-      res.status(200).json({ message: 'Login successful', token });
-    });
+          
+          db.query(
+              'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
+              [username, email, hashedPassword],
+              (err) => {
+                  if (err) {
+                      return res.status(500).json({ message: 'Error inserting user' });
+                  }
+                  res.status(201).json({ message: 'User registered successfully' });
+              }
+          );
+      } catch (error) {
+          res.status(500).json({ message: 'Server error while hashing password' });
+      }
   });
 };
+
+
+exports.login = async(req, res) => {
+  const { email, password } = req.body;
+
+  
+  if (!email || !password) {
+      return res.status(400).json({ message: 'Email and password are required' });
+  }
+
+  
+  db.query('SELECT * FROM users WHERE email = ?', [email], (err, results) => {
+      if (err) {
+          console.error('Database error:', err);
+          return res.status(500).json({ message: 'Database error' });
+      }
+
+      if (results.length === 0) {
+          return res.status(400).json({ message: 'Invalid email or password' });
+      }
+
+      const user = results[0];
+
+      
+      bcrypt.compare(password, user.password, (err, isMatch) => {
+          if (err) {
+              console.error('Password comparison error:', err);
+              return res.status(500).json({ message: 'Error comparing passwords' });
+          }
+
+          if (!isMatch) {
+              return res.status(400).json({ message: 'Invalid email or password' });
+          }
+
+         
+          const token = jwt.sign(
+              { id: user.id, email: user.email, role: user.role },
+              JWT_SECRET_KEY,
+              { expiresIn: '1h' }
+          );
+
+          
+          res.status(200).json({ message: 'Login successful', token });
+      });
+  });
+}
   
   
-  // Forgot Password Route (OTP Generation)
+ 
 exports.forgotPassword = async (req, res) => {
   const { email } = req.body;
 
-  // Validate email
+  
   if (!email) {
     return res.status(400).json({ message: 'Email is required' });
   }
 
   try {
-    // Generate OTP and expiry time
-    const otp = Math.floor(100000 + Math.random() * 900000); // 6-digit OTP
-    const otpHash = crypto.createHash('sha256').update(otp.toString()).digest('hex'); // Hash OTP
-    const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes expiry
+    
+    const otp = Math.floor(100000 + Math.random() * 900000); 
+    const otpHash = crypto.createHash('sha256').update(otp.toString()).digest('hex'); 
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000); 
 
-    // Save OTP to database
+    
     const saveOtpQuery = "INSERT INTO otp (email, otp, otp_expires, used) VALUES (?, ?, ?, FALSE) ON DUPLICATE KEY UPDATE otp=?, otp_expires=?, used=FALSE";
     await db.query(saveOtpQuery, [email, otpHash, otpExpires, otpHash, otpExpires]);
 
-    // Configure nodemailer (Use environment variables for security)
+   
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
         user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS, // Use app password or OAuth2 for Gmail
+        pass: process.env.EMAIL_PASS, 
       },
     });
 
-    // Send OTP via email
+    
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
@@ -166,14 +182,12 @@ exports.resetPassword = async (req, res) => {
   }
 
   try {
-    // Verify JWT token
+    
     const decoded = jwt.verify(token, JWT_SECRET_KEY);
     const email = decoded.email;
-
-    // Hash the new password securely
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Update the password in the database
+    
     const updatePasswordQuery = "UPDATE users SET password = ? WHERE email = ?";
     await db.query(updatePasswordQuery, [hashedPassword, email]);
 
