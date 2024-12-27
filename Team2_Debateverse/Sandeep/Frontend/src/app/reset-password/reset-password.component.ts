@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-reset-password',
@@ -13,15 +14,27 @@ export class ResetPasswordComponent {
   password: string = '';
   confirmPassword: string = '';
 
+  constructor(private http: HttpClient, private router: Router) {}
+
   onSubmit() {
     console.log('Reset Password form submitted');
-    console.log(`Password: ${this.password}, Confirm Password: ${this.confirmPassword}`);
 
     if (this.password === this.confirmPassword) {
-      console.log('Password reset successfully!');
-      // Add your password reset logic here
+      const resetData = { password: this.password };
+
+      // Call backend to reset password
+      this.http.post('http://localhost:3000/api/reset-password', resetData).subscribe(
+        (response: any) => {
+          alert('Password reset successfully!');
+          this.router.navigate(['/login']);
+        },
+        (error) => {
+          console.error('Error resetting password:', error);
+          alert('Failed to reset password. Please try again.');
+        }
+      );
     } else {
-      console.error('Passwords do not match!');
+      alert('Passwords do not match!');
     }
   }
 }

@@ -1,0 +1,69 @@
+<div class="container">
+  <!-- Search Bar -->
+  <div class="filter-container">
+    <div class="search-bar">
+      <input type="text" [(ngModel)]="searchKeyword" name="searchKeyword" value="{{ searchKeyword }}"
+        placeholder="Search by name" />
+      <button (click)="searchQuery()">Search</button>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters">
+      <label>
+        <input type="checkbox" [(ngModel)]="exactMatch" name="exactMatch" [value]="exactMatch" />
+        Exact Match
+      </label>
+
+      <!-- Likes Slider -->
+      <label>
+        Likes greater than: {{ likesThreshold }}
+        <input type="range" [(ngModel)]="likesThreshold" name="likesThreshold" min="0" max="100" step="1" />
+      </label>
+
+      <!-- Questions Slider -->
+      <label>
+        Votes greater than: {{ votesThreshold }}
+        <input type="range" [(ngModel)]="votesThreshold" name="votesThreshold" min="0" max="100" step="1" />
+      </label>
+
+      <!-- Joined After Date -->
+      <label>
+        Joined After
+        <input type="date" [(ngModel)]="joinedAfter" name="joinedAfter" [value]="joinedAfter || ''" />
+      </label>
+      <button (click)="resetFilters()">Reset Filters</button>
+    </div>
+    
+  </div>
+
+  <!-- User List -->
+  <div class="user-list">
+    <div *ngFor="let debate of filteredDebates" class="user-card">
+      <h3>{{ debate.question }}</h3>
+      @for (option of debate.options;track $index){
+        <p>{{option}} : {{debate.voteCount[$index]}}</p>
+      }
+      <p>{{ debate.likes }} likes</p>
+      <p>Added On: {{ debate.addedDate | date: 'short'}}</p>
+      <button (click)="vote(debate._id)" >Vote</button>
+    </div>
+  </div>
+</div>
+<!-- Modal for voting -->
+<div *ngIf="showModal" class="modal">
+  <div class="modal-content">
+    <span class="likes"><span *ngIf="liked.includes(selectedDebate)"> You liked</span>{{ selectedDebate?.likes }} <span class="heart" (click)="likecount()">&#9829;</span></span>
+    <h3>{{ selectedDebate?.question }}</h3>
+
+    <!-- Display vote bars for each option -->
+    <div class="options" *ngFor="let option of selectedDebate?.options; let i = index">
+      <p>{{ option }}</p>
+      <div class="vote-bar" [style.width.%]="getVotePercentage(i)">
+        <span class="vote-count">{{ selectedDebate?.votes[i] }}</span>
+      </div>
+      <button (click)="submitVote(i)">Vote for this option</button>
+    </div>
+    <button class="close" (click)="closeModal()">close</button>
+  </div>
+</div>
+

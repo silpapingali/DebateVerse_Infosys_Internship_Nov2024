@@ -1,13 +1,18 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { FormsModule } from '@angular/forms'; // Import FormsModule if using ngModel
+import { FormsModule } from '@angular/forms'; // For ngModel
+import { CommonModule } from '@angular/common'; // For *ngFor and *ngIf
+import { AppComponent } from './app.component';
 
 @NgModule({
+  declarations: [
+    AppComponent,
+  ],
   imports: [
     BrowserModule,
-    FormsModule, // Add FormsModule if needed
+    FormsModule, // Import FormsModule for ngModel
+    CommonModule, // Import CommonModule for *ngFor and other structural directives
   ],
-  providers: [],
-  bootstrap: [],  // No need to bootstrap AppComponent here
+  bootstrap: [AppComponent],
 })
 export class AppModule {}

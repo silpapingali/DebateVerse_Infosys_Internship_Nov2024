@@ -1,0 +1,18 @@
+<div class="create-debate-container">
+  <h2>Create a New Debate</h2>
+  <form (submit)="createDebate()">
+    <label for="question">Debate Question</label>
+    <input type="text" id="question" [(ngModel)]="debate.question" name="question" required />
+
+    <h3>Options:</h3>
+    
+    <div>
+      @for(option of debate.options;track $index){
+      <input type="text" [(ngModel)]="debate.options[$index]" name="option{{ $index }}" placeholder="Option {{ $index + 1 }}"required />
+      <button type="button" (click)="removeOption($index)">Remove</button>}
+    </div>
+    <button type="button" (click)="addOption()">Add Option</button>
+    <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
+    <button type="submit">Create Debate</button>
+  </form>
+</div>
