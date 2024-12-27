@@ -2,6 +2,7 @@ const debatesModel = require("../models/debatesModel");
 const likesModel = require("../models/likesModel");
 
 const AllDebates = async (req, res) => {
+  //null checks
   const createdBy = req.user.email.split("@")[0];
   const { userId } = req.user;
   const { page } = req.query;

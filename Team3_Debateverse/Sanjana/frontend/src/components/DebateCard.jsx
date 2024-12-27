@@ -6,6 +6,8 @@ import { likeRequest, setLiked } from "../redux/slices/allDebatesSlice";
 import Vote from "./Vote";
 import { FaPlus, FaMinus } from "react-icons/fa";
 
+
+
 const DebateCard = ({ debate, liked, Qno, isMine }) => {
   const dispatch = useDispatch();
   // console.log(liked);
