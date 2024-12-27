@@ -41,19 +41,18 @@ db.connect((err) => {
     console.log("Connected to the database");
 });
 
-// Signup Route
-app.post("/registration", (req, res) => {
+// Registration route
+app.post('/registration', async (req, res) => {
     const { name, email, password, role } = req.body;
 
+    // Validate the role
     if (role !== "user" && role !== "admin") {
         return res.status(400).json({ message: 'Invalid role. Choose either "user" or "admin".' });
     }
 
-    const hashedPassword = bcrypt.hashSync(password, 10);
-
-    // Check if the email already exists
+    // Check if the email already exists in the database
     const checkEmailQuery = "SELECT * FROM registration WHERE email = ?";
-    db.query(checkEmailQuery, [email], (err, data) => {
+    db.query(checkEmailQuery, [email], async (err, data) => {
         if (err) {
             console.error("Error checking email:", err);
             return res.status(500).json({ message: "Error checking email availability" });
@@ -63,15 +62,28 @@ app.post("/registration", (req, res) => {
             return res.status(400).json({ message: "Email already exists. Please use a different email." });
         }
 
+        // Hash the password
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Insert the new user into the database
         const sql = "INSERT INTO registration (name, email, password, role) VALUES (?)";
         const values = [name, email, hashedPassword, role];
 
-        db.query(sql, [values], (err) => {
+        db.query(sql, [values], (err, result) => {
             if (err) {
                 console.error("Error inserting data:", err);
                 return res.status(500).json({ message: "Error during registration" });
             }
-            return res.status(201).json({ message: "Registration successful" });
+
+            // Generate a JWT token for the user
+            const token = jwt.sign(
+                { id: result.insertId, email, role },
+                'your_secret_key', // Use an environment variable in production
+                { expiresIn: '1h' }
+            );
+
+            // Send the token as a response
+            return res.status(201).json({ message: "Registration successful", token });
         });
     });
 });
@@ -223,8 +235,8 @@ app.post('/debatetopic', authenticateToken, (req, res) => {
 
         const debateId = debateResult.insertId;
         const optionsData = options.map(option => [option.text, debateId]);
-
         const insertOptionsQuery = 'INSERT INTO option (text, debate_id) VALUES ?';
+
         db.query(insertOptionsQuery, [optionsData], (err) => {
             if (err) {
                 console.error('Error inserting options:', err);
@@ -235,6 +247,7 @@ app.post('/debatetopic', authenticateToken, (req, res) => {
         });
     });
 });
+
 
 // Fetch debates
 app.get('/debatetopic', authenticateToken, (req, res) => {

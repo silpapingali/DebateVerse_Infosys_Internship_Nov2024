@@ -1,6 +1,16 @@
 <div class="main-container">
   <header>
     <h1>Welcome to DebateVerse</h1>
+    <nav>
+      <ul>
+        <!-- Show Login button only if the user is not logged in -->
+        <li *ngIf="!isLoggedIn"><a routerLink="/login" class="button-link">Login</a></li>
+        <!-- Show Dashboard and Logout buttons only if the user is logged in -->
+        <li *ngIf="isLoggedIn"><a (click)="dashboard()" class="button-link">Dashboard</a></li>
+        <li *ngIf="isLoggedIn"><a routerLink="/overall-debates" class="button-link">Debates</a></li>
+        <li *ngIf="isLoggedIn"><a (click)="logout()" class="button-link">Logout</a></li>
+      </ul>
+    </nav>
   </header>
 
   <!-- Router Outlet -->

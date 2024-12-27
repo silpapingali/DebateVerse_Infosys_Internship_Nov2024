@@ -4,6 +4,7 @@ const {signup,login,
     verifyOtp,resetPassword,forgotPassword
 } = require('../controllers/authController');
 
+
 // User registration (Signup)
 router.post('/signup', signup);
 

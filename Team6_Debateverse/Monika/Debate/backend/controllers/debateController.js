@@ -80,10 +80,10 @@ const getDebateDetails = async (req, res) => {
     });
 };
 
-// Fetch all debates
+// Get all debates with pagination
 const allDebates = async (req, res) => {
-    const limit = parseInt(req.query.limit) || 10; // Pagination limit
-    const offset = parseInt(req.query.offset) || 0; // Pagination offset
+    const limit = parseInt(req.query.limit) || 10; 
+    const offset = parseInt(req.query.offset) || 0; 
 
     const query = `
       SELECT 
@@ -110,7 +110,6 @@ const allDebates = async (req, res) => {
             return res.status(500).json({ error: 'Failed to fetch debates' });
         }
 
-        // Format the debates with nested options
         const formattedDebates = results.reduce((acc, row) => {
             const {
                 debate_id, question, created_at, 
@@ -125,12 +124,196 @@ const allDebates = async (req, res) => {
                     text: question,
                     created_on: created_at,
                     options: [],
-                    likes: likes || 0,
+                    total_likes: likes || 0,
                 };
                 acc.push(debate);
             }
 
-            if (option_id) { // Only push options if they exist
+            if (option_id) { 
+                debate.options.push({
+                    id: option_id,
+                    text: option_text,
+                    created_at: option_created_at,
+                    upvotes: upvotes || 0,
+                });
+            }
+
+            return acc;
+        }, []); 
+
+        res.json(formattedDebates);
+    });
+};
+
+
+const recentDebates = async (req, res) => {
+    const limit = parseInt(req.query.limit) || 10; 
+    const offset = parseInt(req.query.offset) || 0; 
+
+    const query = `
+      SELECT 
+          dq.id AS debate_id, 
+          dq.question, 
+          dq.created_at, 
+          o.id AS option_id, 
+          o.option_text, 
+          o.created_at AS option_created_at, 
+          COUNT(DISTINCT v.id) AS upvotes, 
+          COUNT(DISTINCT r.id) AS likes
+      FROM debatequestions dq
+      LEFT JOIN debate_options o ON dq.id = o.question_id
+      LEFT JOIN votes v ON o.id = v.option_id
+      LEFT JOIN reactions r ON dq.id = r.debate_id AND r.action = 'like'
+      GROUP BY dq.id, o.id
+      ORDER BY dq.created_at DESC
+      LIMIT ? OFFSET ?
+    `;
+
+    db.query(query, [limit, offset], (err, results) => {
+        if (err) {
+            console.error('Error fetching recent debates:', err.message);
+            return res.status(500).json({ error: 'Failed to fetch recent debates' });
+        }
+
+        const formattedDebates = results.reduce((acc, row) => {
+            const {
+                debate_id, question, created_at, 
+                option_id, option_text, option_created_at, 
+                upvotes, likes,
+            } = row;
+
+            let debate = acc.find(d => d.id === debate_id);
+            if (!debate) {
+                debate = {
+                    id: debate_id,
+                    text: question,
+                    created_on: created_at,
+                    options: [],
+                    total_likes: likes || 0,
+                };
+                acc.push(debate);
+            }
+
+            if (option_id) { 
+                debate.options.push({
+                    id: option_id,
+                    text: option_text,
+                    created_at: option_created_at,
+                    upvotes: upvotes || 0,
+                });
+            }
+
+            return acc;
+        }, []); 
+
+        res.json({
+            success: true,
+            debates: formattedDebates,
+        });
+    });
+};
+
+
+const reactions = (req, res) => {
+    const { debateId } = req.params;
+    const userId = req.user?.id; 
+    const { action } = req.body;
+
+    if (!userId) {
+        return res.status(401).json({ error: 'Unauthorized. Please log in.' });
+    }
+
+    if (action !== 'like') {
+        return res.status(400).json({ error: 'Invalid action.' });
+    }
+
+    const checkQuery = `
+        SELECT id 
+        FROM reactions 
+        WHERE debate_id = ? AND user_id = ? AND action = 'like'
+    `;
+
+    db.query(checkQuery, [debateId, userId], (checkErr, checkResult) => {
+        if (checkErr) {
+            console.error('Error checking existing reaction:', checkErr);
+            return res.status(500).json({ error: 'Server error while checking reaction' });
+        }
+
+        if (checkResult.length > 0) {
+            return res.status(409).json({ error: 'You have already liked this debate.' });
+        }
+
+        const insertQuery = `
+            INSERT INTO reactions (debate_id, user_id, action) 
+            VALUES (?, ?, 'like')
+        `;
+
+        db.query(insertQuery, [debateId, userId], (insertErr) => {
+            if (insertErr) {
+                console.error('Error inserting like:', insertErr);
+                return res.status(500).json({ error: 'Server error while inserting reaction' });
+            }
+
+            const likeCountQuery = `
+                SELECT COUNT(id) AS like_count 
+                FROM reactions 
+                WHERE debate_id = ? AND action = 'like'
+            `;
+
+            db.query(likeCountQuery, [debateId], (countErr, countResult) => {
+                if (countErr) {
+                    console.error('Error fetching like count:', countErr);
+                    return res.status(500).json({ error: 'Server error while fetching like count' });
+                }
+
+                res.status(201).json({ success: true, like_count: countResult[0].like_count });
+            });
+        });
+    });
+};
+
+const searchDebate = (req, res) => {
+    const { keyword } = req.query;
+
+    if (!keyword) {
+        return res.status(400).json({ message: "Keyword is required" });
+    }
+
+    const query = `
+        SELECT dq.id AS debate_id, dq.question, dq.created_at, 
+               o.id AS option_id, o.option_text, o.created_at AS option_created_at, 
+               COUNT(DISTINCT v.id) AS upvotes, COUNT(DISTINCT r.id) AS likes
+        FROM debatequestions dq
+        LEFT JOIN debate_options o ON dq.id = o.question_id
+        LEFT JOIN votes v ON o.id = v.option_id
+        LEFT JOIN reactions r ON dq.id = r.debate_id AND r.action = 'like'
+        WHERE dq.question LIKE ?
+        GROUP BY dq.id, o.id
+        ORDER BY dq.created_at DESC
+    `;
+
+    db.query(query, [`%${keyword}%`], (err, results) => {
+        if (err) {
+            console.error('Error searching debates:', err.message);
+            return res.status(500).json({ error: 'Failed to search debates' });
+        }
+
+        const formattedDebates = results.reduce((acc, row) => {
+            const { debate_id, question, created_at, option_id, option_text, option_created_at, upvotes, likes } = row;
+
+            let debate = acc.find(d => d.id === debate_id);
+            if (!debate) {
+                debate = {
+                    id: debate_id,
+                    text: question,
+                    created_on: created_at,
+                    options: [],
+                    total_likes: likes || 0,
+                };
+                acc.push(debate);
+            }
+
+            if (option_id) {
                 debate.options.push({
                     id: option_id,
                     text: option_text,
@@ -142,131 +325,12 @@ const allDebates = async (req, res) => {
             return acc;
         }, []);
 
-        res.json(formattedDebates);
+        res.json({ success: true, debates: formattedDebates });
     });
 };
-
-// Handle reactions (like)
-const reactions = (req, res) => {
-    const { debateId } = req.params;
-    const { action } = req.body;
-    const userId = req.user?.id;
-
-    if (!userId) {
-        return res.status(401).json({ error: 'Unauthorized. Please log in.' });
-    }
-
-    if (action !== 'like') {
-        return res.status(400).json({ error: 'Invalid action.' });
-    }
-
-    const checkQuery = `SELECT id FROM reactions WHERE debate_id = ? AND user_id = ? AND action = 'like'`;
-    db.query(checkQuery, [debateId, userId], (checkErr, checkResult) => {
-        if (checkErr) {
-            console.error('Error checking existing reaction:', checkErr);
-            return res.status(500).json({ error: 'Server error' });
-        }
-
-        if (checkResult.length > 0) {
-            return res.status(409).json({ error: 'Already liked.' });
-        }
-
-        const query = `INSERT INTO reactions (debate_id, user_id, action) VALUES (?, ?, ?)`;
-        db.query(query, [debateId, userId, action], (err) => {
-            if (err) {
-                console.error('Error inserting like:', err);
-                return res.status(500).json({ error: 'Server error' });
-            }
-
-            const likeCountQuery = `SELECT COUNT(id) AS like_count FROM reactions WHERE debate_id = ? AND action = 'like'`;
-            db.query(likeCountQuery, [debateId], (countErr, countResult) => {
-                if (countErr) {
-                    console.error('Error fetching like count:', countErr);
-                    return res.status(500).json({ error: 'Server error' });
-                }
-
-                res.json({ likeCount: countResult[0].like_count });
-            });
-        });
-    });
-};
-
-const searchDebate = (req, res) => {
-    const { keyword, page = 1, limit = 10 } = req.query;
-
-    // Validate input
-    if (!keyword || typeof keyword !== 'string') {
-        return res.status(400).json({ message: 'Keyword is required for search.' });
-    }
-
-    const trimmedKeyword = keyword.trim();
-    if (!trimmedKeyword) {
-        return res.status(400).json({ message: 'Keyword must not be empty.' });
-    }
-
-    const offset = (page - 1) * limit;
-
-    const query = `
-        SELECT dq.id AS debate_id, dq.question, dq.created_at,
-               o.id AS option_id, o.option_text, o.created_at AS option_created_at,
-               COUNT(DISTINCT v.id) AS upvotes,
-               COUNT(DISTINCT r.id) AS likes
-        FROM debatequestions dq
-        LEFT JOIN debate_options o ON dq.id = o.question_id
-        LEFT JOIN votes v ON o.id = v.option_id
-        LEFT JOIN reactions r ON dq.id = r.debate_id AND r.action = 'like'
-        WHERE dq.question LIKE ?
-        GROUP BY dq.id, o.id
-        ORDER BY dq.created_at DESC
-        LIMIT ? OFFSET ?;
-    `;
-
-    const searchParam = `%${trimmedKeyword}%`;
-
-    // Execute query
-    db.query(query, [searchParam, parseInt(limit), parseInt(offset)], (err, results) => {
-        if (err) {
-            console.error('Error fetching search results:', err);
-            return res.status(500).json({ message: 'Server error while searching for debates.' });
-        }
-
-        // Format debates
-        const formattedDebates = results.reduce((acc, row) => {
-            const { debate_id, question, created_at, option_id, option_text, option_created_at, upvotes, likes } = row;
-
-            let debate = acc.find(d => d.id === debate_id);
-            if (!debate) {
-                debate = {
-                    id: debate_id,
-                    text: question,
-                    created_on: created_at,
-                    options: [],
-                    likes: likes || 0
-                };
-                acc.push(debate);
-            }
-
-            if (option_id) {
-                debate.options.push({
-                    id: option_id,
-                    text: option_text,
-                    created_at: option_created_at,
-                    upvotes: upvotes || 0
-                });
-            }
-
-            return acc;
-        }, []);
-
-        res.status(200).json({ debates: formattedDebates });
-    });
-};
-
-
 const upvote = (req, res) => {
     const { debateId, optionId } = req.params;
-    const userId = req.user?.id; // Assuming user is authenticated and their ID is in `req.user`
-
+    const userId = req.user?.id; 
     if (!userId) {
         return res.status(401).json({ error: 'Unauthorized. Please log in.' });
     }
@@ -289,7 +353,7 @@ const upvote = (req, res) => {
                 return res.status(500).json({ error: 'Server error' });
             }
 
-            // Get the current vote count for the option
+            
             const voteCountQuery = `SELECT COUNT(id) AS vote_count FROM votes WHERE option_id = ?`;
             db.query(voteCountQuery, [optionId], (countErr, countResult) => {
                 if (countErr) {
@@ -302,11 +366,13 @@ const upvote = (req, res) => {
         });
     });
 };
+
 module.exports = {
     createDebate,
+    searchDebate,
     getDebateDetails,
     allDebates,
     reactions,
-    searchDebate ,
-    upvote
+    recentDebates,
+    upvote,
 };

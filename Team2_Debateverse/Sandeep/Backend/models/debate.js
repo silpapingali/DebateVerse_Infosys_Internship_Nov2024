@@ -1,10 +1,14 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
-const debateSchema = new mongoose.Schema({
-  title: { type: String, required: true },
-  description: { type: String, required: true },
-  participants: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-  createdAt: { type: Date, default: Date.now },
-});
+const DebateSchema = new mongoose.Schema({
+  question: { type: String, required: true },
+  options: [{ type: String, required: true }],
+  likes: { type: Number, default: 0 }, // Field to track the likes for the debate
+  voteCount: [{ type: Number, default: 0 }], // Array of vote counts for each option
+  addedDate: { type: Date, default: Date.now }, // Added date (auto-set to current date)
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  voted: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+}, { timestamps: true });
 
-module.exports = mongoose.model("Debate", debateSchema);
+const Debate = mongoose.model('Debate', DebateSchema);
+module.exports = Debate;

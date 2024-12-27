@@ -4,6 +4,7 @@ import { FaHeart } from "react-icons/fa";
 import { store } from "../App";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 
 const DebatesSearch = () => {
   const { token } = useContext(store);
@@ -15,6 +16,7 @@ const DebatesSearch = () => {
   const [postedAfter, setPostedAfter] = useState("");
   const [exactMatch, setExactMatch] = useState(false);
   const navigate = useNavigate();
+  const role = localStorage.getItem("role");
 
   useEffect(() => {
     if (!token) {
@@ -30,13 +32,13 @@ const DebatesSearch = () => {
       })
       .then((res) => {
         setDebates(res.data);
-        setFilteredDebates(res.data);
+        setFilteredDebates(res.data); 
       })
       .catch((err) => console.error("Error fetching debates:", err));
   }, [token, navigate]);
 
   const filterDebates = () => {
-    let filtered = debates;
+    let filtered = [...debates]; 
 
     if (searchTerm) {
       filtered = filtered.filter((debate) =>
@@ -47,13 +49,17 @@ const DebatesSearch = () => {
     }
 
     if (likesFilter > 0) {
-      filtered = filtered.filter((debate) => debate.likes > likesFilter);
+      filtered = filtered.filter((debate) => {
+        const likes = debate.likes || 0;
+        return likes >= likesFilter;
+      });
     }
 
     if (votesFilter > 0) {
-      filtered = filtered.filter((debate) =>
-        debate.votes ? debate.votes.reduce((a, b) => a + b, 0) > votesFilter : false
-      );
+      filtered = filtered.filter((debate) => {
+        const votes = debate.totalVotes || 0; 
+        return votes >= votesFilter;
+      });
     }
 
     if (postedAfter) {
@@ -74,14 +80,23 @@ const DebatesSearch = () => {
   };
 
   const handleDebateClick = (debate) => {
-    navigate("/moderatedebate", { state: { debate } }); 
+    navigate("/moderatedebate", { state: { debate } });
+  };
+
+  const handleBackToDashboard = () => {
+    // Redirect based on role
+    if (role === "admin") {
+      navigate("/admindashboard");
+    } else {
+      navigate("/userdashboard");
+    }
   };
 
   return (
     <div className="flex flex-col md:flex-row h-screen bg-white/80">
       <div className="w-full md:w-1/4 p-4 bg-white shadow-lg">
         <button
-          onClick={() => navigate("/userdashboard")}
+          onClick={handleBackToDashboard}
           className="mb-6 px-4 py-2 bg-yellow-500 text-white font-bold rounded-lg shadow-md hover:bg-yellow-600"
         >
           Back to Dashboard
@@ -103,7 +118,7 @@ const DebatesSearch = () => {
             type="range"
             min="0"
             max="10000"
-            step="500"
+            step="1"
             value={likesFilter}
             onChange={(e) => setLikesFilter(Number(e.target.value))}
             className="w-full mt-2"
@@ -116,7 +131,7 @@ const DebatesSearch = () => {
             type="range"
             min="0"
             max="25000"
-            step="1000"
+            step="2"
             value={votesFilter}
             onChange={(e) => setVotesFilter(Number(e.target.value))}
             className="w-full mt-2"
@@ -161,6 +176,21 @@ const DebatesSearch = () => {
                 <FaHeart className="text-red-500 mr-2" />
                 <p>{debate.likes || 0} Likes</p>
               </div>
+              <div className="key={debate._id} absolute top-3 right-4 w-1/4">
+              <ResponsiveContainer width="100%" height={150}>
+        <BarChart
+          data={debate.options?.map((opt, idx) => ({
+            name: `Option ${idx + 1}`,  
+            votes: opt.votes || 0,     
+          }))}
+          margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
+        >
+          <XAxis dataKey="name" tick={false} />
+          <YAxis tick={false} />
+          <Bar dataKey="votes" fill="#6a0dad" barSize={20} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
             </div>
           ))
         )}

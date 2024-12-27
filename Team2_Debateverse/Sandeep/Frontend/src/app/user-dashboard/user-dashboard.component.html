@@ -1,0 +1,41 @@
+
+
+<div class="container">
+
+  <h1>Welcome to your dashboard {{ userName }}!</h1>
+
+  <!-- Display Debates -->
+  <div *ngIf="debates.length > 0; else noDebates">
+    <h2>Your Debates</h2>
+    <ul>
+      <li *ngFor="let debate of debates" class="debate-item">
+        <h3 class="debate-question">{{ debate.question }}</h3>
+        
+        <!-- Display debate options with vote counts -->
+        <div class="debate-details">
+          <ul class="vote-list">
+            <li *ngFor="let option of debate.options; let i = index">
+              {{ option }} - Votes: {{ debate.voteCount[i] }}
+            </li>
+          </ul>
+
+          <!-- Display likes -->
+          <p><strong>Likes:</strong> {{ debate.likes }}</p>
+          
+          <!-- Display the date when the debate was added -->
+          <small><strong>Created On:</strong> {{ debate.addedDate | date: 'medium' }}</small>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <!-- No Debates Template -->
+  <ng-template #noDebates>
+    <p>No debates found. Start by creating a new one!</p>
+  </ng-template>
+
+  <!-- Button to Create a New Debate -->
+  <div class="create-debate-button">
+    <button (click)="createDebate()">Create New Debate</button>
+  </div>
+</div>

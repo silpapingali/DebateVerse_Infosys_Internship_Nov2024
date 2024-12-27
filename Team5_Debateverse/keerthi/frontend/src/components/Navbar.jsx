@@ -1,122 +1,133 @@
-import { NavLink, useNavigate } from "react-router-dom";
-import { UserContext } from "../context/UserContext";
-import { useContext, useState } from "react";
-import { LogOut, Menu, X } from "lucide-react";
-import { toast } from "react-toastify";
+import { Link, useNavigate } from "react-router-dom";
+import { FaHome } from "react-icons/fa";
+import { useContext } from "react";
+import { store } from "../App";
 
 const Navbar = () => {
+  const { token, setToken, role, setRole } = useContext(store);
   const navigate = useNavigate();
-  const { isAuth, setIsAuth, role } = useContext(UserContext);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
-
-  const logout = () => {
-    toast.info("Logged out !");
+  const handleLogout = () => {
+    setToken(null);
+    setRole(null);
     localStorage.removeItem("token");
-    setIsAuth(false);
-    toggleMenu();
+    localStorage.removeItem("role");
+    localStorage.removeItem("username");
     navigate("/login");
   };
 
   return (
-    <nav className="fixed w-full bg-orange-500 p-4 md:px-10">
-      <div className="container mx-auto flex justify-between items-center">
-        <button
-          onClick={() => (location.pathname = "/")}
-          className="text-white text-xl font-bold"
-        >
-          DebateHub
-        </button>
-
-        <div className="md:hidden">
-          <button onClick={toggleMenu} className="text-white">
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+    <header className="max-w-screen-2xl mx-auto px-4 py-6">
+      <nav className="flex justify-between items-center">
+        <div>
+          <Link to="/">
+            <FaHome className="text-primary text-3xl ml-6" />
+          </Link>
         </div>
-
-        <div
-          className={`${
-            isMenuOpen ? "block" : "hidden"
-          } md:flex flex flex-col md:flex-row items-center md:justify-center gap-4 md:gap-14 absolute md:relative top-14 md:top-0 left-0 w-full bg-orange-500 md:w-full p-4 md:p-0`}
-        >
-          {isAuth && role == "user" && (
+        <div className="flex space-x-6">
+          {!token ? (
             <>
-              <NavLink
-                to="/userdashboard"
-                className={({ isActive }) =>
-                  isActive ? "bg-white rounded-xl px-3" : "text-white"
-                }
-                onClick={toggleMenu}
-              >
-                Dashboard
-              </NavLink>
-              <NavLink
-                to="/userdebates"
-                className={({ isActive }) =>
-                  isActive ? "bg-white rounded-xl px-3" : "text-white"
-                }
-                onClick={toggleMenu}
-              >
-                All Debates
-              </NavLink>
-
-              <button onClick={logout}>
-                <LogOut className="text-white" />
-              </button>
-            </>
-          )}
-          {isAuth && role == "admin" && (
-            <>
-              <NavLink
-                to="/admindashboard"
-                className={({ isActive }) =>
-                  isActive ? "bg-white rounded-xl px-3" : "text-white"
-                }
-                onClick={toggleMenu}
-              >
-                Admin Dashboard
-              </NavLink>
-              <button onClick={logout}>
-                <LogOut className="text-white" />
-              </button>
-            </>
-          )}
-          {!isAuth && (
-            <>
-              <NavLink
-                to="/aboutus"
-                className={({ isActive }) =>
-                  isActive ? "bg-white rounded-xl px-3" : "text-white"
-                }
-                onClick={toggleMenu}
-              >
-                About us
-              </NavLink>
-              <NavLink
-                to="/register"
-                className={({ isActive }) =>
-                  isActive ? "bg-white rounded-xl px-3" : "text-white"
-                }
-                onClick={toggleMenu}
-              >
-                Register
-              </NavLink>
-              <NavLink
-                to="/login"
-                className={({ isActive }) =>
-                  isActive ? "bg-white rounded-xl px-3" : "text-white"
-                }
-                onClick={toggleMenu}
-              >
+              <Link to="/about" className="text-primary font-primary font-bold">
+                About
+              </Link>
+              <Link to="/login" className="text-primary font-primary font-bold">
                 Login
-              </NavLink>
+              </Link>
+            </>
+          ) : (
+            <>
+              {role === "admin" ? (
+                <Link
+                  to="/admindashboard"
+                  className="text-primary font-primary font-bold"
+                >
+                  Dashboard
+                </Link>
+              ) : (
+                <Link
+                  to="/userdashboard"
+                  className="text-primary font-primary font-bold"
+                >
+                  User Dashboard
+                </Link>
+              )}
+              <Link
+                to="/debatesearch"
+                className="text-primary font-primary font-bold"
+              >
+                Debates
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="text-primary font-primary font-bold bg-transparent border-none cursor-pointer"
+              >
+                Logout
+              </button>
             </>
           )}
         </div>
-      </div>
-    </nav>
+      </nav>
+    </header>
   );
 };
 
 export default Navbar;
+
+
+// import { Link, useNavigate } from "react-router-dom";
+// import { FaHome } from "react-icons/fa";
+// import { useContext } from "react";
+// import { store } from "../App";
+
+// const Navbar = () => {
+//   const {token, setToken,role, setRole} = useContext(store); 
+//   const navigate = useNavigate(); 
+
+//   const handleLogout = () => {
+//     setToken(null); 
+//     setRole(null); 
+//     localStorage.removeItem('token');
+//     localStorage.removeItem('role');
+//     localStorage.removeItem('username');
+//     navigate('/login');
+//   };
+
+//   return (
+//     <header className="max-w-screen-2xl mx-auto px-4 py-6">
+//       <nav className="flex justify-between items-center">
+//         <div>
+//           <Link to='/'>
+//             <FaHome className="text-primary text-3xl ml-6" />
+//           </Link>
+//         </div>
+
+//         <div className="flex space-x-6">
+//           {!token ? (
+//             <>
+//               <Link to='/about' className="text-primary font-primary font-bold">About</Link>
+//               <Link to='/login' className="text-primary font-primary font-bold">Login</Link>
+//             </>
+//           ) : (
+//             <>
+//               {role === 'admin' ? (
+//                 <Link to="/admindashboard" className="text-primary font-primary font-bold">Dashboard</Link>
+//               ) : (
+//                 <Route path="/userdashboard" element={<UserDashboard />} />
+//               )}
+//               <Link to="/debatesearch" className="text-primary font-primary font-bold">Debates</Link>
+//               <button
+//                 onClick={handleLogout}
+//                 className="text-primary font-primary font-bold bg-transparent border-none cursor-pointer"
+//               >
+//                 Logout
+//               </button>
+//             </>
+//           )}
+//         </div>
+//       </nav>
+//     </header>
+//   );
+// };
+
+// export default Navbar;
+
