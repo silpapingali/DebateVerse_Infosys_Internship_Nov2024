@@ -159,6 +159,7 @@ app.post('/login', async (req, res) => {
     return res.status(500).send('SERVER_ERROR');
   }
 });
+
 app.post('/request-password-reset', async (req, res) => {
   try {
     const { email } = req.body;
@@ -226,20 +227,53 @@ app.post('/reset-password/:token', async (req, res) => {
   }
 });
 
+app.get('/user/:id', async (req, res) => {
+ 
+  const { id } = req.params;
+   
+  try {
+    const user = await Registeruser.findById({_id:id});
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
 
+    res.json(user);
+  } catch (err) {
+    console.error('Error fetching user:', err);
+    res.status(500).json({ message: 'Error fetching user details' });
+  }
+});
+
+// API route to fetch user's debates
+app.get('/user/:id/debates',  async (req, res) => {
+  const { id } = req.params;
+
+  try {
+
+    const user = await Registeruser.findById(id);
+    const debates = await Debate.find({ createdBy: user.username }); // Find all debates for this user
+    console.log(debates)
+    res.json(debates);
+  } catch (err) {
+    console.error('Error fetching debates:', err);
+    res.status(500).json({ message: 'Error fetching debates' });
+  }
+});
 
 
 // User Dashboard Route
 app.get('/userdashboard', middleware, async (req, res) => {
   try {
     let exist = await Registeruser.findById(req.user.id);
+    
     if (!exist) {
       return res.status(400).send('User not found');
     }
     if (exist.role !== 'user') {
       return res.status(403).send('Access denied: Users only');
     }
-    res.json({
+    return res.json({
       message: "Welcome to the User Dashboard",
       user:exist
     });
@@ -320,7 +354,7 @@ app.get('/debates',middleware, async (req, res) => {
   try {
     const username = req.user.username;
     const debates = await Debate.find({ createdBy: username });
-
+    
     if (debates.length === 0) {
       return res.status(404).json({ message: 'No debates found.' });
     }
@@ -415,7 +449,7 @@ app.post('/vote/:id',middleware, async (req, res) => {
 
   try {
     const debate = await Debate.findById(id);
-    console.log(debate)
+    
     if (!debate) return res.status(404).json({ message: "Debate not found" });
 
     // Check if user has already voted
@@ -435,10 +469,9 @@ app.post('/vote/:id',middleware, async (req, res) => {
     //console.log(updatedVotes)
 
     debate.options = updatedVotes;
-    console.log(debate.totalVotes)
+    
     debate.totalVotes += votes.reduce((total, vote) => total + vote.voteCount, 0);
-    console.log(debate.totalVotes)
-    console.log(votes)
+    
     debate.votedUsers.push({
       userId,
       votes,
@@ -452,6 +485,40 @@ app.post('/vote/:id',middleware, async (req, res) => {
   }
 });
 
+app.get("/allusers", async (req, res) => {
+  try {
+    // Get all users from the database
+    const users = await Registeruser.find({role:"user"});
+    
+    const usersWithDebates = await Promise.all(
+      users.map(async (user) => {
+        // Fetch all debates for the current user
+        const debates = await Debate.find({ createdBy: user.username });
+        // Calculate total likes and votes for the user's debates
+        let totalLikes = 0;
+        let totalVotes = 0;
+
+        debates.forEach((debate) => {
+          totalLikes += debate.likes || 0;
+          totalVotes += debate.totalVotes || 0;
+        });
+        return {
+          userId: user._id,
+          username: user.username, // Adjust as per your user model
+          totalDebates: debates.length,
+          totalLikes,
+          totalVotes,
+        };
+      })
+    );
+     
+    // Send the response back to the frontend
+    res.status(200).json(usersWithDebates);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error fetching users and their debates." });
+  }
+});
 
 
 // Get a single debate by ID
@@ -470,6 +537,29 @@ app.get('/debate/:id', middleware, async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+app.delete('/debate/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    await Debate.findByIdAndDelete(id);
+    res.status(200).json({ message: 'Debate deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Error deleting debate' });
+  }
+});
+
+app.delete('/debate/:debateId/option/:optionId', async (req, res) => {
+  const { debateId, optionId } = req.params;
+  try {
+    const debate = await Debate.findById(debateId);
+    debate.options = debate.options.filter(option => option._id.toString() !== optionId);
+    await debate.save();
+    res.status(200).json({ message: 'Option deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Error deleting option' });
+  }
+});
+
 
 
 app.listen(5000, () => {

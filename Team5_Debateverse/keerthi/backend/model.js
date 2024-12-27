@@ -48,6 +48,7 @@ const OptionSchema = new mongoose.Schema({
     type: Number, 
     default: 0 
   },
+
 });
 
 // Debate Schema
@@ -78,6 +79,7 @@ const DebateSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+ 
   votedUsers: [
     {
       userId: { 

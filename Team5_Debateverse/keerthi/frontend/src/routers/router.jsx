@@ -13,6 +13,7 @@ import VerifySuccess from "../components/VerifySuccess";
 import DebatesSearch from "../components/DebatesSearch";
 import NewDebate from "../components/NewDebate";
 import Moderatedebate from "../components/Moderatedebate";
+import Userdetails from "../components/Userdetails";
 
 const router = createBrowserRouter([
   {
@@ -32,6 +33,7 @@ const router = createBrowserRouter([
       { path: "/debatesearch", element: <DebatesSearch /> },
       { path: "/newdebate", element: <NewDebate /> },
       { path: "/moderatedebate", element: <Moderatedebate /> },
+      { path: "/userdetails/:id", element: <Userdetails /> },
     ],
   },
 ]);

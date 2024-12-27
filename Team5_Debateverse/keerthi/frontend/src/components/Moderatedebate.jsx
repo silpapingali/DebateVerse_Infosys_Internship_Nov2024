@@ -189,21 +189,21 @@ const ModerateDebate = () => {
   if (!debate) return <p>Loading debate details...</p>;
 
   return (
-    <div className="flex flex-col items-center bg-white/80 min-h-screen py-8 overflow-y-auto">
-      <div className="relative w-full">
-        {role === "admin" && (
-          <button className="absolute right-4 top-2 text-red-600 hover:text-red-700">
-            <RxCrossCircled size={24} />
+    <div className="flex items-center justify-center bg-white/80 min-h-screen py-8 overflow-y-auto">
+      <div className="w-full max-w-3xl bg-white p-8 rounded-lg shadow-lg"> {/* Increased card size */}
+        <div className="relative w-full">
+          {role === "admin" && (
+            <button className="absolute right-4 top-2 text-red-600 hover:text-red-700">
+              <RxCrossCircled size={24} />
+            </button>
+          )}
+          <button
+            onClick={handleGoBack}
+            className="absolute left-4 top-2 px-4 py-2 bg-yellow-500 text-white font-bold rounded-lg shadow-md hover:bg-yellow-600"
+          >
+            Go Back
           </button>
-        )}
-        <button
-          onClick={handleGoBack}
-          className="absolute left-4 top-2 px-4 py-2 bg-yellow-500 text-white font-bold rounded-lg shadow-md hover:bg-yellow-600"
-        >
-          Go Back
-        </button>
-      </div>
-      <div className="w-11/12 md:w-3/4 bg-white p-6 rounded-lg shadow-lg">
+        </div>
         <h1 className="text-2xl font-bold mb-4 text-center">Moderate Debate</h1>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center">
@@ -263,10 +263,12 @@ const ModerateDebate = () => {
             </div>
           ))}
         </div>
+
         {/* Bar Chart */}
-        <div className="mb-6">
+        <div className="mb-6 w-full max-w-xs mx-auto">
           <Bar data={chartData} options={{ responsive: true }} />
         </div>
+
         <button
           onClick={handleSubmitVotes}
           className="mt-4 px-6 py-2 bg-green-500 text-white rounded-lg shadow-md hover:bg-green-600"
