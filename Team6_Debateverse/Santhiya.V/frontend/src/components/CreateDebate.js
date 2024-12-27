@@ -45,27 +45,29 @@ function CreateDebate() {
             const debateData = {
                 text: debateText,
                 options: options.map(option => ({ text: option })),
-                created_by: "userId", // Ensure this matches your logic for fetching the user ID
+                created_by: createdBy, // Ensure this matches your logic for fetching the user ID
                 created_on: new Date().toISOString().split('T')[0]
             };
 
-            console.log("Submitting Debate Data:", debateData); // log debate date
+            console.log("Submitting Debate Data:", debateData); // Log debate data
 
-            console.log("Sending request to backend...");
-            
             axios.post('http://localhost:8080/debatetopic', debateData, {
                 headers: { Authorization: `Bearer ${token}` },
             })
             .then(response => {
-                console.log('Debate posted:', response.data);
-                navigate('/home');
+                console.log('Debate created successfully:', response.data);
+                alert('Debate created successfully!');
+                navigate('/home'); // Navigate to home after successful post
             })
             .catch(error => {
-                console.error('Error posting debate:', error);
+                console.error('Error creating debate:', error.response ? error.response.data : error);
+                alert('Failed to create debate. Please try again.');
             });
+        } else {
+            alert('User not authenticated. Please log in.');
         }
     } else {
-        alert('Please fill in all fields');
+        alert('Please fill in all fields and provide at least 2 options.');
     }
   };
 
@@ -115,3 +117,4 @@ function CreateDebate() {
 }
 
 export default CreateDebate;
+
