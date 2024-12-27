@@ -11,7 +11,6 @@ const nodemailer = require('nodemailer');
 require('dotenv').config();
 
 const mongoURI = process.env.MONGO_URI;
-const jwtSecret = process.env.JWT_SECRET;
 const emailUser = process.env.EMAIL_USER;
 const emailPass = process.env.EMAIL_PASS;
 const adminemail = process.env.EMAIL_ADMIN;
@@ -290,19 +289,6 @@ app.post('/registersuccess', async (req, res) => {
 // Add a new debate
 app.post('/debates', async (req, res) => {
   const { question, options, createdBy } = req.body;
-
-  if (!question || !options || options.length < 2 || options.length > 7) {
-    return res.status(400).json({
-      error: 'Invalid data. Question is required, and there should be 2 to 7 options.',
-    });
-  }
-
-  if (options.some(option => !option.trim())) {
-    return res.status(400).json({
-      error: 'All options must be filled out.',
-    });
-  }
-
   try {
     
     const newDebate = new Debate({
@@ -356,6 +342,87 @@ app.get('/alldebates',middleware, async (req, res) => {
     return res.status(500).json({ error: 'Failed to fetch debates.' });
   }
 });
+
+// Vote for a specific debate option
+app.post('/vote/:debateId', middleware, async (req, res) => {
+  try {
+    const { debateId } = req.params;
+    const { votes } = req.body;
+    const userId = req.user.id;
+    const debate = await Debate.findById(debateId);
+
+    if (!debate) {
+      return res.status(404).json({ error: 'Debate not found' });
+    }
+
+    if (debate.votedUsers.includes(userId)) {
+      return res.status(400).send('You have already voted for this debate.');
+    }
+
+    for (const { optionIndex, increment } of votes) {
+      if (optionIndex < 0 || optionIndex >= debate.options.length) {
+        return res.status(400).json({ error: 'Option index out of bounds' });
+      }
+      debate.options[optionIndex].votes += increment;
+    }
+    debate.votedUsers.push(userId);
+    const totalVotes = debate.options.reduce((sum, option) => sum + option.votes, 0);
+
+    debate.totalVotes = totalVotes;
+    await debate.save();
+
+    res.status(200).json({ message: 'Votes registered successfully', totalVotes, debate });
+  } catch (error) {
+    console.error('Error voting:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
+
+// Like a debate
+app.post("/like/:debateId", async (req, res) => {
+  const { debateId } = req.params;
+  const userId = req.user.id; // Assuming user ID is extracted from the token
+
+  try {
+    const debate = await Debate.findById(debateId);
+
+    // Check if user already liked the debate
+    if (debate.likedBy.includes(userId)) {
+      return res.status(400).json({ message: "You have already liked this debate." });
+    }
+
+    // Increment the like count and add user ID to likedBy array
+    debate.likes += 1;
+    debate.likedBy.push(userId);
+
+    await debate.save();
+    res.json({ likes: debate.likes });
+  } catch (error) {
+    console.error("Error liking debate:", error);
+    res.status(500).json({ message: "Server error." });
+  }
+});
+
+
+// Get a single debate by ID
+app.get('/debate/:id', middleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const debate = await Debate.findById(id);
+
+    if (!debate) {
+      return res.status(404).json({ error: 'Debate not found' });
+    }
+
+    res.status(200).json(debate);
+  } catch (error) {
+    console.error('Error fetching debate:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 
 app.listen(5000, () => {
   console.log('Server running...');

@@ -31,6 +31,9 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public Map<String, Object> createUser(User user) {
+        if(user.getName() == null || user.getName().isEmpty()) {
+            throw new IllegalArgumentException("Username cannot be empty");
+        }
         if(user.getEmail() == null || user.getEmail().isEmpty()) {
             throw new IllegalArgumentException("Email cannot be empty");
         }
@@ -48,6 +51,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         User newUser = new User();
+        newUser.setName(user.getUsername());
         newUser.setPassword(passwordEncoder.encode(user.getPassword()));
         newUser.setEmail(user.getEmail());
         newUser.setRole(User.Role.USER);

@@ -1,54 +1,121 @@
-import React from "react";
+import React, { useContext, useState } from "react";
 import { format } from "date-fns";
+import { Heart, MessageCircleMore, ThumbsUp } from "lucide-react";
+import { useDispatch } from "react-redux";
+import { likeRequest, setLiked } from "../redux/slices/allDebatesSlice";
+import Vote from "./Vote";
+import { FaPlus, FaMinus } from "react-icons/fa";
 
-const DebateCard = ({ debate }) => {
-  const maxLikes = Math.max(...debate.options.map((opt) => opt.likes));
+const DebateCard = ({ debate, liked, Qno, isMine }) => {
+  const dispatch = useDispatch();
+  // console.log(liked);
+
+  const [isVotePopup, setIsVotePopup] = useState(0);
+
+  const handleLike = (_id, index) => {
+    dispatch(likeRequest(_id));
+    liked
+      ? dispatch(setLiked({ index, val: -1 }))
+      : dispatch(setLiked({ index, val: 1 }));
+  };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-lg relative">
-      <p className="text-gray-600 text-sm mb-2">
-        Asked on {format(new Date(debate.date), "MMM dd, yyyy")}
-      </p>
-      <h3 className="text-lg font-bold mb-4">{debate.title}</h3>
+    <div
+      className={`${
+        isMine ? "bg-blue-600" : "bg-indigo-600"
+      } rounded-lg p-5 w-full text-white `}
+    >
+      <div className="flex justify-between items-center">
+        <h1 className="font-semibold">
+          Asked by <span className="text-red-400">{debate.createdBy}</span> on{" "}
+          <span className="text-green-400">
+            {format(new Date(debate.createdOn), "dd-MM-yyyy,  hh:mm a")}
+          </span>
+        </h1>
+        <button
+          disabled={isMine}
+          onClick={() => {
+            handleLike(debate._id, Qno - 1);
+          }}
+          className={`flex gap-3 justify-center ${
+            liked ? "text-red-500" : ""
+          } font-bold items-center`}
+        >
+          <Heart fill={liked ? "red" : "white"} />
+          {debate.totalLikes}
+        </button>
+      </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        {/* Options with Likes and Comments */}
-        <div className="space-y-2">
-          {debate.options.map((option, index) => (
-            <div
-              key={index}
-              className="flex items-center justify-between p-2 bg-gray-100 rounded-md"
-            >
-              <span className="text-gray-800">{option.text}</span>
-              <div className="flex items-center space-x-3 text-sm text-gray-500">
-                <span className="flex items-center space-x-1">
-                  <span>👍</span>
-                  <span>{option.likes}</span>
-                </span>
-                <span className="flex items-center space-x-1">
-                  <span>💬</span>
-                  <span>{option.comments}</span>
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
+      <div>
+        <h1 className="font-extrabold text-lg py-2">
+          {Qno}. {debate.question}
+        </h1>
+      </div>
 
-        {/* Bar Graph */}
-        <div className="flex flex-col space-y-2">
-          {debate.options.map((option, index) => {
-            const percentage = maxLikes > 0 ? (option.likes / maxLikes) * 100 : 0;
+      <div className="flex gap-5 flex-col md:flex-row justify-start md:items-center">
+        <div className="options w-full">
+          {debate.options.map((option, ind) => {
             return (
-              <div key={index} className="flex items-center">
-                <div
-                  className="h-4 bg-orange-500 rounded"
-                  style={{ width: `${percentage}%` }}
-                />
-                <span className="ml-2 text-sm text-gray-600">{option.likes}</span>
+              <div
+                key={ind}
+                className="option w-full gap-3 flex-wrap font-bold flex justify-start py-1 items-center"
+              >
+                <h1 key={ind}>{`${ind + 1}. ${option.answer}`}</h1>
+                <div className="flex ml-10 gap-5 justify-start items-center">
+                  <button
+                    className={`flex gap-2 justify-center font-bold items-center`}
+                  >
+                    <ThumbsUp />
+                    {option.votes}
+                  </button>
+                  <button
+                    className={`flex gap-2 justify-center font-bold items-center`}
+                  >
+                    <MessageCircleMore />
+                    {option.votes}
+                  </button>
+                </div>
+                {isVotePopup != 0 && (
+                  <div className="flex justify-center items-center gap-1 md:ml-10">
+                    <button className="p-2 rounded-full bg-violet-500">
+                      <FaMinus size={16} />
+                    </button>
+                    <h1 className="px-5 py-1 bg-blue-600 rounded-xl">5</h1>
+                    <button className="p-2 rounded-full bg-violet-500">
+                      <FaPlus size={16} />
+                    </button>
+                  </div>
+                )}
               </div>
             );
           })}
         </div>
+
+        <div className="graph w-1/3">
+          <h1>This is for the graph.</h1>
+        </div>
+      </div>
+      <div className="flex mt-5 gap-2 flex-col md:flex-row justify-center items-center">
+        {!isMine && (
+          <button
+            onClick={() => {
+              setIsVotePopup(Qno);
+            }}
+            className="w-full bg-emerald-500 rounded-lg p-2 font-bold text-lg"
+          >
+            {isVotePopup ? "Submit" : "Vote"}
+          </button>
+        )}
+        {isVotePopup != 0 && (
+          <button
+            onClick={() => {
+              setIsVotePopup(0);
+            }}
+            className="w-full bg-red-500 rounded-lg p-2 font-bold text-lg"
+          >
+            Cancel
+          </button>
+        )}
       </div>
     </div>
   );

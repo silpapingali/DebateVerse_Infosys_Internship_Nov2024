@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import Validation from './SignupValidation';
 import axios from 'axios';
 
+
 function Signup() {
     const [values, setValues] = useState({
         email: '',
@@ -37,7 +38,7 @@ function Signup() {
                 })
                 .catch(err => {
                     if (err.response && err.response.status === 400) {
-                        setErrors({ email: "User already exists with this email." });
+                        setErrors({ email: "User  already exists with this email." });
                     } else {
                         console.error(err);
                     }
@@ -47,8 +48,9 @@ function Signup() {
     }, [errors, isSubmitting, navigate, values]);
 
     return (
-        <div className='d-flex justify-content-center align-items-center bg-black vh-100'>
-            <div className='bg-white p-3 rounded w-25'>
+        <div className='d-flex justify-content-center align-items-center bg-gradient vh-100'>
+            <div className='card shadow-lg p-4 rounded w-25'>
+                <h2 className='text-center mb-4'>Signup</h2>
                 <form onSubmit={handleSubmit}>
                     <div className='mb-3'>
                         <label htmlFor='email'><strong>Email</strong></label>
@@ -86,12 +88,11 @@ function Signup() {
                         {errors.confirmPassword && <span className='text-danger'>{errors.confirmPassword}</span>}
                     </div>
 
-                    <button type='submit' className='btn btn-success w-100 bg-primary'>Signup</button>
-                    <p>You agree to our terms and policies</p>
-                    <Link to="/" className='btn btn-default border w-100 bg-light text-decoration-none'>Login</Link>
+                    <button type='submit' className='btn btn-primary w-100'>Signup</button>
+                    <p className='text-center mt-3'>You agree to our terms and policies</p>
+                    <Link to="/" className='btn btn-light border w-100 text-decoration-none'>Login</Link>
                 </form>
 
-               
                 {successMessage && (
                     <div className='alert alert-success mt-3'>
                         {successMessage}

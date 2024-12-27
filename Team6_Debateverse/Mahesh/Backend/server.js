@@ -301,58 +301,58 @@ const verifyToken = (req, res, next) => {
     });
 };
 
-
 app.post('/debates', verifyToken, (req, res) => {
-    const { text, options, created_by, created_on } = req.body;
-  
+    const { text, options, created_by } = req.body;
+
+    // Validate input
     if (!text || !options || options.length < 2) {
-      return res.status(400).json({ message: 'Debate text and at least 2 options are required' });
+        return res.status(400).json({ message: 'Debate text and at least 2 options are required' });
     }
-  
-    
+
     const debateId = uuidv4();
-  
- 
+    const createdOn = new Date().toISOString().split('T')[0]; // Format to YYYY-MM-DD
+
+    // Insert debate into the debates table
     const debateQuery = `
-      INSERT INTO debates (id, text, created_by, created_on, likes, dislikes, is_public, is_blocked) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO debates (id, text, created_by, created_on, likes, dislikes, is_public, is_blocked) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `;
-  
+
     db.query(
-      debateQuery,
-      [debateId, text, created_by, created_on, JSON.stringify([]), JSON.stringify([]), true, false],
-      (debateErr) => {
-        if (debateErr) {
-          console.error('Error inserting into debates table:', debateErr);
-          return res.status(500).json({ message: 'Failed to create debate' });
+        debateQuery,
+        [debateId, text, created_by, createdOn, 0, JSON.stringify([]), true, false],
+        (debateErr) => {
+            if (debateErr) {
+                console.error('Error inserting into debates table:', debateErr);
+                return res.status(500).json({ message: 'Failed to create debate' });
+            }
+
+            // Prepare options for insertion
+            const optionsQuery = `
+                INSERT INTO options (id, debate_id, text, created_on, upvotes) 
+                VALUES ?
+            `;
+
+            const optionsValues = options.map((option) => [
+                uuidv4(), // Generate a new UUID for each option
+                debateId,
+                option.text, // Use the text from the option
+                createdOn, // Use the same created_on date for options
+                0 // Default upvotes to 0
+            ]);
+
+            // Insert options into the options table
+            db.query(optionsQuery, [optionsValues], (optionsErr) => {
+                if (optionsErr) {
+                    console.error('Error inserting into options table:', optionsErr);
+                    return res.status(500).json({ message: 'Failed to create options' });
+                }
+
+                res.status(201).json({ message: 'Debate and options created successfully' });
+            });
         }
-  
-        
-        const optionsQuery = `
-          INSERT INTO options (id, debate_id, text, created_on, upvotes, downvotes) 
-          VALUES ?
-        `;
-  
-        const optionsValues = options.map((option) => [
-          uuidv4(), 
-          debateId,
-          option.text, 
-          created_on,
-          JSON.stringify([]), 
-          JSON.stringify([])  
-        ]);
-  
-        db.query(optionsQuery, [optionsValues], (optionsErr) => {
-          if (optionsErr) {
-            console.error('Error inserting into options table:', optionsErr);
-            return res.status(500).json({ message: 'Failed to create options' });
-          }
-  
-          res.status(201).json({ message: 'Debate and options created successfully' });
-        });
-      }
     );
-  });
+});
 
   
 app.get('/debates', verifyToken, (req, res) => {
@@ -391,43 +391,42 @@ app.get('/debates', verifyToken, (req, res) => {
     });
   });
 
-  app.post('/debates/:id/reactions', verifyToken, (req, res) => {
-    const { id } = req.params; 
-    const { action, userId } = req.body; 
+// Route to handle likes 
+app.post('/debates/:id/reactions', verifyToken, (req, res) => {
+    const { id } = req.params;
+    const { action, userId } = req.body;
 
+    // Check if the action is 'like'
     if (action !== 'like') {
         return res.status(400).json({ message: 'Only "like" action is supported at this time' });
     }
 
-  
+    // Query to fetch current likes for the debate
     db.query('SELECT likes FROM debates WHERE id = ?', [id], (err, results) => {
         if (err) {
             console.error('Error fetching likes:', err);
             return res.status(500).json({ message: 'Error fetching likes' });
         }
 
+        // Check if the debate exists
         if (results.length === 0) {
             return res.status(404).json({ message: 'Debate not found' });
         }
 
-        const currentLikes = JSON.parse(results[0].likes || '[]');
-        if (!currentLikes.includes(userId)) {
-            currentLikes.push(userId);
-        }
+        // Increment the likes count
+        let currentLikes = results[0].likes || 0;
+        currentLikes += 1;
 
-        
-        db.query(
-            'UPDATE debates SET likes = ? WHERE id = ?',
-            [JSON.stringify(currentLikes), id],
-            (updateErr) => {
-                if (updateErr) {
-                    console.error('Error updating likes:', updateErr);
-                    return res.status(500).json({ message: 'Error updating likes' });
-                }
-
-                res.status(200).json({ likes: currentLikes }); 
+        // Update the likes count in the database
+        db.query('UPDATE debates SET likes = ? WHERE id = ?', [currentLikes, id], (updateErr) => {
+            if (updateErr) {
+                console.error('Error updating likes:', updateErr);
+                return res.status(500).json({ message: 'Error updating likes' });
             }
-        );
+
+            // Respond with the updated likes count
+            res.status(200).json({ likes: currentLikes });
+        });
     });
 });
 
@@ -508,7 +507,81 @@ app.get('/alldebates', verifyToken, (req, res) => {
     });
 });
 
+app.get('/debates/:debateId', verifyToken, (req, res) => {
+    const { debateId } = req.params;
 
+    const getDebateQuery = `
+        SELECT * FROM debates WHERE id = ?;
+    `;
+
+    db.query(getDebateQuery, [debateId], (err, debateResults) => {
+        if (err) {
+            console.error('Error fetching debate:', err);
+            return res.status(500).json({ message: 'Failed to fetch debate' });
+        }
+
+        if (debateResults.length === 0) {
+            return res.status(404).json({ message: 'Debate not found' });
+        }
+
+        const debate = debateResults[0];
+
+        const getOptionsQuery = `
+            SELECT * FROM options WHERE debate_id = ?;
+        `;
+
+        db.query(getOptionsQuery, [debateId], (optionsErr, optionsResults) => {
+            if (optionsErr) {
+                console.error('Error fetching options:', optionsErr);
+                return res.status(500).json({ message: 'Failed to fetch options' });
+            }
+
+            const debateWithOptions = {
+                ...debate,
+                options: optionsResults,
+            };
+
+            res.status(200).json(debateWithOptions);
+        });
+    });
+});
+
+app.post('/debates/:debateId/submitVotes', verifyToken, (req, res) => {
+    const { debateId } = req.params;
+    const { votes } = req.body; // Expecting an array of { optionId, votes }
+
+    if (!votes || !Array.isArray(votes)) {
+        return res.status(400).json({ message: 'Invalid votes data' });
+    }
+
+    // Prepare the SQL query to update the votes for each option
+    const updateQueries = votes.map(vote => {
+        const { optionId, votes } = vote;
+        return new Promise((resolve, reject) => {
+            const query = `
+                UPDATE options 
+                SET upvotes = upvotes+ ?
+                WHERE id = ?;
+            `;
+            db.query(query, [votes, optionId], (err) => {
+                if (err) {
+                    return reject(err);
+                }
+                resolve();
+            });
+        });
+    });
+
+    // Execute all update queries
+    Promise.all(updateQueries)
+        .then(() => {
+            res.status(200).json({ message: 'Votes submitted successfully' });
+        })
+        .catch(err => {
+            console.error('Error updating votes:', err);
+            res.status(500).json({ message: 'Failed to submit votes' });
+        });
+});
 
 
 app.listen(8081, () => {

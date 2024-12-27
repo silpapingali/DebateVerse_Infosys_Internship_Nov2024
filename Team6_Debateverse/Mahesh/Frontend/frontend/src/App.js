@@ -9,6 +9,7 @@ import ResetPassword from './ResetPassword';
 import ConfirmRegistration from "./ConfirmRegistration";
 import CreateDebate from './CreateDebate';
 import Debates from './Debates'; 
+import Upvotes from './Upvotes';
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
         <Route path='/reset-password/:token' element={<ResetPassword />} />
         <Route path='/confirm-registration/:token' element={<ConfirmRegistration />} />
         <Route path="/debates" element={<Debates />} />
+        <Route path="/upvotes" element={<Upvotes />}/>
       </Routes>
     </BrowserRouter>
   );

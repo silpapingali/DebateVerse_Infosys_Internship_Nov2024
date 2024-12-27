@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.annotations.CreationTimestamp;
+
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
@@ -13,8 +15,11 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PostLoad;
+import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -35,12 +40,38 @@ public class Debate {
     @JoinColumn(name = "created_by_id", nullable = false)
     private User createdBy;
 
-    @OneToMany(mappedBy = "debate", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy= "debate", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
-    private List<Option> options = new ArrayList<>();
+    private List<Option> options;
 
-    private boolean isPublic = false;
+    @ManyToMany
+    private List<User> likes = new ArrayList<>();
+
+    @ManyToMany
+    private List<User> dislikes = new ArrayList<>();
+
+    @Column(nullable = false)
+    private boolean isPublic = true;
+
+    @Column(nullable = false)
     private boolean isBlocked = false;
 
-    private LocalDate createdOn = LocalDate.now();
+    @Column(nullable = false, updatable = false)
+    @CreationTimestamp
+    private LocalDate createdOn;
+
+    @Transient
+    private int totalVotes;
+
+    @Transient
+    private int totalLikes;
+
+    @PostLoad
+    private void calculateDerivedFields() {
+        this.totalVotes = options.stream()
+                .flatMap(option -> option.getVotes().stream())
+                .mapToInt(Vote::getVotes)
+                .sum();
+        this.totalLikes = likes.size();
+    }
 }
