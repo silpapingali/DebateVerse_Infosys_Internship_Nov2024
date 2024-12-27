@@ -100,7 +100,7 @@ const Admindashboard = () => {
             type="range"
             min="0"
             max="100000"
-            step="1000"
+            step="1"
             value={votesFilter}
             onChange={(e) => setVotesFilter(Number(e.target.value))}
             className="w-full mt-2"
