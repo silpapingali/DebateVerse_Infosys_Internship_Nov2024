@@ -1,7 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom'; 
 import Image from '../assets/Image.jpeg'; 
-import Navbar from './Navbar'; 
+
+ 
 const About = () => {
   const navigate = useNavigate(); 
   const navigateToCreateDebate = () => {
@@ -9,9 +10,7 @@ const About = () => {
   };
 
   return (
-    <div>
-      <Navbar /> 
-      
+    <div>   
       <div style={styles.container}>
         <h2 style={styles.header}>About DebateHub</h2>
         

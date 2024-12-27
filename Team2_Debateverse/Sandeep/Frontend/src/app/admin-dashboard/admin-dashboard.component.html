@@ -1,0 +1,131 @@
+<div class="admin-dashboard-container">
+  <h2>Admin Dashboard</h2>
+
+  <!-- Top right corner buttons -->
+  <div class="top-right-buttons">
+    <button (click)="viewMode = 'users'; fetchUsers()">Users</button>
+    <button (click)="logout()">Logout</button>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+
+  <!-- View for Debates -->
+  <div *ngIf="viewMode === 'debates'" class="debates-view">
+    <h3>Debates</h3>
+    <table>
+      <tr>
+        <th>Question</th>
+        <th>Likes</th>
+        <th>Added Date</th>
+        <th>Action</th>
+      </tr>
+      <tr *ngFor="let debate of debates">
+        <td>{{ debate.question }}</td>
+        <td>
+          <div class="debate-hover">
+            <span class="likes">{{ debate.likes }} <span class="heart">&#9829;</span></span>
+            <div class="votes">
+              <div *ngFor="let option of debate.options; let i = index">
+                <span>{{ option }}: {{ debate.voteCount[i] }} votes</span>
+              </div>              
+            </div>
+          </div>
+        </td>
+        <td>{{ debate.addedDate | date: 'short' }}</td>
+        <td>
+          <button (click)="openEditModal(debate)">Edit Debate</button>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- View for Users -->
+  <div *ngIf="viewMode === 'users'" class="users-view">
+    <!-- Search Panel -->
+    <div class="search-panel">
+      <button class="back-button" (click)="viewMode = 'debates'; fetchDebates()">Back to Debates</button>
+
+      <h3>Search Filters</h3>
+      <label>
+        <input type="checkbox" [(ngModel)]="exactMatch" /> Exact Match
+      </label>
+
+      <div class="slider-container">
+        <label>Likes greater than:</label>
+        <input type="range" min="0" max="10000" [(ngModel)]="searchLikes" class="slider" />
+        <span>{{ searchLikes }}</span>
+      </div>
+
+      <div class="slider-container">
+        <label>Questions greater than:</label>
+        <input type="range" min="0" max="200" [(ngModel)]="searchQuestions" class="slider" />
+        <span>{{ searchQuestions }}</span>
+      </div>
+
+      <div class="date-filter">
+        <label>Joined After:</label>
+        <input type="date" [(ngModel)]="joinedAfter" />
+      </div>
+
+      <button (click)="searchUsers()" class="search-button">Search</button>
+      <button (click)="resetFilters()" class="reset-button">Reset Filters</button>
+    </div>
+
+    <!-- Users Table -->
+    <div class="users-table">
+      <h3>Users</h3>
+      <table>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Likes</th>
+          <th>Questions</th>
+          <th>Joined Date</th>
+          <th>Actions</th>
+        </tr>
+        <tr *ngFor="let user of filteredUsers">
+          <td>{{ user.name }}</td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.likes }}</td>
+          <td>{{ user.questionsCount }}</td>
+          <td>{{ user.addedDate | date: 'short' }}</td>
+          <td>
+            <button (click)="deleteUser(user._id)">Delete</button>
+            <button *ngIf="!user.suspended" (click)="SuspendUser(user._id,user.suspended)">Suspend</button>
+            <button *ngIf="user.suspended" (click)="SuspendUser(user._id,user.suspended)">Un Suspend</button>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="editingDebate" class="modal">
+  <div class="modal-content">
+    <h2>Edit Debate</h2>
+    <form (ngSubmit)="saveDebateChanges()">
+      <!-- Question Field -->
+      <label>
+        Question:
+        <input [(ngModel)]="editingDebate.question" name="question" required />
+      </label>
+    
+      <!-- Options Fields -->
+      <div >
+        @for(option of editingDebate.options;track $index){
+          <input type="text" [(ngModel)]="editingDebate.options[$index]" name="option{{ $index }}" placeholder="Option {{ $index + 1 }}"required />
+          <button type="button" (click)="removeOption($index)">Remove</button>}
+      </div>
+      <button type="button" (click)="addOption()">Add Option</button>
+    
+      <!-- Submit Button -->
+      <button type="submit">Save Changes</button>
+    
+      <!-- Cancel Button -->
+      <button type="button" (click)="closeEditModal()">Cancel</button>
+    </form>
+  </div>
+</div>

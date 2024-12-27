@@ -1,5 +1,11 @@
+
+
+
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { setRole } from '../redux/actions/userActions';
 
 const Logout = () => {
   const navigate = useNavigate();
