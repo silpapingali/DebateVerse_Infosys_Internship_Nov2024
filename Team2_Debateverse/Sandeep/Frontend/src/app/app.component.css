@@ -1,28 +1,60 @@
 body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f0f8ff;
-  }
-  
-  .main-container {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-  }
-  
-  header {
-    background-color: #20b2aa;
-    color: white;
-    padding: 15px;
-    text-align: center;
-  }
-  
-  footer {
-    background-color: #20b2aa;
-    color: white;
-    padding: 10px;
-    text-align: center;
-    margin-top: auto;
-  }
-  
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f0f8ff;
+}
+
+.main-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+header {
+  background-color: #20b2aa;
+  color: white;
+  padding: 10px;
+  text-align: center;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content:space-between;
+}
+
+footer {
+  background-color: #20b2aa;
+  color: white;
+  padding: 10px;
+  text-align: center;
+  margin-top: auto;
+}
+
+nav ul {
+  list-style: none;
+  display: flex;
+  justify-content: center;
+  padding: 0;
+}
+
+nav ul li {
+  margin: 0 15px;
+}
+
+/* Add button-like styling to anchor tags */
+nav ul li a {
+  text-decoration: none;
+  color: white;
+  font-weight: bold;
+  padding: 8px 15px;
+  background-color: #fda900ec;
+  border: 2px solid #fda900ec;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+nav ul li a:hover {
+  background-color: #ffffff;
+  color: #fda900ec;
+}

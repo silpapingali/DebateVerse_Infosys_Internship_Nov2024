@@ -22,7 +22,7 @@ export default function ResetPassword() {
 
         setError('');
         axios
-            .post('http://localhost:8081/reset-password', { password, token })
+            .post('http://localhost:8081/api/auth/resetPassword', { password, token })
             .then((response) => {
                 setMessage(response.data.message);
                 navigate('/');
@@ -36,7 +36,7 @@ export default function ResetPassword() {
     return (
         <div
         className="d-flex justify-content-center align-items-center vh-100 position-relative"
-        style={{ backgroundColor: '#007BFF' }} // Light grey background color
+        style={{ backgroundColor: '#007BFF' }} 
     >
             <div className="bg-white p-4 rounded w-25">
                 <h2 className="text-center">Reset Password</h2>

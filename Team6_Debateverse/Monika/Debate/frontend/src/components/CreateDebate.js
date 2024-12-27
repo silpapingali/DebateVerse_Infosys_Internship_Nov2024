@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "./Navbar";
+
 
 const CreateDebate = () => {
   const [question, setQuestion] = useState("");
@@ -79,7 +79,7 @@ const CreateDebate = () => {
 
     if (question.trim() && options.every((opt) => opt.trim())) {
       try {
-        const response = await fetch("http://localhost:8081/api/debates", {
+        const response = await fetch("http://localhost:8081/api/debate/createdebate", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -97,7 +97,7 @@ const CreateDebate = () => {
           setOptions(["", ""]);
           setMessage("Debate successfully created!");
 
-          // Delay navigation by 2 seconds to show the success message
+          
           setTimeout(() => {
             navigate("/debatelist");
           }, 2000);
@@ -114,7 +114,7 @@ const CreateDebate = () => {
 
   return (
     <div>
-      <Navbar />
+      
       <div style={{ ...formStyle, marginBottom: "8px" }}>
         <h2>New Debate</h2>
         {message && (

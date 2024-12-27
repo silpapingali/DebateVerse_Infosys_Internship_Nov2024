@@ -1,12 +1,11 @@
 <div class="form-container">
-    <h1>Welcome to DebateVerse</h1>
-    <form (ngSubmit)="onSubmit()">
-      <input type="email" placeholder="Email" [(ngModel)]="email" name="email" required />
-      <input type="password" placeholder="Password" [(ngModel)]="password" name="password" required />
-      <button type="submit">Login</button>
-    </form>
-    <a routerLink="/forgot-password">Forgot Password?</a>
-    <br>
-    <a routerLink="/register">Don't have an account? Sign up</a>
+  <h1>Welcome to DebateVerse</h1>
+  <form (ngSubmit)="onSubmit()">
+    <input type="email" placeholder="Email" [(ngModel)]="loginData.email" name="email" required />
+    <input type="password" placeholder="Password" [(ngModel)]="loginData.password" name="password" required />
+    <button type="submit">Login</button>
+  </form>
+  <a routerLink="/forgot-password">Forgot Password?</a>
+  <br />
+  <a routerLink="/register">Don't have an account? Sign up</a>
 </div>
-  

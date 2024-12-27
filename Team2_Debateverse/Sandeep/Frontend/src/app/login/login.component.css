@@ -1,6 +1,7 @@
 .form-container {
     width: 300px;
-    margin: auto;
+    margin: 20px;
+    margin-left: 37%;
     padding: 20px;
     background-color: #a8e6e8;
     text-align: center;
@@ -24,4 +25,34 @@
     cursor: pointer;
     text-decoration: underline;
   }
-  
+  .radio-group {
+    margin-bottom: 20px;
+    font-size: 14px;
+    color: #555;
+}
+
+.radio-group p {
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #6879e3;
+    font-size: 16px;
+}
+
+.radio-group label {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 20px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #555;
+    transition: color 0.7s ease;
+}
+
+.radio-group input[type="radio"] {
+    margin-right: 8px;
+    accent-color: #3498db;
+    transform: scale(1.1);
+    cursor: pointer;
+}
+
+   

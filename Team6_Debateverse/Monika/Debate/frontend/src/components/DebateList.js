@@ -1,30 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import Navbar from './Navbar';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import { faker } from '@faker-js/faker';
-import { Bar } from 'react-chartjs-2';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-} from 'chart.js';
-
-// Register Chart.js components
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+import axios from 'axios'; 
+import { useNavigate } from 'react-router-dom'; 
+import { faker } from '@faker-js/faker'; 
 
 function DebateList() {
   const [debates, setDebates] = useState([]);
-  const navigate = useNavigate();
+  const navigate = useNavigate(); 
 
   useEffect(() => {
-    // Fetch debates from backend and add dummy created_by names using faker
     axios
-      .get('http://localhost:8081/alldebates', {
+      .get('http://localhost:8081/api/debate/alldebates', {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
@@ -48,7 +33,7 @@ function DebateList() {
 
     axios
       .post(
-        `http://localhost:8081/debateList/${debateId}/reactions`,
+        `http://localhost:8081/api/debate/${debateId}/reactions`,
         { action: 'like' },
         {
           headers: {
@@ -57,11 +42,10 @@ function DebateList() {
         }
       )
       .then((response) => {
-        // Update likes count in debates state
         setDebates((prevDebates) =>
           prevDebates.map((debate) =>
             debate.id === debateId
-              ? { ...debate, likes: response.data.likes }
+              ? { ...debate, likes: Array.isArray(response.data.likes) ? response.data.likes : [] }
               : debate
           )
         );
@@ -78,7 +62,7 @@ function DebateList() {
 
     axios
       .post(
-        `http://localhost:8081/options/${optionId}/upvote`,
+        `http://localhost:8081/api/options/${optionId}/upvote`,
         {},
         {
           headers: {
@@ -87,7 +71,6 @@ function DebateList() {
         }
       )
       .then((response) => {
-        // Update upvotes count in debates state
         setDebates((prevDebates) =>
           prevDebates.map((debate) =>
             debate.id === debateId
@@ -95,7 +78,7 @@ function DebateList() {
                   ...debate,
                   options: debate.options.map((option) =>
                     option.id === optionId
-                      ? { ...option, upvotes: response.data.upvotes }
+                      ? { ...option, upvotes: Array.isArray(response.data.upvotes) ? response.data.upvotes : [] }
                       : option
                   ),
                 }
@@ -106,27 +89,8 @@ function DebateList() {
       .catch((error) => console.error('Error upvoting option:', error));
   };
 
-  const generateBarChartData = (options) => {
-    const labels = options.map((option) => option.text);
-    const upvotes = options.map((option) => option.upvotes ? option.upvotes.length : 0);
-
-    return {
-      labels,
-      datasets: [
-        {
-          label: 'Upvotes',
-          data: upvotes,
-          backgroundColor: 'rgba(54, 162, 235, 0.6)',
-          borderColor: 'rgba(54, 162, 235, 1)',
-          borderWidth: 1,
-        },
-      ],
-    };
-  };
-
   return (
     <div>
-      <Navbar />
       <h2 style={{ marginLeft: '60px' }}>All Debates</h2>
       <div style={{ marginLeft: '60px' }}>
         {debates.length > 0 ? (
@@ -136,11 +100,9 @@ function DebateList() {
               style={{
                 marginBottom: '20px',
                 border: '1px solid #ccc',
-                padding: '20px',
+                padding: '10px',
                 width: '80%',
                 position: 'relative',
-                borderRadius: '10px',
-                boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
               }}
             >
               <div
@@ -153,7 +115,7 @@ function DebateList() {
                 }}
               >
                 <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#555' }}>
-                  {debate.likes} likes
+                  {Array.isArray(debate.likes) ? debate.likes.length : 0} likes
                 </span>
                 <button
                   className="btn btn-light"
@@ -172,39 +134,29 @@ function DebateList() {
               </div>
 
               <h4>{debate.text}</h4>
+              <p>Created by: {debate.created_by}</p>
               <p>Created on: {debate.created_on}</p>
 
-              <div style={{ display: 'flex', marginTop: '20px', justifyContent: 'space-between' }}>
-                <div style={{ flex: 1 }}>
-                  <h5>Options:</h5>
+              <div style={{ display: 'flex' }}>
+                <div style={{ marginTop: '10px', width: '60%' }}>
                   {debate.options && debate.options.length > 0 ? (
-                    debate.options.map((option) => (
+                    debate.options.map((option, index) => (
                       <div
                         key={option.id}
                         style={{
-                          padding: '10px',
-                          marginBottom: '10px',
-                          border: '1px solid #ccc',
+                          border: '1px solid #ddd',
                           borderRadius: '5px',
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
+                          padding: '5px',
+                          marginBottom: '5px',
+                          backgroundColor: '#f9f9f9',
+                          width: '100%',
                         }}
                       >
-                        <span>{option.text}</span>
-                        <button
-                          onClick={() => handleUpvoteOption(debate.id, option.id)}
-                          style={{
-                            backgroundColor: '#4CAF50',
-                            color: 'white',
-                            border: 'none',
-                            padding: '5px 10px',
-                            borderRadius: '5px',
-                            cursor: 'pointer',
-                          }}
-                        >
-                          Upvote ({option.upvotes ? option.upvotes.length : 0})
-                        </button>
+                        <strong>{index + 1}. </strong>
+                        {option.text}
+                        <div>
+                          <span>{Array.isArray(option.upvotes) ? option.upvotes.length : 0} upvotes</span>
+                        </div>
                       </div>
                     ))
                   ) : (
@@ -212,26 +164,41 @@ function DebateList() {
                   )}
                 </div>
 
-                <div style={{ width: '40%' }}>
-                  {debate.options && debate.options.length > 0 ? (
-                    <Bar
-                      data={generateBarChartData(debate.options)}
-                      options={{
-                        responsive: true,
-                        plugins: {
-                          legend: {
-                            position: 'top',
-                          },
-                          title: {
-                            display: true,
-                            text: 'Upvotes for Debate Options',
-                          },
-                        },
-                      }}
-                    />
-                  ) : (
-                    <p>No data to display graph.</p>
-                  )}
+                <div style={{ width: '35%', marginLeft: '20px' }}>
+                  <h4>Upvotes Bar Graph</h4>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    {debate.options && debate.options.length > 0 ? (
+                      debate.options.map((option, index) => (
+                        <div
+                          key={option.id}
+                          style={{
+                            width: '80%',
+                            height: '30px',
+                            backgroundColor: 'lightblue',
+                            marginBottom: '10px',
+                            textAlign: 'center',
+                            lineHeight: '30px',
+                            color: '#000',
+                            position: 'relative',
+                          }}
+                        >
+                          {Array.isArray(option.upvotes) ? option.upvotes.length : 0} upvotes
+                          <div
+                            style={{
+                              height: '100%',
+                              width: `${(Array.isArray(option.upvotes) ? option.upvotes.length : 0) * 10}%`,
+                              backgroundColor: 'green',
+                              position: 'absolute',
+                              top: 0,
+                              left: 0,
+                            }}
+                          />
+                        </div>
+                      ))
+                    ) : (
+                      <p>No options available for bar graph.</p>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

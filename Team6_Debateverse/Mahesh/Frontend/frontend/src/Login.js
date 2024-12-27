@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import Validation from './LoginValidation';
 import axios from 'axios';
 
+
 function Login() {
     const [values, setValues] = useState({
         email: '',
@@ -57,9 +58,10 @@ function Login() {
     }, [errors, isSubmitting, navigate, values]);
 
     return (
-        <div className='d-flex justify-content-center align-items-center bg-black vh-100'>
-            <div className='bg-white p-3 rounded w-25'>
-                <form action='' onSubmit={handleSubmit}>
+        <div className='d-flex justify-content-center align-items-center bg-gradient vh-100'>
+            <div className='card shadow-lg p-4 rounded w-25'>
+                <h2 className='text-center mb-4'>Login</h2>
+                <form onSubmit={handleSubmit}>
                     <div className='mb-3'>
                         <label htmlFor='email'><strong>Email</strong></label>
                         <input
@@ -85,12 +87,12 @@ function Login() {
                     {loginError && <div className='alert alert-danger'>{loginError}</div>}
                     <button
                         type='submit'
-                        className='btn btn-success w-100 bg-primary'>
+                        className='btn btn-primary w-100'>
                         Log in
                     </button>
-                    <p>You agree to our terms and policies</p>
+                    <p className='text-center mt-3'>You agree to our terms and policies</p>
                     <Link to="/forgot-password" className='text-decoration-none'>Forgot Password?</Link>
-                    <Link to="/signup" className='btn btn-default border w-100 bg-light text-decoration-none mt-2'>
+                    <Link to="/signup" className='btn btn-light border w-100 text-decoration-none mt-2'>
                         Create Account
                     </Link>
                 </form>

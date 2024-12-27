@@ -1,0 +1,77 @@
+/* Center the content on the page */
+.homepage-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    /* min-height: 100vh; */
+    background-color: #f4f4f9;
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    text-align: center;
+  }
+  
+  /* Styling for the title */
+  h1 {
+    font-size: 2.5rem;
+    color: #2c3e50;
+    margin-bottom: 10px;
+  }
+  
+  /* Styling for the description and steps */
+  p {
+    font-size: 1.2rem;
+    color: #34495e;
+    margin-bottom: 20px;
+  }
+  
+  .info-section {
+    margin-bottom: 30px;
+  }
+  
+  .info-section h2 {
+    font-size: 1.8rem;
+    color: #2c3e50;
+  }
+  
+  ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  ul li {
+    margin: 10px 0;
+    font-size: 1rem;
+    color: #555;
+  }
+  
+  /* Styling for buttons */
+  .button-group {
+    display: flex;
+    gap: 20px;
+  }
+  
+  .btn {
+    padding: 10px 20px;
+    font-size: 1rem;
+    color: #fff;
+    background-color: #3498db;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: background-color 0.3s ease;
+  }
+  
+  .btn:hover {
+    background-color: #2980b9;
+  }
+  
+  .btn:nth-child(2) {
+    background-color: #2ecc71;
+  }
+  
+  .btn:nth-child(2):hover {
+    background-color: #27ae60;
+  }
+  
