@@ -1,21 +1,22 @@
 import React, { useContext, useEffect, useState } from "react";
 import { IoSearchSharp } from "react-icons/io5";
-import { FaHeart } from "react-icons/fa";
+import { FaEdit } from "react-icons/fa";
 import { store } from "../App";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const Admindashboard = () => {
   const { token } = useContext(store);
-  const [debates, setDebates] = useState([]);
-  const [filteredDebates, setFilteredDebates] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [filteredUsers, setFilteredUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [likesFilter, setLikesFilter] = useState(0);
   const [votesFilter, setVotesFilter] = useState(0);
-  const [postedAfter, setPostedAfter] = useState("");
+  const [debatesFilter, setDebatesFilter] = useState(0);
+  const [joinedAfter, setJoinedAfter] = useState("");
   const [exactMatch, setExactMatch] = useState(false);
   const navigate = useNavigate();
 
+  // Fetch users with their data
   useEffect(() => {
     if (!token) {
       navigate("/login");
@@ -23,68 +24,64 @@ const Admindashboard = () => {
     }
 
     axios
-      .get("http://localhost:5000/alldebates", {
+      .get("http://localhost:5000/allusers", {
         headers: {
           "x-token": token,
         },
       })
       .then((res) => {
-        setDebates(res.data);
-        setFilteredDebates(res.data);
+        setUsers(res.data);
+        setFilteredUsers(res.data);
       })
-      .catch((err) => console.error("Error fetching debates:", err));
+      .catch((err) => console.error("Error fetching users:", err));
   }, [token, navigate]);
 
-  const filterDebates = () => {
-    let filtered = debates;
+  // Filter Logic
+  const filterUsers = () => {
+    let filtered = users;
 
     if (searchTerm) {
-      filtered = filtered.filter((debate) =>
+      filtered = filtered.filter((user) =>
         exactMatch
-          ? debate.question === searchTerm
-          : debate.question.toLowerCase().includes(searchTerm.toLowerCase())
+          ? user.username === searchTerm
+          : user.username.toLowerCase().includes(searchTerm.toLowerCase())
       );
-    }
-
-    if (likesFilter > 0) {
-      filtered = filtered.filter((debate) => debate.likes > likesFilter);
     }
 
     if (votesFilter > 0) {
-      filtered = filtered.filter((debate) =>
-        debate.votes ? debate.votes.reduce((a, b) => a + b, 0) > votesFilter : false
-      );
+      filtered = filtered.filter((user) => user.totalVotes > votesFilter);
     }
 
-    if (postedAfter) {
-      const filterDate = new Date(postedAfter);
-      filtered = filtered.filter((debate) => new Date(debate.createdDate) > filterDate);
+    if (debatesFilter > 0) {
+      filtered = filtered.filter((user) => user.totalDebatesCreated > debatesFilter);
     }
 
-    setFilteredDebates(filtered);
+    if (joinedAfter) {
+      const filterDate = new Date(joinedAfter);
+      filtered = filtered.filter((user) => new Date(user.joinedDate) > filterDate);
+    }
+
+    setFilteredUsers(filtered);
   };
 
   useEffect(() => {
-    filterDebates();
-  }, [searchTerm, likesFilter, votesFilter, postedAfter, exactMatch, debates]);
+    filterUsers();
+  }, [searchTerm, votesFilter, debatesFilter, joinedAfter, exactMatch, users]);
 
   const formatDate = (date) => {
     const d = new Date(date);
-    return d.toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" });
-  };
-
-  const handleDebateClick = (debate) => {
-    navigate("/moderatedebate", { state: { debate } }); 
+    return d.toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" });
   };
 
   return (
     <div className="flex flex-col md:flex-row h-screen bg-white/80">
+      {/* Sidebar */}
       <div className="w-full md:w-1/4 p-4 bg-white shadow-lg">
         <button
-          onClick={() => navigate("/userdashboard")}
+          onClick={() => navigate("/")}
           className="mb-6 px-4 py-2 bg-yellow-500 text-white font-bold rounded-lg shadow-md hover:bg-yellow-600"
         >
-          Back to Dashboard
+          Back
         </button>
         <div className="mb-4">
           <label className="flex items-center">
@@ -98,24 +95,11 @@ const Admindashboard = () => {
           </label>
         </div>
         <div className="mb-4">
-          <label>Likes greater than:</label>
-          <input
-            type="range"
-            min="0"
-            max="10000"
-            step="500"
-            value={likesFilter}
-            onChange={(e) => setLikesFilter(Number(e.target.value))}
-            className="w-full mt-2"
-          />
-          <p>{likesFilter}+</p>
-        </div>
-        <div className="mb-4">
           <label>Votes greater than:</label>
           <input
             type="range"
             min="0"
-            max="25000"
+            max="100000"
             step="1000"
             value={votesFilter}
             onChange={(e) => setVotesFilter(Number(e.target.value))}
@@ -124,16 +108,32 @@ const Admindashboard = () => {
           <p>{votesFilter}+</p>
         </div>
         <div className="mb-4">
+          <label>Debates created greater than:</label>
+          <input
+            type="range"
+            min="0"
+            max="500"
+            step="1"
+            value={debatesFilter}
+            onChange={(e) => setDebatesFilter(Number(e.target.value))}
+            className="w-full mt-2"
+          />
+          <p>{debatesFilter}+</p>
+        </div>
+        <div className="mb-4">
           <label>Joined After:</label>
           <input
             type="date"
-            value={postedAfter}
-            onChange={(e) => setPostedAfter(e.target.value)}
+            value={joinedAfter}
+            onChange={(e) => setJoinedAfter(e.target.value)}
             className="w-full mt-2"
           />
         </div>
       </div>
+
+      {/* Main Content */}
       <div className="flex-1 p-4 overflow-y-auto">
+        {/* Search Bar */}
         <div className="relative mb-4">
           <input
             type="text"
@@ -144,23 +144,21 @@ const Admindashboard = () => {
           />
           <IoSearchSharp className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600" />
         </div>
-        {filteredDebates.length === 0 ? (
-          <p>No debates found based on the filters.</p>
+        {/* User List */}
+        {filteredUsers.length === 0 ? (
+          <p>No users found based on the filters.</p>
         ) : (
-          filteredDebates.map((debate) => (
+          filteredUsers.map((user) => (
             <div
-              key={debate._id}
-              className="relative bg-white p-4 rounded-lg shadow-md mb-4 hover:bg-gray-300 cursor-pointer"
-              onClick={() => handleDebateClick(debate)}
+              key={user._id}
+              className="relative bg-white p-4 rounded-lg shadow-md mb-4 cursor-pointer"
             >
-              <h4 className="font-semibold text-xl">{debate.question}</h4>
+              <h4 className="font-semibold text-lg">{user.username}</h4>
               <p className="text-gray-500">
-                Posted by {debate.createdBy} on {formatDate(debate.createdDate)}
+                {user.totalDebatesCreated} debates | {user.totalVotes} votes | Joined{" "}
+                {formatDate(user.joinedDate)}
               </p>
-              <div className="mt-4 flex items-center">
-                <FaHeart className="text-red-500 mr-2" />
-                <p>{debate.likes || 0} Likes</p>
-              </div>
+              <FaEdit className="absolute right-4 top-4 text-gray-600 hover:text-blue-500 cursor-pointer" />
             </div>
           ))
         )}
@@ -168,6 +166,5 @@ const Admindashboard = () => {
     </div>
   );
 };
-
 
 export default Admindashboard;

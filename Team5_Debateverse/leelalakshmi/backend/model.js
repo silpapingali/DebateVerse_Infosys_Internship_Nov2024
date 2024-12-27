@@ -37,6 +37,18 @@ const UserSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  totalDebatesCreated: {
+    type: Number,
+    default: 0,
+  },
+  totalVotes: {
+    type: Number,
+    default: 0,
+  },
+  joinedDate: {
+    type: Date,
+    default: Date.now, 
+  },
 });
 
 const DebateSchema=new mongoose.Schema({
@@ -63,10 +75,7 @@ const DebateSchema=new mongoose.Schema({
     type: Number,
     default: 0, 
   },
-  likedBy: { 
-    type: [String],
-    default: [] 
-  },
+  likedBy: [String], 
   totalVotes:{
    type: Number,
    default:0,

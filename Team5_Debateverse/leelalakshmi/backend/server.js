@@ -46,6 +46,7 @@ app.post('/register', async (req, res) => {
       username,
       email,
       password: hashedPassword,
+      joinedDate: Date.now(),
       role: email === adminemail ? 'admin' : 'user',
       isVerified: false,
     });
@@ -53,7 +54,10 @@ app.post('/register', async (req, res) => {
     await newUser.save();
 
     let newUsername = new User({
-      username
+      username,
+      totalDebatesCreated: 0, 
+      totalVotes: 0, 
+      joinedDate: newUser.joinedDate,
     });
     await newUsername.save();
 
@@ -202,7 +206,7 @@ app.post('/reset-password/:token', async (req, res) => {
 
       let user = await Registeruser.findOne({
           resetPasswordToken: token,
-          resetPasswordExpires: { $gt: Date.now() }, // Ensure token has not expired
+          resetPasswordExpires: { $gt: Date.now() },
       });
 
       if (!user) {
@@ -251,7 +255,6 @@ app.get('/admindashboard', middleware, async (req, res) => {
     if (!exist) {
       return res.status(400).send('User not found');
     }
-    // Check if the user has admin role
     if (exist.role !== 'admin') {
       return res.status(403).send('Access denied: Admins only');
     }
@@ -296,7 +299,16 @@ app.post('/debates', async (req, res) => {
       options,
       createdBy,
       createdAt: new Date(),
+      totalVotes: 0, 
     });
+
+    const user = await User.findOne({ username: createdBy });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    user.totalDebatesCreated += 1;
+    await user.save();
     await newDebate.save();
     res.status(201).json({
       message: 'Debate created successfully.',
@@ -330,7 +342,8 @@ app.get('/debates',middleware, async (req, res) => {
 
 app.get('/alldebates',middleware, async (req, res) => {
   try {
-    const alldebates = await Debate.find();
+    const username = req.user.username;
+    const alldebates = await Debate.find({ createdBy: {$ne:username} });
 
     if (alldebates.length === 0) {
       return res.status(404).json({ message: 'No debates found.' });
@@ -381,27 +394,49 @@ app.post('/vote/:debateId', middleware, async (req, res) => {
 
 
 // Like a debate
-app.post("/like/:debateId", async (req, res) => {
+app.post("/like/:debateId", middleware, async (req, res) => {
   const { debateId } = req.params;
-  const userId = req.user.id; // Assuming user ID is extracted from the token
-
+  const username = req.user.username; 
   try {
     const debate = await Debate.findById(debateId);
-
-    // Check if user already liked the debate
-    if (debate.likedBy.includes(userId)) {
-      return res.status(400).json({ message: "You have already liked this debate." });
+    if (!debate) {
+      return res.status(404).json({ error: "Debate not found." });
     }
-
-    // Increment the like count and add user ID to likedBy array
+    if (debate.likedBy.includes(username)) {
+      return res.status(400).send('You have already liked for this debate.');
+    }
+    debate.likedBy.push(username);
     debate.likes += 1;
-    debate.likedBy.push(userId);
-
     await debate.save();
-    res.json({ likes: debate.likes });
+    return res.status(200).json({ message: "Debate liked successfully.", likes: debate.likes });
   } catch (error) {
     console.error("Error liking debate:", error);
-    res.status(500).json({ message: "Server error." });
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+
+// Dislike a debate
+app.post('/dislike/:debateId', middleware, async (req, res) => {
+  try {
+    const debateId = req.params.debateId;
+    const username = req.user.username;
+    const debate = await Debate.findById(debateId);
+    
+    if (!debate) {
+      return res.status(404).json({ message: 'Debate not found' });
+    }
+    if (debate.likedBy.includes(username)) {
+      debate.likedBy = debate.likedBy.filter((user) => user.toString() !== username.toString());
+      debate.likes = Math.max(0, debate.likes - 1);
+    }
+      
+      await debate.save();
+
+      return res.json({ likes: debate.likes });
+  } catch (error) {
+    console.error('Error disliking debate:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
@@ -420,6 +455,70 @@ app.get('/debate/:id', middleware, async (req, res) => {
   } catch (error) {
     console.error('Error fetching debate:', error);
     res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get("/allusers", middleware, async (req, res) => {
+  try {
+    const users = await User.find({ username: { $ne: "Admin" } });
+    const updatedUsers = await Promise.all(
+      users.map(async (user) => {
+        const debates = await Debate.find({ createdBy: user.username });
+        const totalVotes = debates.reduce((sum, debate) => sum + (debate.totalVotes || 0), 0);
+        return {
+          ...user.toObject(),
+          totalVotes,
+        };
+      })
+    );
+    res.json(updatedUsers);
+  } catch (err) {
+    console.error("Error fetching users:", err);
+    res.status(500).json({ error: "Failed to fetch users." });
+  }
+});
+
+
+app.delete('/delete/:debateId', async (req, res) => {
+  try {
+    const { debateId } = req.params;
+    const debate = await Debate.findByIdAndDelete(debateId);
+    if (!debate) {
+      return res.status(404).json({ message: "Debate not found" });
+    }
+
+    res.status(200).json({ message: "Debate deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting debate:", error);
+    res.status(500).json({ message: "Error deleting debate" });
+  }
+});
+
+app.delete('/option/delete/:debateId/:optionId', async (req, res) => {
+  try {
+    const { debateId, optionId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(debateId)) {
+      return res.status(400).json({ message: "Invalid debate ID" });
+    }
+    if (!mongoose.Types.ObjectId.isValid(optionId)) {
+      return res.status(400).json({ message: "Invalid option ID" });
+    }
+    const debate = await Debate.findById(debateId);
+    if (!debate) {
+      return res.status(404).json({ message: "Debate not found" });
+    }
+    const optionIndex = debate.options.findIndex(option => option._id.toString() === optionId);
+    if (optionIndex === -1) {
+      return res.status(400).json({ message: "Option not found" });
+    }
+
+    debate.options.splice(optionIndex, 1);
+    await debate.save();
+
+    res.status(200).json({ message: "Option deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting option:", error);
+    res.status(500).json({ message: "Error deleting option" });
   }
 });
 

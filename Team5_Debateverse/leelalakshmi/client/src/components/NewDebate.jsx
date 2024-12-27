@@ -18,7 +18,7 @@ const NewDebate = () => {
       setErrorMessage('You can add a maximum of 7 options');
     } else {
       setErrorMessage('');
-      setOptions([...options, { optionText: '' }]); // Add a new object with `optionText`
+      setOptions([...options, { optionText: '' }]);
     }
   };
 
@@ -27,13 +27,13 @@ const NewDebate = () => {
       setErrorMessage('You must add at least 2 options');
     } else {
       setErrorMessage('');
-      setOptions(options.filter((_, i) => i !== index)); // Remove the option at the given index
+      setOptions(options.filter((_, i) => i !== index)); 
     }
   };
 
   const handleOptionChange = (index, value) => {
     const updatedOptions = [...options];
-    updatedOptions[index].optionText = value; // Update the optionText
+    updatedOptions[index].optionText = value; 
     setOptions(updatedOptions);
   };
 
@@ -46,7 +46,7 @@ const NewDebate = () => {
       setErrorMessage('The debate question cannot be empty.');
       return;
     }
-    if (options.some(option => !option.optionText.trim())) { // Corrected line here
+    if (options.some(option => !option.optionText.trim())) { 
       setErrorMessage('All options must be filled out.');
       return;
     }
@@ -55,8 +55,8 @@ const NewDebate = () => {
     const debateData = {
       question,
       options: options.map((option) => ({ 
-        optionText: option.optionText.trim(),  // Ensure optionText is a string
-        votes: 0  // Default votes to 0 for new options
+        optionText: option.optionText.trim(),  
+        votes: 0  
       })),
       createdBy: localStorage.getItem('username'),
     };
@@ -72,7 +72,7 @@ const NewDebate = () => {
       });
       setSuccessMessage('Your new debate was created successfully.');
       setQuestion('');
-      setOptions([{ optionText: '' }, { optionText: '' }]); // Reset options
+      setOptions([{ optionText: '' }, { optionText: '' }]); 
       setTimeout(() => {
         setSuccessMessage('');
       }, 3000);
@@ -85,7 +85,7 @@ const NewDebate = () => {
   };
 
   const handleGoBack = () => {
-    navigate('/userdashboard'); // Navigate back to user dashboard
+    navigate('/userdashboard');
   };
 
   return (

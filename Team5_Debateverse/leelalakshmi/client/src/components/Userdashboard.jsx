@@ -5,6 +5,7 @@ import { MdOutlinePostAdd } from "react-icons/md";
 import { ImUsers } from "react-icons/im";
 import { FaHeart } from "react-icons/fa6";
 import axios from 'axios';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'; // Import Recharts components
 
 const Userdashboard = () => {
   const { token, setToken } = useContext(store);
@@ -98,33 +99,50 @@ const Userdashboard = () => {
                   {debate.question}
                 </h4>
                 <div className="absolute top-4 right-4 m-4 flex items-center space-x-2">
-                  <p className="text-lg font-bold text-gray-700">0</p>
+                <p className='font-bold'>{debate.likes || 0}</p>
                   <FaHeart className="text-red-500 text-2xl mr-2" />
                 </div>
-                <ul className="mt-2">
+                <ul className="mt-4 space-y-4">
                   {debate.options.map((option, idx) => (
                     <li
                       key={idx}
-                      className="flex justify-between items-center space-x-4"
+                      className="flex items-center justify-between bg-gray-50 p-4 rounded-lg shadow-sm"
                     >
-                      <span className="flex-grow">{idx + 1}. {option.optionText}</span>
-  
-                      <div className="flex items-center justify-center space-x-2">
-                        <ImUsers size={24} />
-                        <p>{debate.votes ? debate.votes[idx] : 0}</p>
+                      <span className="flex-grow text-base font-medium text-gray-800">
+                        {idx + 1}. {option.optionText}
+                      </span>
+                      <div className="flex items-center space-x-3">
+                        <ImUsers className="text-black-500" size={20} />
+                        <p className="text-lg font-semibold text-gray-900">{option.votes}</p>
                       </div>
                     </li>
                   ))}
                 </ul>
-                <div className="my-6">
-                  <p>Votes distribution:</p>
-                  <div className="w-full h-40 bg-gray-200">
-                    <p>Graph: Visualize votes for each option here</p>
-                  </div>
-                </div>
-              </div>
-            ))
-          )}
+
+                {/* Bar Chart for Votes Distribution */}
+          <div className="my-6">
+                  <p className="text-lg font-medium">Votes distribution:</p>
+                  <div className="flex-grow-[8] h-60 bg-gray-300 px-4 py-2 rounded-lg shadow-md">
+            <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                   data={debate.options.map((opt, idx) => ({
+                  name: idx + 1,
+                  votes: opt.votes,
+                  }))}
+                  margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
+                >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" label={{ value: 'Options', position: 'insideBottom', offset: -10 }} />
+              <YAxis label={{ value: 'Votes', angle: -90, position: 'insideLeft', offset: 10 }} />
+              <Tooltip />
+              <Bar dataKey="votes" fill='#6a0dad' barSize={30} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          </div>
+          </div>
+          ))
+        )}
         </div>
       </div>
     </div>
