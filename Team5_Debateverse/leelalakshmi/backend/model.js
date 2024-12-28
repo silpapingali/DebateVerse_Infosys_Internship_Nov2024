@@ -49,6 +49,10 @@ const UserSchema = new mongoose.Schema({
     type: Date,
     default: Date.now, 
   },
+  isblocked:{
+    type: Boolean,
+    default: false
+  },
 });
 
 const DebateSchema=new mongoose.Schema({
@@ -60,7 +64,11 @@ const DebateSchema=new mongoose.Schema({
   options: [
     {
       optionText: { type: String, required: true }, 
-      votes: { type: Number, default: 0 },         
+      votes: { type: Number, default: 0 },
+      isremoved:{
+        type:Boolean,
+        default:false
+      }         
     },
   ],
   createdBy: { 
@@ -81,6 +89,10 @@ const DebateSchema=new mongoose.Schema({
    default:0,
   },
   votedUsers: [String],
+  isblocked:{
+    type:Boolean,
+    default:false
+  },
 
 });
 

@@ -14,9 +14,9 @@ const Admindashboard = () => {
   const [debatesFilter, setDebatesFilter] = useState(0);
   const [joinedAfter, setJoinedAfter] = useState("");
   const [exactMatch, setExactMatch] = useState(false);
+  const [popupUser, setPopupUser] = useState(null);
   const navigate = useNavigate();
 
-  // Fetch users with their data
   useEffect(() => {
     if (!token) {
       navigate("/login");
@@ -36,7 +36,6 @@ const Admindashboard = () => {
       .catch((err) => console.error("Error fetching users:", err));
   }, [token, navigate]);
 
-  // Filter Logic
   const filterUsers = () => {
     let filtered = users;
 
@@ -73,9 +72,45 @@ const Admindashboard = () => {
     return d.toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" });
   };
 
+
+const toggleBlockStatus = (userId, isBlocked) => {
+  axios
+    .put(
+      `http://localhost:5000/blockuser/${userId}`,
+      { isblocked: !isBlocked },
+      {
+        headers: {
+          "x-token": token,
+        },
+      }
+    )
+    .then((response) => {
+      const updatedUser = response.data.user;
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user._id === updatedUser._id ? updatedUser : user
+        )
+      );
+      setPopupUser(null); 
+    })
+    .catch((err) => console.error("Error updating block status:", err));
+};
+
+
+  const openPopup = (user) => {
+    setPopupUser(user);
+  };
+
+  const closePopup = () => {
+    setPopupUser(null);
+  };
+
+  const getUserClass = (isBlocked) => {
+    return isBlocked ? "bg-red-100 border-red-500" : "";
+  };
+
   return (
     <div className="flex flex-col md:flex-row h-screen bg-white/80">
-      {/* Sidebar */}
       <div className="w-full md:w-1/4 p-4 bg-white shadow-lg">
         <button
           onClick={() => navigate("/")}
@@ -130,10 +165,7 @@ const Admindashboard = () => {
           />
         </div>
       </div>
-
-      {/* Main Content */}
       <div className="flex-1 p-4 overflow-y-auto">
-        {/* Search Bar */}
         <div className="relative mb-4">
           <input
             type="text"
@@ -144,25 +176,59 @@ const Admindashboard = () => {
           />
           <IoSearchSharp className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600" />
         </div>
-        {/* User List */}
         {filteredUsers.length === 0 ? (
           <p>No users found based on the filters.</p>
         ) : (
           filteredUsers.map((user) => (
             <div
               key={user._id}
-              className="relative bg-white p-4 rounded-lg shadow-md mb-4 cursor-pointer"
+              className={`relative bg-white p-4 rounded-lg shadow-md mb-4 cursor-pointer border-2 ${getUserClass(user.isblocked)}`}
             >
               <h4 className="font-semibold text-lg">{user.username}</h4>
               <p className="text-gray-500">
                 {user.totalDebatesCreated} debates | {user.totalVotes} votes | Joined{" "}
                 {formatDate(user.joinedDate)}
               </p>
-              <FaEdit className="absolute right-4 top-4 text-gray-600 hover:text-blue-500 cursor-pointer" />
+              <FaEdit
+                className="absolute right-4 top-4 text-gray-600 hover:text-blue-500 cursor-pointer"
+                onClick={() => openPopup(user)}
+              />
             </div>
           ))
         )}
       </div>
+
+      {popupUser && (
+        <div
+          className="absolute top-0 left-0 w-full h-full flex justify-center items-center bg-black/50"
+          onClick={closePopup}
+        >
+          <div
+            className="bg-white p-6 rounded-lg shadow-lg"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-lg font-bold mb-4">{popupUser.isblocked ? "Unblock" : "Block"} User</h3>
+            <p>
+              Are you sure you want to {popupUser.isblocked ? "unblock" : "block"}{" "}
+              {popupUser.username}?
+            </p>
+            <div className="flex justify-end mt-4">
+              <button
+                className="px-4 py-2 bg-gray-300 rounded-lg mr-2"
+                onClick={closePopup}
+              >
+                Cancel
+              </button>
+              <button
+                className={`px-4 py-2 ${popupUser.isblocked ? "bg-green-500" : "bg-red-500"} text-white rounded-lg`}
+                onClick={() => toggleBlockStatus(popupUser._id, popupUser.isblocked)}
+              >
+                {popupUser.isblocked ? "Unblock" : "Block"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -188,33 +188,36 @@ const ModerateDebate = () => {
 
   const handleDeleteDebate = async () => {
     try {
-      const response = await axios.delete(`http://localhost:5000/delete/${debate._id}`, {
-        headers: { 'x-token': token }
+      const response = await axios.patch(`http://localhost:5000/debate/block/${debate._id}`, {}, {
+        headers: { 'x-token': token },
       });
       alert(response.data.message);
       navigate("/debatesearch");
     } catch (error) {
-      console.error("Error deleting debate:", error);
-      alert("Error: Failed to delete debate.");
+      console.error("Error blocking debate:", error);
+      alert("Error: Failed to block debate.");
     }
   };
+  
   const handleDeleteOption = async (optionId) => {
-  try {
-    const response = await axios.delete(
-      `http://localhost:5000/option/delete/${debate._id}/${optionId}`,
-      { headers: { 'x-token': token } }
-    );
-    alert(response.data.message);
-
-
-    const updatedOptions = debate.options.filter(option => option._id !== optionId);
-    setDebate({ ...debate, options: updatedOptions });
-    setVotes(updatedOptions.map(() => 0)); 
-  } catch (error) {
-    console.error("Error deleting option:", error);
-    alert("Error: Failed to delete option.");
-  }
-};
+    try {
+      const response = await axios.patch(
+        `http://localhost:5000/debate/${debate._id}/option/${optionId}/remove`,
+        {},
+        { headers: { 'x-token': token } }
+      );
+      alert(response.data.message);
+  
+      const updatedOptions = debate.options.map((option) =>
+        option._id === optionId ? { ...option, isremoved: true } : option
+      );
+      setDebate({ ...debate, options: updatedOptions });
+    } catch (error) {
+      console.error("Error removing option:", error);
+      alert("Error: Failed to remove option.");
+    }
+  };
+  
 
 
   if (!debate) return <p>Loading debate details...</p>;
@@ -266,39 +269,43 @@ const ModerateDebate = () => {
           </p>
         )}
         <div className="mb-6">
-          {debate.options.map((option, index) => (
-            <div key={index} className="mb-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="flex items-center space-x-2">
-                  <ImUsers size={24} />
-                  {index + 1}. {option.optionText}
-                </span>
-                <div className="flex items-center">
-                  <button
-                    className="px-2 py-1 bg-blue-500 text-white rounded-md mr-2"
-                    onClick={() => handleVote(index, 1)}
-                  >
-                    +
-                  </button>
-                  <span>{votes[index]}</span>
-                  <button
-                    className="px-2 py-1 bg-blue-500 text-white rounded-md ml-2"
-                    onClick={() => handleVote(index, -1)}
-                  >
-                    -
-                  </button>
-                  {role === "admin" && (
-                    <button
-                      onClick={() => handleDeleteOption(index)}
-                      className="ml-2 text-red-600 hover:text-red-700"
-                    >
-                      <RxCrossCircled size={24} />
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
+        {debate.options
+  .filter((option) => !option.isremoved) // Filter only options where isremoved is false
+  .map((option, index) => (
+    <div key={index} className="mb-4">
+      <div className="flex items-center justify-between mb-2">
+        <span className="flex items-center space-x-2">
+          <ImUsers size={24} />
+          {index + 1}. {option.optionText}
+        </span>
+        <div className="flex items-center">
+          <button
+            className="px-2 py-1 bg-blue-500 text-white rounded-md mr-2"
+            onClick={() => handleVote(index, 1)}
+          >
+            +
+          </button>
+          <span>{votes[index]}</span>
+          <button
+            className="px-2 py-1 bg-blue-500 text-white rounded-md ml-2"
+            onClick={() => handleVote(index, -1)}
+          >
+            -
+          </button>
+          {role === "admin" && (
+            <button
+              onClick={() => handleDeleteOption(option._id)}
+              className="ml-2 text-red-600 hover:text-red-700"
+            >
+              <RxCrossCircled size={24} />
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  ))}
+
+
         </div>
         {message && (
           <p
