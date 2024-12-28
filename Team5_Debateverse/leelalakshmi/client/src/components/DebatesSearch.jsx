@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { IoSearchSharp } from "react-icons/io5";
 import { FaHeart } from "react-icons/fa";
 import { store } from "../App";

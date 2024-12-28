@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from 'react';
+import { useContext, useState, useEffect } from 'react';
 import { store } from '../App';
 import { useNavigate } from 'react-router-dom';
 import { MdOutlinePostAdd } from "react-icons/md";
