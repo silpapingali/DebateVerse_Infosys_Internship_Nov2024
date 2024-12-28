@@ -1,13 +1,17 @@
-const express= require("express");
-const { CreateDebate, AllDebates, MyDebates, LikeDebate } = require("../controllers/Debates");
-const {Authjwt} = require("../middlewares/Authjwt");
+// backend/routes/debateRoute.js
 
-const DebateRoutes= express.Router();
+const express = require('express');
+const { CreateDebate, AllDebates, MyDebates, LikeDebate, searchDebates } = require('../controllers/Debates'); // Import searchDebates
+const { Authjwt } = require('../middlewares/Authjwt');
 
-DebateRoutes.get("/alldebates",Authjwt, AllDebates);
-DebateRoutes.post("/create", Authjwt, CreateDebate);
-DebateRoutes.get("/mydebates",Authjwt, MyDebates);
-DebateRoutes.get("/likerequest",Authjwt, LikeDebate);
+const DebateRoutes = express.Router();
 
+DebateRoutes.get('/alldebates', Authjwt, AllDebates);
+DebateRoutes.post('/create', Authjwt, CreateDebate);
+DebateRoutes.get('/mydebates', Authjwt, MyDebates);
+DebateRoutes.get('/likerequest', Authjwt, LikeDebate);
 
-module.exports=  DebateRoutes;
+// Search route
+DebateRoutes.post('/search', Authjwt, searchDebates); // Correct POST route for search
+
+module.exports = DebateRoutes;

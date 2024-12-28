@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { IoSearchSharp } from "react-icons/io5";
-import { FaHeart } from "react-icons/fa";
+import { FaHeart, FaThumbsUp } from "react-icons/fa";
 import { store } from "../App";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -38,6 +38,7 @@ const DebatesSearch = () => {
       })
       .catch((err) => console.error("Error fetching debates:", err));
   }, [token, navigate, userId]);
+
 
   const filterDebates = () => {
     let filtered = debates;
@@ -161,9 +162,15 @@ const DebatesSearch = () => {
               <p className="text-gray-500">
                 Posted by {debate.createdBy} on {formatDate(debate.createdDate)}
               </p>
-              <div className="mt-4 flex items-center">
-                <FaHeart className="text-red-500 mr-2" />
-                <p>{debate.likes || 0} Likes</p>
+              <div className = "flex space-x-4 m-4">
+                <div className="mt-4 flex items-center">
+                  <FaHeart className="text-red-500 mr-2" />
+                  <p>{debate.likes || 0} Likes</p>
+                </div>
+                <div className="mt-4 flex items-center">
+                  <FaThumbsUp className="text-green-500 mr-2" />
+                  <p>{debate.totalVotes || 0} Votes</p>
+                </div>
               </div>
             </div>
           ))

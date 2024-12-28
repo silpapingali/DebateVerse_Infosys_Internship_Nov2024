@@ -2,6 +2,7 @@ const debatesModel = require("../models/debatesModel");
 const likesModel = require("../models/likesModel");
 
 const AllDebates = async (req, res) => {
+  //null checks
   const createdBy = req.user.email.split("@")[0];
   const { userId } = req.user;
   const { page } = req.query;
@@ -88,4 +89,23 @@ const LikeDebate = async (req, res) => {
   }
 };
 
-module.exports = { AllDebates, CreateDebate, MyDebates, LikeDebate };
+const searchDebates=async (req, res) => {
+  const { query } = req.body;  // Get the query from the request body
+
+  try {
+    // Search for debates where the question matches the query
+    const debates = await debatesModel.find({
+      question: { $regex: query, $options: 'i' }  // Case-insensitive search
+    }).exec();
+
+    if (debates.length === 0) {
+      return res.status(404).json({ message: 'No debates found' });
+    }
+
+    res.status(200).json(debates);  // Return the found debates
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching debates', error });
+  }
+};
+
+module.exports = { AllDebates, CreateDebate, MyDebates, LikeDebate,searchDebates };
