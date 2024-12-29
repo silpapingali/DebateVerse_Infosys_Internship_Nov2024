@@ -8,8 +8,12 @@ import axios from "axios";
 const Admindashboard = () => {
   const { token } = useContext(store);
   const [users, setUsers] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
   const [filteredUsers, setFilteredUsers] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [likesFilter, setLikesFilter] = useState(0);
+  const [votesFilter, setVotesFilter] = useState(0);
+  const [postedAfter, setPostedAfter] = useState("");
+  const [exactMatch, setExactMatch] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -37,25 +41,41 @@ const Admindashboard = () => {
         console.error("Error fetching users:", err);
       }
     };
+
     fetchUsers();
   }, [token, navigate]);
 
   const filterUsers = () => {
+    console.log(users)
     let filtered = users;
 
     if (searchTerm) {
       filtered = filtered.filter((user) =>
-        user.username.toLowerCase().includes(searchTerm.toLowerCase())
+        exactMatch
+          ? user.username === searchTerm
+          : user.username.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
+    if (likesFilter > 0) {
+      filtered = filtered.filter((user) => user.totalLikes > likesFilter);
+    }
+
+    if (votesFilter > 0) {
+      filtered = filtered.filter((user) => user.totalVotes > votesFilter);
+    }
+
+    if (postedAfter) {
+      const filterDate = new Date(postedAfter);
+      filtered = filtered.filter((user) => new Date(user.createdDate) > filterDate);
+    }
+
     setFilteredUsers(filtered);
-    console.log(filteredUsers)
   };
 
   useEffect(() => {
     filterUsers();
-  }, [searchTerm, users]);
+  }, [searchTerm, likesFilter, votesFilter, postedAfter, exactMatch, users]);
 
   const formatDate = (date) => {
     const d = new Date(date);
@@ -63,9 +83,63 @@ const Admindashboard = () => {
   };
 
   const handleUserClick = (userId) => {
-    console.log(userId)
-    console.log("Navigating to:", `/userdetails/${userId}`);
-    navigate(`/userdetails/${userId}`); // Navigate to user details page with the user ID
+    navigate(`/userdetails/${userId}`);
+  };
+
+  const handleDeleteUser = async (userId) => {
+    const confirmDelete = window.confirm("Are you sure you want to block this user and their debates?");
+    if (confirmDelete) {
+      try {
+        await axios.patch(
+          `http://localhost:5000/blockuser/${userId}`,
+          {},
+          { headers: { "x-token": token } }
+        );
+
+        await axios.patch(
+          `http://localhost:5000/blockuserdebates/${userId}`,
+          {},
+          { headers: { "x-token": token } }
+        );
+
+        setUsers((prevUsers) => prevUsers.filter((user) => user.userId !== userId));
+        setFilteredUsers((prevUsers) => prevUsers.filter((user) => user.userId !== userId));
+
+        alert("User and their debates have been blocked.");
+      } catch (err) {
+        console.error("Error blocking user:", err);
+        alert("An error occurred while blocking the user.");
+      }
+    }
+  };
+
+  const handleUnblockUser = async (userId) => {
+    const confirmUnblock = window.confirm("Are you sure you want to unblock this user and his debates?");
+    if (confirmUnblock) {
+      try {
+        await axios.patch(
+          `http://localhost:5000/unblockuser/${userId}`,
+          {},
+          { headers: { "x-token": token } }
+        );
+
+        setUsers((prevUsers) =>
+          prevUsers.map((user) =>
+            user.userId === userId ? { ...user, isBlocked: false } : user
+          )
+        );
+        setFilteredUsers((prevUsers) =>
+          prevUsers.map((user) =>
+            user.userId === userId ? { ...user, isBlocked: false } : user
+          )
+        );
+
+        alert("User has been unblocked.");
+      } catch (err) {
+        console.error("Error unblocking user:", err);
+        alert("An error occurred while unblocking the user.");
+      }
+    }
   };
 
   return (
@@ -81,22 +155,72 @@ const Admindashboard = () => {
           />
           <IoSearchSharp className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600" />
         </div>
+
+        <div className="mb-4">
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={exactMatch}
+              onChange={() => setExactMatch(!exactMatch)}
+              className="mr-2"
+            />
+            Exact Match
+          </label>
+        </div>
+
+        <div className="mb-4">
+          <label>Likes greater than:</label>
+          <input
+            type="range"
+            min="0"
+            max="1000"
+            step="1"
+            value={likesFilter}
+            onChange={(e) => setLikesFilter(Number(e.target.value))}
+            className="w-full mt-2"
+          />
+          <p>{likesFilter}+</p>
+        </div>
+
+        <div className="mb-4">
+          <label>Votes greater than:</label>
+          <input
+            type="range"
+            min="0"
+            max="5000"
+            step="5"
+            value={votesFilter}
+            onChange={(e) => setVotesFilter(Number(e.target.value))}
+            className="w-full mt-2"
+          />
+          <p>{votesFilter}+</p>
+        </div>
+
+        <div className="mb-4">
+          <label>Posted After:</label>
+          <input
+            type="date"
+            value={postedAfter}
+            onChange={(e) => setPostedAfter(e.target.value)}
+            className="w-full mt-2"
+          />
+        </div>
       </div>
 
       <div className="flex-1 p-4 overflow-y-auto">
         {filteredUsers.length === 0 ? (
-          <p>No users found based on the search term.</p>
+          <p>No users found based on the filters.</p>
         ) : (
           filteredUsers.map((user, index) => {
-            const { userId,totalDebates, totalLikes, totalVotes } = user;
+            const { userId, totalDebates, totalLikes, totalVotes, username, isblocked } = user;
 
             return (
               <div
                 key={userId || index}
                 className="relative bg-white p-4 rounded-lg shadow-md mb-4 hover:bg-gray-300 cursor-pointer"
-                onClick={() => handleUserClick(user.userId)} // Pass user._id to the handleUserClick function
+                onClick={() => handleUserClick(user.userId)}
               >
-                <h4 className="font-semibold text-xl">{user.username}</h4>
+                <h4 className="font-semibold text-xl">{username}</h4>
                 <p className="text-gray-500">Joined on {formatDate(user.createdDate)}</p>
                 <div className="mt-4 flex flex-col items-start">
                   <p>Total Debates: {totalDebates}</p>
@@ -106,6 +230,28 @@ const Admindashboard = () => {
                   </div>
                   <p>Total Votes: {totalVotes}</p>
                 </div>
+
+                {isblocked ? (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleUnblockUser(userId);
+                    }}
+                    className="absolute top-4 right-4 bg-green-500 text-white py-1 px-3 rounded-lg hover:bg-green-600"
+                  >
+                    Unblock
+                  </button>
+                ) : (
+                  <button
+                    className="absolute top-4 right-4 bg-red-500 text-white py-1 px-3 rounded-lg hover:bg-red-600"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteUser(userId);
+                    }}
+                  >
+                    Block
+                  </button>
+                )}
               </div>
             );
           })

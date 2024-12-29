@@ -48,8 +48,8 @@ const Navbar = () => {
   }, [token, role, navigate]);
 
   return (
-    <header className="max-w-screen-2xl mx-auto px-4 py-3">
-      <nav className="flex justify-between items-center">
+    <header className="max-w-screen-2xl mx-auto px-4 py-2 bg-orange-500 mb-5">
+      <nav className="max-w-screen-2xl px-4 py-3 flex justify-between items-center fixed top-0 left-0 right-0 bg-orange-500">
         <div className="flex items-center space-x-4">
           <Link to="/">
             <FaHome className="text-primary text-3xl" />
