@@ -1,33 +1,39 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Register from './components/Register';
-import Forgotpassword from './components/Forgotpassword';
-import Login from './components/Login';
-import Admin from './components/Admin';
-import Home from './components/Home';
-import Otp from './components/Otp';
-import ResetPassword from './components/ResetPassword';
-import CreateDebate from './components/CreateDebate';
-import Navbar from './components/Navbar';
-import './App.css';
+import { BrowserRouter, Routes, Route } from 'react-router-dom'; 
+import Navbar from './components/Navbar';  
+import Otp from './components/Otp';  
+import Forgotpassword from './components/Forgotpassword';  
+import ResetPassword from './components/ResetPassword';  
+import Login from './components/Login';  
+import Register from './components/Register';  
+import Admin from './components/Admin';  
+import Debates from './components/Debates';  
+import CreateDebate from './components/CreateDebate'; 
+import About from './components/About';
+import UserDashboard from './components/UserDashboard';
+import ModerateDebate from './components/ModerateDebate';
+import { Provider } from 'react-redux';
 
 function App() {
   return (
-    <Router>  {/* Move Router to wrap everything */}
+    <BrowserRouter>  {/* Move Router to wrap everything */}
       <div className="App">
         <Navbar />
         <Routes>
-          <Route path='/register' element={<Register />} />
-          <Route path='/createdebate' element={<CreateDebate />} />
-          <Route path='/login' element={<Login />} />
-          <Route path="/home" element={<Home />} />
+          <Route path='/' element={<Login />} />
+          <Route path='/Register' element={<Register />} />
+          <Route path='/Forgot-password' element={<Forgotpassword />} />
+          <Route path='/Otp' element={<Otp />} />
+          <Route path='/reset-password' element={<ResetPassword />} />
           <Route path="/admin" element={<Admin />} />
-          <Route path='/forgotpassword' element={<Forgotpassword />} />
-          <Route path='/otp' element={<Otp />} />
-          <Route path='/resetpassword' element={<ResetPassword />} />
+          <Route path="/debates" element={<Debates />} />
+          <Route path="/createdebate" element={<CreateDebate />} />
+          <Route path="/userdashboard" element={<UserDashboard />} />
+          <Route path="/moderatedebate" element={<ModerateDebate />} />
+          <Route path="/about" element={<About />} />
         </Routes>
       </div>
-    </Router>
+    </BrowserRouter>
   );
 }
 
