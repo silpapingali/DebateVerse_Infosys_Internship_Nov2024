@@ -3,7 +3,7 @@ import { Search, Calendar } from 'lucide-react';
 import VoteGraph from '../components/VoteGraph';
 import { useEffect, useState } from "react";
 
-const Debates = () => {
+const DebateList = () => {
   const navigate = useNavigate();
   const [debates, setDebates] = useState([]);
 
@@ -30,10 +30,10 @@ const Debates = () => {
     const matchesSearch = exactMatch 
       ? debate.title.toLowerCase() === searchTerm.toLowerCase()
       : debate.title.toLowerCase().includes(searchTerm.toLowerCase());
-
+    
     const matchesVotes = debate.options.some(opt => opt.userVotes >= minVotes);
     const matchesDate = !dateAfter || new Date(debate.createdAt) >= new Date(dateAfter);
-    return matchesSearch  && matchesVotes && matchesDate;
+    return matchesSearch && matchesVotes && matchesDate;
   });
 
   return (
@@ -41,7 +41,7 @@ const Debates = () => {
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <button 
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/admin')}
             className="px-6 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-lg shadow-lg"
           >
             Back to Dashboard
@@ -53,7 +53,7 @@ const Debates = () => {
               placeholder="Search debates..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border-2 border-green-300 rounded-lg font-comic"
+              className="w-full pl-10 pr-4 py-2 border-2 border-orange-300 rounded-lg font-comic"
             />
           </div>
         </div>
@@ -81,7 +81,7 @@ const Debates = () => {
                   max="10000"
                   value={minLikes}
                   onChange={(e) => setMinLikes(Number(e.target.value))}
-                  className="w-full h-2 bg-green-200 rounded-lg appearance-none"
+                  className="w-full h-2 bg-orange-200 rounded-lg appearance-none"
                 />
                 <div className="flex justify-between text-xs mt-1">
                   <span>0</span>
@@ -98,7 +98,7 @@ const Debates = () => {
                   max="25000"
                   value={minVotes}
                   onChange={(e) => setMinVotes(Number(e.target.value))}
-                  className="w-full h-2 bg-green-200 rounded-lg appearance-none"
+                  className="w-full h-2 bg-orange-200 rounded-lg appearance-none"
                 />
                 <div className="flex justify-between text-xs mt-1">
                   <span>0</span>
@@ -126,7 +126,7 @@ const Debates = () => {
             {filteredDebates.map((debate) => (
               <div 
                 key={debate._id}
-                onClick={() => navigate(`/debates/${debate._id}`)}
+                onClick={() => navigate(`/admin/debates/${debate._id}`)}
                 className="bg-white rounded-lg shadow-lg p-6 cursor-pointer hover:shadow-xl"
               >
                 <div className="flex justify-between items-start mb-4">
@@ -189,7 +189,6 @@ const Debates = () => {
                   {debate.isActive ? 'Active' : 'Closed'}
                 </span>
                 </div>
-              
               </div>
             ))}
           </div>
@@ -199,4 +198,4 @@ const Debates = () => {
   );
 };
 
-export default Debates;
+export default DebateList;

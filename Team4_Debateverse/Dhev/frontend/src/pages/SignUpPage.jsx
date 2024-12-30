@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import PasswordStrengthMeter from "../components/PasswordStrengthMeter";
 import { useAuthStore } from "../store/authStore";
+
 const SignUpPage = () => {
 	const [name, setName] = useState("");
 	const [email, setEmail] = useState("");
@@ -17,12 +18,14 @@ const SignUpPage = () => {
 		e.preventDefault();
 
 		try {
-			await signup(email, password, name);
+			// Pass default role as "user"
+			await signup(email, password, name, "user");
 			navigate("/verify-email");
 		} catch (error) {
 			console.log(error);
 		}
 	};
+
 	return (
 		<motion.div
 			initial={{ opacity: 0, y: 20 }}
@@ -86,4 +89,5 @@ const SignUpPage = () => {
 		</motion.div>
 	);
 };
+
 export default SignUpPage;

@@ -18,14 +18,20 @@ import { useAuthStore } from "./store/authStore";
 import { useEffect } from "react";
 import { Provider } from 'react-redux';
 
-const ProtectedRoute = ({ children }) => {
+import AdminDashboard from './pages/AdminDashboard';
+import DebateList from './pages/DebateList';
+import UserList from "./pages/UserList";
+import AdminDebateDetail from "./pages/AdminDebateDetail";
+
+
+const ProtectedRoute = ({ children, requireAdmin  }) => {
     const { isAuthenticated, user } = useAuthStore();
 
     if (!isAuthenticated) {
         return <Navigate to='/login' replace />;
     }
 
-    if (!user.isVerified) {
+    if (requireAdmin && !user.isVerified && user.role !== 'admin') {
         return <Navigate to='/verify-email' replace />;
     }
 
@@ -35,7 +41,10 @@ const ProtectedRoute = ({ children }) => {
 const RedirectAuthenticatedUser = ({ children }) => {
     const { isAuthenticated, user } = useAuthStore();
 
-    if (isAuthenticated && user.isVerified) {
+    if (isAuthenticated && user.isVerified && user.role === 'admin') {
+        return <Navigate to='/admin' replace />;
+    }
+    if (isAuthenticated && user.isVerified && user.role === 'user') {
         return <Navigate to='/' replace />;
     }
 
@@ -70,7 +79,10 @@ function App() {
                         <FloatingShape color='bg-emerald-500' size='w-48 h-48' top='70%' left='80%' delay={5} />
                         <FloatingShape color='bg-lime-500' size='w-32 h-32' top='40%' left='-10%' delay={2} />
                     </>
-            
+                    
+
+
+
                 <Routes>
                 <Route
                         path='/login'
@@ -86,6 +98,22 @@ function App() {
                         <Route path="/debates/:id" element={<DebateDetail />} />
                         <Route path="/create" element={<CreateDebate />} />
                         <Route path="/user/:username" element={<UserDebates />} />
+
+
+                        <Route
+                         path="/admin/*"
+                          element={
+                           <ProtectedRoute requireAdmin>
+                         <Routes>
+                           <Route path="/" element={<AdminDashboard />} />
+                            <Route path="debates" element={<DebateList />} />
+                            <Route path="debates/:id" element={<AdminDebateDetail />} />
+                            
+                            <Route path="users" element={<UserList />} />
+                        </Routes>
+                        </ProtectedRoute>
+                            }
+                        />
                     </Route>
                     <Route
                         path='/signup'

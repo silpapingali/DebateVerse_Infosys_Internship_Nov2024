@@ -24,7 +24,7 @@ const DebateCard = ({ debate }) => {
               </h2>
             </div>
             <div className="flex items-center text-red-500 gap-1 font-comic">
-              <span>{debate.likes} Likes</span>
+              <span>{debate.likes.length} Likes</span>
               <span>❤️</span>
             </div>
           </div>
@@ -42,7 +42,22 @@ const DebateCard = ({ debate }) => {
             ))}
           </div>
 
-          <VoteGraph options={debate.options} />
+          <div className="mt-4 h-16 bg-green-50 rounded-lg flex items-end">
+  {debate.options.map((option, index) => {
+    const totalVotes = option.upvotes.reduce((sum, vote) => sum + vote.count, 0) - option.downvotes.reduce((sum, vote) => sum + vote.count, 0);
+    const maxVotes = Math.max(...debate.options.map(opt => opt.upvotes.reduce((sum, vote) => sum + vote.count, 0) - opt.downvotes.reduce((sum, vote) => sum + vote.count, 0)));
+    const heightPercentage = maxVotes ? (totalVotes / maxVotes) * 100 : 0; // Calculate the height as a percentage of the maxVotes
+
+    return (
+      <div
+        key={index}
+        className="bg-green-400 w-1/5 mx-0.5 transition-all"
+        style={{ height: `${heightPercentage}%` }}
+      />
+    );
+  })}
+</div>
+
         </div>
       </div>
     </div>
