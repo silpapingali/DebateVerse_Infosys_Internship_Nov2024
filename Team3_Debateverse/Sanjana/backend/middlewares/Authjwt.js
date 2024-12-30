@@ -11,5 +11,4 @@ const Authjwt= (req, res, next)=>{
         next();
     });
 }
-
 module.exports={Authjwt};

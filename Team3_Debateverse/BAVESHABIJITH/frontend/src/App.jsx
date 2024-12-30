@@ -24,12 +24,11 @@ function App() {
             <Route path="/userdebates" element={<UserAllDebates />} />
             <Route path="/userdashboard" element={<UserDashboard />} />
           
-          <Route element={<AdminProtected />}>
             <Route path="/admindashboard" element={<AdminDashboard />} />
-          </Route>
 
           <Route element={<PublicProtected />}>
-            <Route path="/" element={<Home />} />
+            <Route path="/home" element={<Home />} />
+            <Route path="/" element={<Navigate to="/login"/>}/>
             <Route path="/aboutus" element={<About />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />

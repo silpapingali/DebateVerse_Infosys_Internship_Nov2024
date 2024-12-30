@@ -25,7 +25,7 @@ export default function VerifyOtp() {
 
         setError('');
         axios
-            .post('http://localhost:8081/verify-otp', { email, otp })
+            .post('http://localhost:8081/api/auth/verifyOtp', { email, otp })
             .then((response) => {
                 setMessage(response.data.message);
                 navigate(`/reset-password?token=${response.data.token}`);
@@ -39,7 +39,7 @@ export default function VerifyOtp() {
     return (
         <div
         className="d-flex justify-content-center align-items-center vh-100 position-relative"
-        style={{ backgroundColor: '#007BFF' }} // Light grey background color
+        style={{ backgroundColor: '#007BFF' }} 
     >
             <div className="bg-white p-4 rounded w-25">
                 <h2 className="text-center">Verify OTP</h2>

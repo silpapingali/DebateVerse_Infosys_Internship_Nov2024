@@ -1,0 +1,24 @@
+.debate-card {
+    border: 1px solid #e5e7eb; /* Light gray border */
+    transition: transform 0.2s ease-in-out;
+  }
+  
+  .debate-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .debate-title {
+    color: #1f2937; /* Dark gray */
+  }
+  
+  .option-item {
+    margin-bottom: 5px;
+  }
+  
+  @media (max-width: 768px) {
+    .debate-card {
+      padding: 1rem;
+    }
+  }
+  

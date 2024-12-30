@@ -27,7 +27,7 @@ export default function Login() {
 
     useEffect(() => {
         if (isSubmitting) {
-            axios.post('http://localhost:8081/login', values)
+            axios.post('http://localhost:8081/api/auth/login', values)  // Correct API endpoint
                 .then((res) => {
                     if (res.data.token) {
                         localStorage.setItem('token', res.data.token);
@@ -39,9 +39,9 @@ export default function Login() {
 
                         // Navigate based on the role
                         if (role === 'admin') {
-                            navigate('/admin-dashboard');  // Admin dashboard
+                            navigate('/admindashboard');  // Admin dashboard
                         } else if (role === 'user') {
-                            navigate('/user-dashboard');  // User dashboard
+                            navigate('/About');  // User dashboard
                         }
                     }
                 })
@@ -59,11 +59,7 @@ export default function Login() {
     }, [isSubmitting, navigate, values]);
 
     return (
-        <div
-            className="d-flex justify-content-center align-items-center bg-primary vh-100 position-relative"
-            style={{ backgroundColor: '#007bff' }} // Ensuring bg-primary effect
-        >
-            {/* Project Title in Background */}
+        <div className="d-flex justify-content-center align-items-center bg-primary vh-100 position-relative">
             <h1
                 className="position-absolute"
                 style={{
@@ -110,7 +106,6 @@ export default function Login() {
                         <strong>Log in</strong>
                     </button>
 
-                    {/* Forgot Password Link */}
                     <div className="text-center mt-2">
                         <Link to="/forgot-password" className="text-decoration-none text-primary">
                             Forgot Password?

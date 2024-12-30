@@ -37,6 +37,22 @@ const UserSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  totalDebatesCreated: {
+    type: Number,
+    default: 0,
+  },
+  totalVotes: {
+    type: Number,
+    default: 0,
+  },
+  joinedDate: {
+    type: Date,
+    default: Date.now, 
+  },
+  isblocked:{
+    type: Boolean,
+    default: false
+  },
 });
 
 const DebateSchema=new mongoose.Schema({
@@ -45,10 +61,16 @@ const DebateSchema=new mongoose.Schema({
     required: true,
     trim: true
   },
-  options:{
-    type: [String],
-    required: true,
-  },
+  options: [
+    {
+      optionText: { type: String, required: true }, 
+      votes: { type: Number, default: 0 },
+      isremoved:{
+        type:Boolean,
+        default:false
+      }         
+    },
+  ],
   createdBy: { 
     type: String, 
     required: true
@@ -57,8 +79,23 @@ const DebateSchema=new mongoose.Schema({
     type: Date,
     default: Date.now
    },
+   likes: {
+    type: Number,
+    default: 0, 
+  },
+  likedBy: [String], 
+  totalVotes:{
+   type: Number,
+   default:0,
+  },
+  votedUsers: [String],
+  isblocked:{
+    type:Boolean,
+    default:false
+  },
 
 });
+
 const Registeruser = mongoose.model('Registeruser', RegisterUserSchema, 'registerusers');
 const User = mongoose.model('User', UserSchema, 'users');
 const Debate=mongoose.model('Debate',DebateSchema,'debates');
