@@ -103,8 +103,9 @@ const Userdetails = () => {
 
   // Function to unblock a debate
   const unblockDebate = (debateId) => {
+    console.log(debateId)
     axios
-      .patch(`http://localhost:5000/debate/${debateId}/unblock`, null, {
+      .patch(`http://localhost:5000/${debateId}/unblock`, null, {
         headers: { "x-token": token },
       })
       .then(() => {

@@ -5,11 +5,10 @@ import { MdOutlinePostAdd } from "react-icons/md";
 import { ImUsers } from "react-icons/im";
 import { FaHeart } from "react-icons/fa6";
 import axios from 'axios';
-import { Bar } from 'react-chartjs-2'; // Import the Bar chart from chart.js
+import { Bar } from 'react-chartjs-2';
 import { FaThumbsUp } from 'react-icons/fa';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
 
-// Register the required chart components
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const Userdashboard = () => {
@@ -26,24 +25,17 @@ const Userdashboard = () => {
 
     const fetchData = async () => {
       try {
-        // Fetch user dashboard data
         const response = await axios.get('http://localhost:5000/userdashboard', {
-          headers: {
-            'x-token': token,
-          },
+          headers: { 'x-token': token },
         });
         console.log('User Dashboard Response:', response);
         setData(response.data.message);
 
-        // Fetch debates
         const debatesResponse = await axios.get('http://localhost:5000/debates', {
-          headers: {
-            'x-token': token,
-          },
+          headers: { 'x-token': token },
         });
         console.log('Debates Response:', debatesResponse);
 
-        // Sort debates in reverse chronological order
         const sortedDebates = debatesResponse.data.sort(
           (a, b) => new Date(b.createdDate) - new Date(a.createdDate)
         );
@@ -68,19 +60,19 @@ const Userdashboard = () => {
   const formatDate = (date) => {
     const d = new Date(date);
     const day = d.getDate();
-    const month = d.getMonth() + 1; // Get month as a number (1-12)
+    const month = d.getMonth() + 1;
     const year = d.getFullYear();
     return `${day}/${month}/${year}`;
   };
 
   const chartData = (debate) => {
-    const totalVotes = debate.options.reduce((acc, option) => acc + option.votes, 0); // Calculate total votes
+    const totalVotes = debate.options.reduce((acc, option) => acc + option.votes, 0);
     return {
       labels: debate.options.map(option => option.optionText),
       datasets: [
         {
           label: 'Vote Share (%)',
-          data: debate.options.map(option => (totalVotes > 0 ? (option.votes / totalVotes) * 100 : 0)), // Calculate vote share as a percentage
+          data: debate.options.map(option => (totalVotes > 0 ? (option.votes / totalVotes) * 100 : 0)),
           backgroundColor: 'rgba(75, 192, 192, 0.2)',
           borderColor: 'rgba(75, 192, 192, 1)',
           borderWidth: 1,
@@ -90,7 +82,7 @@ const Userdashboard = () => {
   };
 
   return (
-    <div className="p-4 flex justify-center items-center h-screen bg-gray-100">
+    <div className="p-4 flex justify-center items-center h-screen ">
       <div className="w-full max-w-4xl bg-white p-6 rounded-lg shadow-md">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold text-primary">My Debates</h2>
@@ -111,8 +103,18 @@ const Userdashboard = () => {
               debates.map((debate) => (
                 <div
                   key={debate._id}
-                  className="relative bg-white p-6 rounded-lg shadow-md mb-6"
+                  className={`relative p-6 rounded-lg shadow-md mb-6 ${
+                    debate.isblocked
+                      ? "bg-red-100 border-2 border-red-500"
+                      : "bg-white"
+                  }`}
                 >
+                  {debate.isblocked && (
+                    <div className="absolute top-0 left-0 right-0 bottom-0 flex justify-center items-center bg-red-200 text-red-700 font-semibold px-4 py-2 rounded">
+                    Blocked
+                  </div>
+                  
+                  )}
                   <p className="text-sm text-blue-700 font-semibold mt-1">
                     Posted on: {formatDate(debate.createdDate)}
                   </p>

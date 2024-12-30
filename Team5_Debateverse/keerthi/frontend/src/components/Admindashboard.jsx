@@ -143,7 +143,7 @@ const Admindashboard = () => {
   };
 
   return (
-    <div className="flex flex-col md:flex-row h-screen bg-white/80">
+    <div className="flex flex-col md:flex-row h-screen ">
       <div className="w-full md:w-1/4 p-4 bg-white shadow-lg">
         <div className="relative mb-4">
           <input
@@ -218,7 +218,10 @@ const Admindashboard = () => {
               <div
                 key={userId || index}
                 className="relative bg-white p-4 rounded-lg shadow-md mb-4 hover:bg-gray-300 cursor-pointer"
-                onClick={() => handleUserClick(user.userId)}
+                onClick={() => {
+                  if (!isblocked){
+                    handleUserClick(user.userId)}
+                }}
               >
                 <h4 className="font-semibold text-xl">{username}</h4>
                 <p className="text-gray-500">Joined on {formatDate(user.createdDate)}</p>

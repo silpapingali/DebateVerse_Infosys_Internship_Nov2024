@@ -119,36 +119,48 @@ app.get('/verify-email', async (req, res) => {
 app.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
+
+    // Check if the user exists
     let exist = await Registeruser.findOne({ email });
     if (!exist) {
       return res.status(400).send('USER_NOT_FOUND');
     }
+
+    // Check if the user's email is verified
     if (!exist.isVerified) {
       return res.status(400).send('Email not verified');
     }
-    const isMatch = await bcrypt.compare(password, exist.password);
-    if (!isMatch) {
-      return res.status(400).send('PASSWORD_MISSMATCH');
+
+    // Check if the user is blocked
+    if (exist.isblocked) {
+      return res.status(403).send('ACCOUNT_BLOCKED'); // HTTP 403 for forbidden access
     }
 
-    
+    // Check if the password matches
+    const isMatch = await bcrypt.compare(password, exist.password);
+    if (!isMatch) {
+      return res.status(400).send('PASSWORD_MISMATCH');
+    }
+
+    // Create a payload for the JWT
     let payload = {
       user: {
         id: exist.id,
-        role: exist.role, 
+        role: exist.role,
         username: exist.username,
       },
     };
 
-    
+    // Sign and return the JWT
     jwt.sign(payload, 'jwtSecret', { expiresIn: 3600000 }, (error, token) => {
       if (error) throw error;
-      return res.json({ token, role: exist.role ,username: exist.username }); 
+      return res.json({ token, role: exist.role, username: exist.username });
     });
   } catch (error) {
-    console.log(error);
-     
-     if (error.message.includes('ECONNREFUSED') || error.message.includes('ENOTFOUND')) {
+    console.error(error);
+
+    // Handle specific error types
+    if (error.message.includes('ECONNREFUSED') || error.message.includes('ENOTFOUND')) {
       return res.status(500).send('DATABASE_ISSUE');
     }
 
@@ -159,6 +171,7 @@ app.post('/login', async (req, res) => {
     return res.status(500).send('SERVER_ERROR');
   }
 });
+
 
 app.post('/request-password-reset', async (req, res) => {
   try {
@@ -604,9 +617,6 @@ app.delete('/debate/:debateId/option/:optionId', async (req, res) => {
 });
 
 
-
-
-
 // /blockuser/:userId
 app.patch('/blockuser/:userId', async (req, res) => {
   const { userId } = req.params;
@@ -631,7 +641,7 @@ app.patch('/blockuserdebates/:userId', async (req, res) => {
 
 app.patch('/:debateId/unblock', middleware, async (req, res) => {
   const { debateId } = req.params;
-
+  console.log("hhii")
   try {
     console.log("Debate ID: ", debateId);
     console.log("Authenticated user: ", req.user);

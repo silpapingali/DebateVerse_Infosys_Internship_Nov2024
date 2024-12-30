@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { FaHome } from "react-icons/fa";
 import { useContext, useState, useEffect } from "react";
 import { store } from "../App";
@@ -27,7 +27,6 @@ const Navbar = () => {
 
     const fetchData = async () => {
       try {
-        // Dynamically choose the endpoint based on the role
         const endpoint = role === "admin" ? "/admindashboard" : "/userdashboard";
         const response = await axios.get(`http://localhost:5000${endpoint}`, {
           headers: {
@@ -51,9 +50,14 @@ const Navbar = () => {
     <header className="max-w-screen-2xl mx-auto px-4 py-2 bg-orange-500 mb-5">
       <nav className="max-w-screen-2xl px-4 py-3 flex justify-between items-center fixed top-0 left-0 right-0 bg-orange-500">
         <div className="flex items-center space-x-4">
-          <Link to="/">
-            <FaHome className="text-primary text-3xl" />
-          </Link>
+          <NavLink
+            to="/"
+            className={({ isActive }) =>
+              `text-primary text-3xl ${isActive ? "underline underline-offset-4 text-black" : ""}`
+            }
+          >
+            <FaHome />
+          </NavLink>
           {username && (
             <span className="text-primary font-primary font-bold">
               Welcome, {username}
@@ -63,36 +67,52 @@ const Navbar = () => {
         <div className="flex space-x-6 items-center">
           {!token ? (
             <>
-              <Link to="/about" className="text-primary font-primary font-bold">
+              <NavLink
+                to="/about"
+                className={({ isActive }) =>
+                  `text-primary font-primary font-bold ${isActive ? "underline underline-offset-4 text-black" : ""}`
+                }
+              >
                 About
-              </Link>
-              <Link to="/login" className="text-primary font-primary font-bold">
+              </NavLink>
+              <NavLink
+                to="/login"
+                className={({ isActive }) =>
+                  `text-primary font-primary font-bold ${isActive ? "underline underline-offset-4 text-black" : ""}`
+                }
+              >
                 Login
-              </Link>
+              </NavLink>
             </>
           ) : (
             <>
               {role === "admin" ? (
-                <Link
+                <NavLink
                   to="/admindashboard"
-                  className="text-primary font-primary font-bold"
+                  className={({ isActive }) =>
+                    `text-primary font-primary font-bold ${isActive ? "underline underline-offset-4 text-black" : ""}`
+                  }
                 >
                   Admin Dashboard
-                </Link>
+                </NavLink>
               ) : (
-                <Link
+                <NavLink
                   to="/userdashboard"
-                  className="text-primary font-primary font-bold"
+                  className={({ isActive }) =>
+                    `text-primary font-primary font-bold ${isActive ? "underline underline-offset-4 text-black" : ""}`
+                  }
                 >
                   User Dashboard
-                </Link>
+                </NavLink>
               )}
-              <Link
+              <NavLink
                 to="/debatesearch"
-                className="text-primary font-primary font-bold"
+                className={({ isActive }) =>
+                  `text-primary font-primary font-bold ${isActive ? "underline underline-offset-4 text-black" : ""}`
+                }
               >
                 Debates
-              </Link>
+              </NavLink>
               <button
                 onClick={handleLogout}
                 className="text-primary font-primary font-bold bg-transparent border-none cursor-pointer"

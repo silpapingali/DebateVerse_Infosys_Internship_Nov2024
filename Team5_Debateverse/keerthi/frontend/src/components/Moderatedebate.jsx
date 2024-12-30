@@ -236,7 +236,7 @@ const ModerateDebate = () => {
   if (!debate) return <p>Loading debate details...</p>;
 
   return (
-    <div className="flex items-center justify-center bg-white/80 min-h-screen py-8 overflow-y-auto">
+    <div className="flex items-center justify-center  min-h-screen py-8 overflow-y-auto">
       <div className="w-full max-w-3xl bg-white p-8 rounded-lg shadow-lg">
         <div className="relative w-full">
           {role === "admin" && (
