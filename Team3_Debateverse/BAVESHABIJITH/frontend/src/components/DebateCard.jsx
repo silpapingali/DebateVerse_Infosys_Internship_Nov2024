@@ -1,16 +1,40 @@
-import React, { useContext, useState } from "react";
+import React, { useRef, useState } from "react";
 import { format } from "date-fns";
-import { Heart, MessageCircleMore, ThumbsUp } from "lucide-react";
+import { Heart, ThumbsUp } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { likeRequest, setLiked } from "../redux/slices/allDebatesSlice";
-import Vote from "./Vote";
-import { FaPlus, FaMinus } from "react-icons/fa";
+import { BiSolidUpvote } from "react-icons/bi";
+import { useNavigate } from "react-router-dom";
+import {
+  setQno,
+  setDebate,
+  setLike,
+  fetchVotes,
+} from "../redux/slices/votingSlice";
+import {
+  ResponsiveContainer,
+  Tooltip,
+  Legend,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 const DebateCard = ({ debate, liked, Qno, isMine }) => {
   const dispatch = useDispatch();
-  // console.log(liked);
+  const likeBtn = useRef(null);
+  const navigate = useNavigate();
 
-  const [isVotePopup, setIsVotePopup] = useState(0);
+  const onCardClick = (e) => {
+    if(isMine) return;
+    dispatch(fetchVotes(debate._id));
+    dispatch(setDebate(debate));
+    dispatch(setLike(liked));
+    dispatch(setQno(Qno));
+    console.log("Card Clicked");
+    navigate("/voting");
+  };
 
   const handleLike = (_id, index) => {
     dispatch(likeRequest(_id));
@@ -21,6 +45,7 @@ const DebateCard = ({ debate, liked, Qno, isMine }) => {
 
   return (
     <div
+      onClick={(e) => onCardClick(e)}
       className={`${
         isMine ? "bg-blue-600" : "bg-indigo-600"
       } rounded-lg p-5 w-full text-white `}
@@ -33,8 +58,10 @@ const DebateCard = ({ debate, liked, Qno, isMine }) => {
           </span>
         </h1>
         <button
+          ref={likeBtn}
           disabled={isMine}
-          onClick={() => {
+          onClick={(e) => {
+            e.stopPropagation();
             handleLike(debate._id, Qno - 1);
           }}
           className={`flex gap-3 justify-center ${
@@ -47,7 +74,7 @@ const DebateCard = ({ debate, liked, Qno, isMine }) => {
       </div>
 
       <div>
-        <h1 className="font-extrabold text-lg py-2">
+        <h1 className="font-extrabold text-xl py-2">
           {Qno}. {debate.question}
         </h1>
       </div>
@@ -58,64 +85,36 @@ const DebateCard = ({ debate, liked, Qno, isMine }) => {
             return (
               <div
                 key={ind}
-                className="option w-full gap-3 flex-wrap font-bold flex justify-start py-1 items-center"
+                className="option w-full flex-wrap font-bold flex justify-between py-1 items-center"
               >
-                <h1 key={ind}>{`${ind + 1}. ${option.answer}`}</h1>
-                <div className="flex ml-10 gap-5 justify-start items-center">
+                <div className="w-full bg-blue-400 rounded-lg px-2 flex gap-3 flex-wrap justify-between items-center">
+                  <h1 key={ind}>{`${ind + 1}. ${option.answer}`}</h1>
                   <button
                     className={`flex gap-2 justify-center font-bold items-center`}
                   >
-                    <ThumbsUp />
-                    {option.votes}
-                  </button>
-                  <button
-                    className={`flex gap-2 justify-center font-bold items-center`}
-                  >
-                    <MessageCircleMore />
+                    <BiSolidUpvote size={28} fill="white" />
                     {option.votes}
                   </button>
                 </div>
-                {isVotePopup != 0 && (
-                  <div className="flex justify-center items-center gap-1 md:ml-10">
-                    <button className="p-2 rounded-full bg-violet-500">
-                      <FaMinus size={16} />
-                    </button>
-                    <h1 className="px-5 py-1 bg-blue-600 rounded-xl">5</h1>
-                    <button className="p-2 rounded-full bg-violet-500">
-                      <FaPlus size={16} />
-                    </button>
-                  </div>
-                )}
               </div>
             );
           })}
         </div>
 
-        <div className="graph w-1/3">
-          <h1>This is for the graph.</h1>
+        <div className="graph w-full h-full flex justify-center items-center">
+          <ResponsiveContainer width="100%" aspect={3}>
+            <BarChart data={debate.options}>
+              <XAxis
+                dataKey=""
+                stroke="#000"
+                tickFormatter={(value, index) => index + 1}
+              />
+              <YAxis stroke="#000" />
+              <Tooltip />
+              <Bar dataKey="votes" fill="#82ca9d" />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
-      </div>
-      <div className="flex mt-5 gap-2 flex-col md:flex-row justify-center items-center">
-        {!isMine && (
-          <button
-            onClick={() => {
-              setIsVotePopup(Qno);
-            }}
-            className="w-full bg-emerald-500 rounded-lg p-2 font-bold text-lg"
-          >
-            {isVotePopup ? "Submit" : "Vote"}
-          </button>
-        )}
-        {isVotePopup != 0 && (
-          <button
-            onClick={() => {
-              setIsVotePopup(0);
-            }}
-            className="w-full bg-red-500 rounded-lg p-2 font-bold text-lg"
-          >
-            Cancel
-          </button>
-        )}
       </div>
     </div>
   );

@@ -12,6 +12,7 @@ const debatesSchema = new mongoose.Schema({
   createdOn: { type: Date, required: true },
   totalVotes: { type: Number, default: 0 },
   totalLikes: { type: Number, default: 0 },
+  status: { type: String, default: "open" },
 });
 
 module.exports = mongoose.model("Debate", debatesSchema);
