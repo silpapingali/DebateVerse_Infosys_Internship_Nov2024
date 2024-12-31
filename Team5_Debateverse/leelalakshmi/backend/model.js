@@ -37,6 +37,11 @@ const UserSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+  },
   totalDebatesCreated: {
     type: Number,
     default: 0,
@@ -83,12 +88,34 @@ const DebateSchema=new mongoose.Schema({
     type: Number,
     default: 0, 
   },
-  likedBy: [String], 
+  likedBy: {
+    type: [String],
+    default: []
+  },
   totalVotes:{
    type: Number,
    default:0,
   },
-  votedUsers: [String],
+  votedUsers: [
+    {
+      userId: { 
+        type: String, 
+      },
+      votes: [
+        {
+          optionId: { 
+            type: Number,
+            required: true 
+          },
+          voteCount: { 
+            type: Number, 
+            required: true, 
+            default: 0 
+          }
+        },
+      ],
+    },
+  ],
   isblocked:{
     type:Boolean,
     default:false
