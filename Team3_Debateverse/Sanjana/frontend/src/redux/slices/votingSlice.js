@@ -31,6 +31,8 @@ const votingSlice = createSlice({
     liked: false,
     Qno: 0,
     votes: [],
+    isVoted: false,
+    isLoading: true,
   },
   reducers: {
     setQno: (state, action) => {
@@ -43,17 +45,32 @@ const votingSlice = createSlice({
     setLike: (state, action) => {
       state.liked = action.payload;
     },
+    setVotes: (state, action) => {
+      const { index, val } = action.payload;
+      state.votes[index] = state.votes[index] + Number(val);
+    }
   },
   extraReducers: (builder) => { 
     builder
+      .addCase(fetchVotes.pending, (state, action) => {
+        state.isLoading = true;
+      })
       .addCase(fetchVotes.fulfilled, (state, action) => {
-        state.votes = action.payload;
+        state.isLoading = false;
+        if(action.payload.votes.length === 0){
+          state.isVoted= false;
+          state.votes = new Array(state.debate.options.length).fill(0);
+          return;
+        }
+        state.votes = action.payload.votes;
+        state.isVoted = true;
       })
       .addCase(fetchVotes.rejected, (state, action) => {
+        state.isLoading = false;
         state.votes = [];
       });
   },
 });
 
-export const { setQno, setDebate, setLike } = votingSlice.actions;
+export const { setQno, setDebate, setLike, setVotes } = votingSlice.actions;
 export default votingSlice.reducer;
