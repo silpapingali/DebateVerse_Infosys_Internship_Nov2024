@@ -9,7 +9,6 @@ function CreateDebate() {
   const [options, setOptions] = useState(['', '']);
   const navigate = useNavigate(); 
 
-  
   const addOption = () => {
     if (options.length >= 7) {
       alert("You cannot add more than 7 options.");
@@ -18,7 +17,6 @@ function CreateDebate() {
     }
   };
 
-  
   const removeOption = (index) => {
     if (options.length <= 2) {
       alert("You must have at least 2 options.");
@@ -28,7 +26,6 @@ function CreateDebate() {
     }
   };
 
-  
   const handleOptionChange = (index, event) => {
     const newOptions = options.map((option, i) =>
       i === index ? event.target.value : option
@@ -36,7 +33,6 @@ function CreateDebate() {
     setOptions(newOptions);
   };
 
-  
   const handleSubmit = () => {
     if (debateText && options.every(option => option.trim() !== '')) {
       const token = localStorage.getItem('token');
@@ -46,13 +42,13 @@ function CreateDebate() {
           const decodedToken = jwtDecode(token);  
           const userId = decodedToken.id;  
           
-          console.log("Token had been sent with request:", token);
+          console.log("Token has been sent with request:", token);
 
           const currentTime = Date.now() / 1000; 
     
           if (decodedToken.exp < currentTime) {
               alert("Token expired. Please log in again.");
-              navigate('/')
+              navigate('/');
           }
 
           const debateData = {
@@ -63,18 +59,21 @@ function CreateDebate() {
           };
 
           
-          axios.post('http://localhost:8081/debates', debateData, {
-            headers: {
-                Authorization: `Bearer ${token}`,  
-            },
-          })
-          .then(response => {
-            console.log('Debate posted:', response.data);
-            navigate('/home');  
-          })
-          .catch(error => {
-            console.error('Error posting debate:', error);
-          });
+          if (window.confirm("Are you sure you want to post this debate?")) {
+            axios.post('http://localhost:8081/debates', debateData, {
+              headers: {
+                  Authorization: `Bearer ${token}`,  
+              },
+            })
+            .then(response => {
+              console.log('Debate posted:', response.data);
+              alert("Debate posted successfully!"); 
+              navigate('/home');  
+            })
+            .catch(error => {
+              console.error('Error posting debate:', error);
+            });
+          }
         } catch (error) {
           console.error("Error decoding token:", error);
           alert("Invalid token, please login again.");
@@ -133,7 +132,7 @@ function CreateDebate() {
         </button>
       </div>
 
-      <div className="d-flex justify-content-between">
+      <div className ="d-flex justify-content-between">
         <button 
           className="btn btn-success" 
           onClick={handleSubmit}
@@ -142,7 +141,11 @@ function CreateDebate() {
         </button>
         <button 
           className="btn btn-warning" 
-          onClick={() => navigate('/home')}
+          onClick={() => {
+            if (window.confirm("Are you sure you want to go back?")) {
+              navigate('/home');
+            }
+          }}
         >
           Go Back
         </button>
@@ -152,4 +155,3 @@ function CreateDebate() {
 }
 
 export default CreateDebate;
-

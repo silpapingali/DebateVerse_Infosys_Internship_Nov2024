@@ -18,6 +18,7 @@ function Upvotes() {
       return;
     }
 
+    
     axios
       .get(`http://localhost:8081/debates/${debateId}`, {
         headers: {
@@ -26,6 +27,7 @@ function Upvotes() {
       })
       .then((response) => {
         setDebate(response.data);
+        setRemainingVotes(10 - response.data.options.reduce((acc, option) => acc + (option.userVotes || 0), 0)); // Calculate remaining votes
         setLoading(false);
       })
       .catch((error) => {
@@ -42,7 +44,7 @@ function Upvotes() {
 
     const updatedOptions = debate.options.map((option) => {
       if (option.id === optionId) {
-        return { ...option, votes: (option.votes || 0) + 1 };
+        return { ...option, votes: (option.votes || 0) + 1, userVotes: (option.userVotes || 0) + 1 }; // Update userVotes
       }
       return option;
     });
@@ -53,14 +55,14 @@ function Upvotes() {
 
   const handleDownvote = (optionId) => {
     const option = debate.options.find((option) => option.id === optionId);
-    if (!option || (option.votes || 0) <= 0) {
+    if (!option || (option.userVotes || 0) <= 0) {
       alert("No votes to remove!");
       return;
     }
 
     const updatedOptions = debate.options.map((option) => {
       if (option.id === optionId) {
-        return { ...option, votes: (option.votes || 0) - 1 };
+        return { ...option, votes: (option.votes || 0) - 1, userVotes: (option.userVotes || 0) - 1 }; // Update userVotes
       }
       return option;
     });
@@ -77,7 +79,7 @@ function Upvotes() {
   
     const votesData = debate.options.map((option) => ({
       optionId: option.id,
-      votes: option.votes || 0,
+      votes: option.userVotes || 0, 
     }));
   
     const token = localStorage.getItem("token");
@@ -111,27 +113,29 @@ function Upvotes() {
 
   return (
     <div>
-      <Navbar /> {/* Place Navbar here */}
+      <Navbar /> 
       <div style={styles.container}>
         <h4 style={styles.title}>{debate.text}</h4>
         <p>Remaining Votes: {remainingVotes}</p>
         <div style={styles.optionsContainer}>
           {debate.options && debate.options.length > 0 ? (
-            debate.options.map((option) => (
+ debate.options.map((option) => (
               <div key={option.id} style={styles.option}>
                 <div style={styles.optionText}>
-                  {option.text} ({option.votes || 0} votes)
+                  {option.text} (Votes: {option.userVotes || 0})
                 </div>
                 <div style={styles.voteButtons}>
                   <button
                     onClick={() => handleUpvote(option.id)}
                     style={styles.voteButton}
+                    disabled={option.userVotes >= 10} 
                   >
                     +
                   </button>
                   <button
                     onClick={() => handleDownvote(option.id)}
                     style={styles.voteButton}
+                    disabled={option.userVotes <= 0} 
                   >
                     -
                   </button>
