@@ -6,10 +6,13 @@ import { ForgotPasswordComponent } from './auth/forgot-password/forgot-password.
 import { LoginComponent } from './auth/login/login.component';
 import { RegisterComponent } from './auth/register/register.component';
 import { ResetPasswordComponent } from './auth/reset-password/reset-password.component';
+import { PagenotfoundComponent } from './components/pagenotfound/pagenotfound.component';
 import { authGuard } from './guards/auth.guard';
-import { AdminDashboardComponent } from './pages/admin/admin-dashboard/admin-dashboard.component';
 import { AboutComponent } from './pages/home-routes/about/about.component';
+import { AdminDashboardComponent } from './pages/home-routes/admin-dashboard/admin-dashboard.component';
+import { AllDebatesComponent } from './pages/home-routes/all-debates/all-debates.component';
 import { DebatePollComponent } from './pages/home-routes/debate-poll/debate-poll.component';
+import { DebateUpdateComponent } from './pages/home-routes/debate-update/debate-update.component';
 import { DebatesComponent } from './pages/home-routes/debates/debates.component';
 import { HomeRoutesComponent } from './pages/home-routes/home-routes.component';
 import { HomeComponent } from './pages/home-routes/home/home.component';
@@ -18,37 +21,102 @@ import { DashboardComponent } from './pages/home-routes/user-dashboard/dashboard
 import { LikedDebatesComponent } from './pages/home-routes/user-dashboard/liked-debates/liked-debates.component';
 import { MyDebatesComponent } from './pages/home-routes/user-dashboard/my-debates/my-debates.component';
 import { UserDashboardComponent } from './pages/home-routes/user-dashboard/user-dashboard.component';
+import { UsersComponent } from './pages/home-routes/users/users.component';
 
 const routes: Routes = [
   {
     path: '',
     component: HomeRoutesComponent,
     children: [
-      { path: '', component: HomeComponent, canActivate: [authGuard] },
-      { path: 'about', component: AboutComponent, canActivate: [authGuard] },
-      { path: 'register', component: RegisterComponent, canActivate: [authGuard] },
-      { path: 'forgot-password', component: ForgotPasswordComponent },
-      { path: 'reset-password', component: ResetPasswordComponent },
-      { path: 'verify-email', component: EmailVerifyComponent },
-      { path: 'debates', component: DebatesComponent },
-      { path: 'login', component: LoginComponent, canActivate: [authGuard] },
-      { path: 'debate/:id', component: DebatePollComponent },
-      { path: 'error', component: ErrorComponent },
+      { path: '', component: HomeComponent, title: 'Home' },
+      { path: 'about', component: AboutComponent, title: 'About' },
+      {
+        path: 'register',
+        component: RegisterComponent,
+        canActivate: [authGuard],
+        title: 'Register',
+      },
+      {
+        path: 'forgot-password',
+        component: ForgotPasswordComponent,
+        title: 'Forgot Password',
+      },
+      {
+        path: 'reset-password',
+        component: ResetPasswordComponent,
+        title: 'Reset Password',
+      },
+      {
+        path: 'verify-email',
+        component: EmailVerifyComponent,
+        title: 'Verify Email',
+      },
+      { path: 'debates', component: DebatesComponent, title: 'Debates' },
+      {
+        path: 'login',
+        component: LoginComponent,
+        canActivate: [authGuard],
+        title: 'Login',
+      },
+      { path: 'debate/:id', component: DebatePollComponent, title: 'Debate' },
+      { path: 'error', component: ErrorComponent, title: 'Error!' },
       {
         path: 'user',
         component: UserDashboardComponent,
+        canActivate: [authGuard],
         children: [
-          { path: '', component: DashboardComponent },
-          { path: 'debates', component: MyDebatesComponent },
-          { path: 'liked-debates', component: LikedDebatesComponent },
-          { path: 'create-debate', component: CreateDebateComponent }
+          {
+            path: 'dashboard',
+            component: DashboardComponent,
+            title: 'User Dashboard',
+          },
+          {
+            path: 'debates',
+            component: MyDebatesComponent,
+            title: 'My Debates',
+          },
+          {
+            path: 'liked-debates',
+            component: LikedDebatesComponent,
+            title: 'Liked Debates',
+          },
+          {
+            path: 'create-debate',
+            component: CreateDebateComponent,
+            title: 'Create Debate',
+          },
         ],
       },
+      {
+        path: 'admin',
+        component: AdminDashboardComponent,
+        canActivate: [authGuard],
+        title: 'Admin Dashboard',
+      },
+      {
+        path: 'all-debates',
+        component: AllDebatesComponent,
+        canActivate: [authGuard],
+        title: 'All Debates',
+      },
+      {
+        path: 'users',
+        component: UsersComponent,
+        canActivate: [authGuard],
+        title: 'All Users',
+      },
+      {
+        path: 'update/debate/:id',
+        component: DebateUpdateComponent,
+        canActivate: [authGuard],
+        title: 'Update Debate',
+      },
+      {
+        path: '**',
+        component: PagenotfoundComponent,
+        title: 'Page Not Found!',
+      },
     ],
-  },
-  {
-    path: 'admin',
-    component: AdminDashboardComponent,
   },
 ];
 

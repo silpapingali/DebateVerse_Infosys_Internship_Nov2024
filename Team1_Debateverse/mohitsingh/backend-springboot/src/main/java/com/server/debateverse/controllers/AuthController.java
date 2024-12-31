@@ -167,4 +167,13 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/get-user")
+    public ResponseEntity<?> getUser(@RequestParam Long userId) {
+        User user = userRepo.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        System.out.println(user);
+        return ResponseEntity.ok(user);
+        
+
+    }
+
 }

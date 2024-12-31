@@ -10,8 +10,8 @@ export class VoteService {
 
   baseUrl: string = 'http://localhost:8080/api/votes';
 
-  getVotesByUser(userId: any) {
-    return this._http.get(`${this.baseUrl}/user/${userId}`);
+  getVotesByUser(userId: any, debateId: any) {
+    return this._http.get(`${this.baseUrl}/${userId}/${debateId}`);
   }
 
   vote(voteReq: any) {

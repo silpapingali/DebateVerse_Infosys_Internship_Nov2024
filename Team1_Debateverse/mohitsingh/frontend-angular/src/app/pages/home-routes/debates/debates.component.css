@@ -9,3 +9,10 @@
 .rounded { border-radius: 0.25rem; }
 .space-y-4 > * + * { margin-top: 1rem; }
 .space-y-2 > * + * { margin-top: 0.5rem; }
+.chart-container {
+  display: flex;
+  /* justify-content: center;
+  align-items: center; */
+  /* width: 100%; */
+  overflow: hidden;
+}

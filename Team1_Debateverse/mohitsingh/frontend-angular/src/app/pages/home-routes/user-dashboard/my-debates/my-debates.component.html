@@ -2,10 +2,10 @@
   <main class="container mx-auto p-4">
     <div class="flex justify-between items-center mb-6">
       <h2 class="text-xl font-mono">My Debates ({{myDebates.length}})</h2>
-      <button class="bg-orange-400 hover:bg-orange-500 px-4 py-2 text-white">
+      <a routerLink="/user/create-debate" class="bg-orange-400 hover:bg-orange-500 px-4 py-2 text-white">
         Create New
         <span class="ml-2">📝</span>
-      </button>
+      </a>
     </div>
     <div *ngFor="let debate of myDebates">
       <div class="bg-white border-2 border-blue-900 p-6 mb-5">
@@ -26,14 +26,16 @@
           <div *ngFor="let option of debate.options" class="relative">
             <div class="flex justify-between mb-1">
               <span class="font-mono">{{ option.text }}</span>
-              <div class="space-x-4">
+              <div class="space-x-2">
                 <span class="text-green-600">{{option.totalVotes}}</span>
-                <span class="text-gray-500">0</span>
+                <span class="text-gray-500">Votes</span>
               </div>
             </div>
             <div class="h-8 bg-gray-100 rounded-sm">
-              <div class="h-full bg-orange-400 rounded-sm transition-all" [style.width.%]="(option.totalVotes*100)/debate.totalVotes">
+              <div class="h-full bg-orange-400 rounded-sm transition-all"
+                [style.width.%]="debate.totalVotes > 0 ? (option.totalVotes * 100) / debate.totalVotes : 0">
               </div>
+
             </div>
           </div>
         </div>
