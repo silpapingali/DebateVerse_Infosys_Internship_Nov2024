@@ -1,5 +1,6 @@
 package com.server.debateverse.entities;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 
@@ -34,7 +35,7 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, name = "user_name")
+    @Column(nullable = false)
     private String name;
 
     @Column(nullable = false, unique = true)
@@ -52,6 +53,10 @@ public class User implements UserDetails {
     private Role role;
 
     private boolean enabled = false;
+
+    private boolean isBlocked = false;
+
+    private LocalDate joinDate = LocalDate.now();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

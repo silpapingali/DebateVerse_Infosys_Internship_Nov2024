@@ -2,6 +2,10 @@ package com.server.debateverse.services.Implementation;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.server.debateverse.entities.Debate;
@@ -39,8 +43,9 @@ public class DebateServiceImpl implements DebateService {
     }
 
     @Override
-    public List<Debate> getAllDebates() {
-        return debateRepo.findAll();
+    public Page<Debate> getAllDebates(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdOn").descending());
+        return debateRepo.findAll(pageable);
     }
 
     @Override
@@ -56,8 +61,10 @@ public class DebateServiceImpl implements DebateService {
     }
 
     @Override
-    public List<Debate> getDebatesExceptUserDebates(Long userId) {
-        return debateRepo.findAllExceptUserDebates(userId);
+    public Page<Debate> getDebatesExceptUserDebates(Long userId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdOn").descending());
+
+        return debateRepo.findAllExceptUserDebates(userId, pageable);
     }
 
     @Override
@@ -87,8 +94,7 @@ public class DebateServiceImpl implements DebateService {
             // Remove from dislikes if previously disliked
             debate.getDislikes().remove(user);
             debateRepo.save(debate);
-        }
-        else{
+        } else {
             throw new IllegalArgumentException("User has already liked this debate");
         }
     }
@@ -106,8 +112,7 @@ public class DebateServiceImpl implements DebateService {
             // Remove from likes if previously liked
             debate.getLikes().remove(user);
             debateRepo.save(debate);
-        }
-        else{
+        } else {
             throw new IllegalArgumentException("User has already disliked this debate");
         }
     }
@@ -115,6 +120,22 @@ public class DebateServiceImpl implements DebateService {
     @Override
     public List<Debate> getLikedDebatesByUserId(Long userId) {
         return debateRepo.findLikedDebatesByUserId(userId);
+    }
+
+    @Override
+    public void blockDebate(Long debateId) {
+        Debate debate = debateRepo.findById(debateId)
+                .orElseThrow(() -> new IllegalArgumentException("Debate not found"));
+        debate.setBlocked(true);
+        debateRepo.save(debate);
+    }
+
+    @Override
+    public void unblockDebate(Long debateId) {
+        Debate debate = debateRepo.findById(debateId)
+                .orElseThrow(() -> new IllegalArgumentException("Debate not found"));
+        debate.setBlocked(false);
+        debateRepo.save(debate);
     }
 
 }

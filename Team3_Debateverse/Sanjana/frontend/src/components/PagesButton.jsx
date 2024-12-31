@@ -2,15 +2,37 @@ import React from "react";
 import { useDispatch } from "react-redux";
 import { fetchUserDebates, setCurrPage } from "../redux/slices/userDebateSlice";
 import { toast } from "react-toastify";
+import {
+  fetchAllDebates,
+  setCurrPage as allSetCurrPage,
+} from "../redux/slices/allDebatesSlice";
 
-const PagesButton = ({ totalPages, currPage, debates }) => {
+const PagesButton = ({
+  from,
+  totalPages,
+  currPage,
+  debates,
+  isExact = false,
+  votes = 0,
+  likegt = 0,
+  date = null,
+  searchQuery= null
+}) => {
   const dispatch = useDispatch();
 
   const handlePageClick = (i) => {
-    if (i > totalPages) return toast.warning("No More Pages !");
-    scrollTo({ top: 0, behavior: "smooth" });
-    dispatch(setCurrPage(i));
-    if (!debates[i]) dispatch(fetchUserDebates(i));
+    if (from == "all") {
+      if (i > totalPages) return toast.warning("No More Pages !");
+      scrollTo({ top: 0, behavior: "smooth" });
+      dispatch(allSetCurrPage(i));
+      if (!debates[i])
+        dispatch(fetchAllDebates({ page: i, isExact, votes, likegt, date, searchQuery }));
+    } else if (from == "user") {
+      if (i > totalPages) return toast.warning("No More Pages !");
+      scrollTo({ top: 0, behavior: "smooth" });
+      dispatch(setCurrPage(i));
+      if (!debates[i]) dispatch(fetchUserDebates(i));
+    }
   };
 
   const pages = [];
