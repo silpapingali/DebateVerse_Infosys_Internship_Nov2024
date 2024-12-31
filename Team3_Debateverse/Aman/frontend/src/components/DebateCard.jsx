@@ -5,12 +5,26 @@ import { useDispatch } from "react-redux";
 import { likeRequest, setLiked } from "../redux/slices/allDebatesSlice";
 import { BiSolidUpvote } from "react-icons/bi";
 import { useNavigate } from "react-router-dom";
-import { setQno, setDebate, setLike, fetchVotes} from "../redux/slices/votingSlice";
+import {
+  setQno,
+  setDebate,
+  setLike,
+  fetchVotes,
+} from "../redux/slices/votingSlice";
+import {
+  ResponsiveContainer,
+  Tooltip,
+  Legend,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+} from "recharts";
 
-const DebateCard = ({ debate, liked, Qno, isMine}) => {
+const DebateCard = ({ debate, liked, Qno, isMine }) => {
   const dispatch = useDispatch();
   const likeBtn = useRef(null);
-  const navigate= useNavigate();
+  const navigate = useNavigate();
   const onCardClick = (e) => {
     dispatch(fetchVotes(debate._id));
     dispatch(setDebate(debate));
@@ -21,10 +35,10 @@ const DebateCard = ({ debate, liked, Qno, isMine}) => {
   };
 
   const handleLike = (_id, index) => {
-      dispatch(likeRequest(_id));
-      liked
-        ? dispatch(setLiked({ index, val: -1 }))
-        : dispatch(setLiked({ index, val: 1 }));
+    dispatch(likeRequest(_id));
+    liked
+      ? dispatch(setLiked({ index, val: -1 }))
+      : dispatch(setLiked({ index, val: 1 }));
   };
 
   return (
@@ -85,8 +99,19 @@ const DebateCard = ({ debate, liked, Qno, isMine}) => {
           })}
         </div>
 
-        <div className="graph w-1/3">
-          <h1>This is for the graph.</h1>
+        <div className="graph w-full">
+          <ResponsiveContainer width="100%" height="100%" aspect={3}>
+            <BarChart data={debate.options}>
+              <XAxis
+                dataKey=""
+                stroke="#000"
+                tickFormatter={(value, index) => index + 1}
+              />
+              <YAxis stroke="#000" />
+              <Tooltip />
+              <Bar dataKey="votes" fill="#82ca9d" />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </div>
     </div>
