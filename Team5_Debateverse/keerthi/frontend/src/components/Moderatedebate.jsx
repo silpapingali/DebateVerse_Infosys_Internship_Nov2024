@@ -19,12 +19,50 @@ const ModerateDebate = () => {
   const debate = location.state?.debate;
   const role = localStorage.getItem("role");
 
-  const [votes, setVotes] = useState(new Array(debate?.options.length).fill(0));
+  const [userId, setUserId] = useState(null); // State to store user ID
+  const [votes, setVotes] = useState(new Array(debate?.options.length).fill(0)); // Initialize votes as an array
   const [totalVotes, setTotalVotes] = useState(debate?.totalVotes || 0); 
   const [likes, setLikes] = useState(debate?.likes || 0);
   const [liked, setLiked] = useState(false);
   const [message, setMessage] = useState("");
   const [hasVoted, setHasVoted] = useState(false);
+  // Fetch user details to get user ID
+  useEffect(() => {
+    const fetchUserDetails = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/userdashboard', {
+          headers: {
+            'x-token': token,
+          },
+        });
+        //console.log(response.data.user)
+        setUserId(response.data.user._id); // Assuming the API returns user details with _id
+      } catch (error) {
+        console.error("Error fetching user details:", error);
+      }
+    };
+
+    if (token) {
+      fetchUserDetails();
+    }
+  }, [token]);
+
+  // Set initial votes based on previous votes of the current user
+  useEffect(() => {
+    if (debate && userId) {
+      const userVotes = debate.votedUsers.find(user => user.userId === userId);
+      //console.log("userVotes",userVotes)
+      if (userVotes) {
+        const initialVotes = new Array(debate.options.length).fill(0);
+        userVotes.votes.forEach((vote, index) => {
+          initialVotes[index] = vote.voteCount || 0;
+        });
+        //console.log(initialVotes)
+        setVotes(initialVotes);
+        //setHasVoted(true);
+      }
+    }
+  }, [debate, userId]);
 
   useEffect(() => {
     if (!debate) {
@@ -37,7 +75,7 @@ const ModerateDebate = () => {
               'x-token': token,
             },
           });
-          const { totalVotes, likes } = response.data;
+          const { totalVotes, likes} = response.data;
           setTotalVotes(totalVotes);
           setLikes(likes);
         } catch (error) {
@@ -50,13 +88,22 @@ const ModerateDebate = () => {
   }, [token, debate, navigate]);
 
   const handleVote = (index, increment) => {
+    console.log("1")
     if (increment > 10) return;
 
     const newVotes = [...votes];
     newVotes[index] = Math.max(0, newVotes[index] + increment);
+     console.log(newVotes)
 
     const newTotalVotes = newVotes.reduce((a, b) => a + b, 0);
+    console.log("totalvotes",newTotalVotes)
+
     if (newTotalVotes <= 10) {
+      console.log("totalvotes",newTotalVotes)
+      if(newTotalVotes > 10){
+        setHasVoted(true)
+      }
+
       setVotes(newVotes);
     }
   };
@@ -74,7 +121,6 @@ const ModerateDebate = () => {
       }
     }
   };
-
   const handleDislike = async () => {
     if (liked) {
       setLikes((prevLikes) => prevLikes - 1);
@@ -95,6 +141,7 @@ const ModerateDebate = () => {
   };
 
   const handleSubmitVotes = async () => {
+    console.log(hasVoted)
     if (hasVoted) {
       setMessage("Error: You have already voted.");
       resetVotesDelay();
@@ -130,7 +177,7 @@ const ModerateDebate = () => {
           },
         }
       );
-
+       console.log("hii",response.data)
       const { totalVotes } = response.data;
       setTotalVotes(totalVotes);
       setHasVoted(true);
@@ -189,8 +236,8 @@ const ModerateDebate = () => {
   if (!debate) return <p>Loading debate details...</p>;
 
   return (
-    <div className="flex items-center justify-center bg-white/80 min-h-screen py-8 overflow-y-auto">
-      <div className="w-full max-w-3xl bg-white p-8 rounded-lg shadow-lg"> {/* Increased card size */}
+    <div className="flex items-center justify-center  min-h-screen py-8 overflow-y-auto">
+      <div className="w-full max-w-3xl bg-white p-8 rounded-lg shadow-lg">
         <div className="relative w-full">
           {role === "admin" && (
             <button className="absolute right-4 top-2 text-red-600 hover:text-red-700">
@@ -235,47 +282,37 @@ const ModerateDebate = () => {
                 </span>
                 <div className="flex items-center">
                   <button
-                    className="px-2 py-1 bg-blue-500 text-white rounded-md mr-2"
                     onClick={() => handleVote(index, 1)}
+                    className="bg-green-500 text-white p-2 rounded-lg"
                   >
                     +
                   </button>
-                  <span>{votes[index]}</span>
+                  <span className="mx-2">{votes[index]}</span>
                   <button
-                    className="px-2 py-1 bg-blue-500 text-white rounded-md ml-2"
                     onClick={() => handleVote(index, -1)}
+                    className="bg-red-500 text-white p-2 rounded-lg"
                   >
                     -
                   </button>
-                  {role === "admin" && (
-                    <button className="ml-2 text-red-600 hover:text-red-700">
-                      <RxCrossCircled size={24} />
-                    </button>
-                  )}
                 </div>
-              </div>
-              <div className="w-full bg-gray-200 h-4 rounded-full">
-                <div
-                  className="bg-blue-500 h-4 rounded-full"
-                  style={{ width: `${calculateBarWidth(votes[index])}%` }}
-                ></div>
               </div>
             </div>
           ))}
         </div>
 
-        {/* Bar Chart */}
-        <div className="mb-6 w-full max-w-xs mx-auto">
-          <Bar data={chartData} options={{ responsive: true }} />
+        <div className="flex justify-center mb-4">
+          <button
+            onClick={handleSubmitVotes}
+            className="px-6 py-2 bg-blue-500 text-white rounded-lg"
+          >
+            Submit Votes
+          </button>
         </div>
-
-        <button
-          onClick={handleSubmitVotes}
-          className="mt-4 px-6 py-2 bg-green-500 text-white rounded-lg shadow-md hover:bg-green-600"
-        >
-          Submit Votes
-        </button>
-        {message && <p className="mt-4 text-center text-red-500">{message}</p>}
+        
+        {message && <p className="text-red-600 text-center">{message}</p>}
+        <div className="flex justify-center mt-6">
+          <Bar data={chartData} />
+        </div>
       </div>
     </div>
   );

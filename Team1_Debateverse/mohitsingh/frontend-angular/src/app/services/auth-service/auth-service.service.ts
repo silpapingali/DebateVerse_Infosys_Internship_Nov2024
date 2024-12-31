@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, tap } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -72,9 +72,27 @@ export class AuthServiceService {
       },
     });
   }
+  fetchUser(userId: any) {
+    return this._http
+      .get('http://localhost:8080/auth/get-user', {
+        params: { userId },
+      })
+      .pipe(
+        tap((res: any) => {
+          console.log(res);
+          localStorage.setItem('user', JSON.stringify(res));
+        })
+      );
+  }
+
   getUser() {
     const user = localStorage.getItem('user');
     return user ? JSON.parse(user) : null;
+  }
+
+  getRole() {
+    const user = localStorage.getItem('user');
+    return user ? JSON.parse(user).role : null;
   }
 
   isLoggedIn() {

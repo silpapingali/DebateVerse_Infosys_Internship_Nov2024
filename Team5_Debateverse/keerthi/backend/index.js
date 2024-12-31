@@ -119,36 +119,48 @@ app.get('/verify-email', async (req, res) => {
 app.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
+
+    // Check if the user exists
     let exist = await Registeruser.findOne({ email });
     if (!exist) {
       return res.status(400).send('USER_NOT_FOUND');
     }
+
+    // Check if the user's email is verified
     if (!exist.isVerified) {
       return res.status(400).send('Email not verified');
     }
-    const isMatch = await bcrypt.compare(password, exist.password);
-    if (!isMatch) {
-      return res.status(400).send('PASSWORD_MISSMATCH');
+
+    // Check if the user is blocked
+    if (exist.isblocked) {
+      return res.status(403).send('ACCOUNT_BLOCKED'); // HTTP 403 for forbidden access
     }
 
-    
+    // Check if the password matches
+    const isMatch = await bcrypt.compare(password, exist.password);
+    if (!isMatch) {
+      return res.status(400).send('PASSWORD_MISMATCH');
+    }
+
+    // Create a payload for the JWT
     let payload = {
       user: {
         id: exist.id,
-        role: exist.role, 
+        role: exist.role,
         username: exist.username,
       },
     };
 
-    
+    // Sign and return the JWT
     jwt.sign(payload, 'jwtSecret', { expiresIn: 3600000 }, (error, token) => {
       if (error) throw error;
-      return res.json({ token, role: exist.role ,username: exist.username }); 
+      return res.json({ token, role: exist.role, username: exist.username });
     });
   } catch (error) {
-    console.log(error);
-     
-     if (error.message.includes('ECONNREFUSED') || error.message.includes('ENOTFOUND')) {
+    console.error(error);
+
+    // Handle specific error types
+    if (error.message.includes('ECONNREFUSED') || error.message.includes('ENOTFOUND')) {
       return res.status(500).send('DATABASE_ISSUE');
     }
 
@@ -159,6 +171,7 @@ app.post('/login', async (req, res) => {
     return res.status(500).send('SERVER_ERROR');
   }
 });
+
 
 app.post('/request-password-reset', async (req, res) => {
   try {
@@ -233,7 +246,7 @@ app.get('/user/:id', async (req, res) => {
    
   try {
     const user = await Registeruser.findById({_id:id});
-    
+    console.log("User",user)
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -372,12 +385,12 @@ app.get('/alldebates', middleware, async (req, res) => {
 
   try {
     const createdBy = req.user.username;
-    const totalRecords = await Debate.countDocuments({ createdBy: { $ne: createdBy } });
+    const totalRecords = await Debate.countDocuments({ createdBy: { $ne: createdBy }});
 
 
     // Fetch debates with pagination and sorting
     const debates = await Debate
-      .find({ createdBy: { $ne: createdBy } })
+      .find({ createdBy: { $ne: createdBy }})
       .skip(skip) // Skip the calculated number of records
       .limit(10) // Limit to 10 debates per page
       .sort({ createdOn: -1 }); // Sort by createdOn date in descending order
@@ -441,55 +454,65 @@ app.post('/dislike/:id', middleware, async (req, res) => {
 });
 
 // Route to submit votes
-app.post('/vote/:id',middleware, async (req, res) => {
+app.post('/vote/:id', middleware, async (req, res) => {
   const { id } = req.params;
   const { votes } = req.body; // Array of vote data (optionIndex and voteCount)
   const userId = req.user.id;
-  
 
   try {
     const debate = await Debate.findById(id);
-    
     if (!debate) return res.status(404).json({ message: "Debate not found" });
 
     // Check if user has already voted
     const userVote = debate.votedUsers.find(user => user.userId === userId);
+
     if (userVote) {
-      return res.status(400).json({ message: "You have already voted for this debate" });
+      // Update existing votes
+      userVote.votes = votes;
+    } else {
+      // Add new votes for the user
+      debate.votedUsers.push({ userId, votes });
     }
 
-    // Update vote counts
-    const updatedVotes = debate.options.map((option, index) => {
-      const vote = votes.find(vote => vote.optionId === index);
-      if (vote) {
-        option.votes += vote.voteCount;
-      }
-      return option;
-    });
-    //console.log(updatedVotes)
-
-    debate.options = updatedVotes;
-    
-    debate.totalVotes += votes.reduce((total, vote) => total + vote.voteCount, 0);
-    
-    debate.votedUsers.push({
-      userId,
-      votes,
+    // Update vote counts for the options
+    debate.options.forEach(option => {
+      option.votes = 0; // Reset the votes
     });
 
+    // Count the votes for each option
+    debate.votedUsers.forEach(user => {
+      user.votes.forEach(vote => {
+        const option = debate.options[vote.optionId];
+        if (option) {
+          option.votes += vote.voteCount;
+        }
+      });
+    });
+
+    // Update total votes
+    debate.totalVotes = debate.options.reduce((total, option) => total + option.votes, 0);
+
+    // Save the updated debate document
     await debate.save();
-    res.json({ totalVotes: debate.totalVotes });
+
+    res.json({
+      totalVotes: debate.totalVotes,
+      options: debate.options,
+      userVotes: votes,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
   }
 });
 
+
+
 app.get("/allusers", async (req, res) => {
   try {
     // Get all users from the database
-    const users = await Registeruser.find({role:"user"});
-    
+    const users = await Registeruser.find({ role: "user" });
+
     const usersWithDebates = await Promise.all(
       users.map(async (user) => {
         // Fetch all debates for the current user
@@ -498,20 +521,25 @@ app.get("/allusers", async (req, res) => {
         let totalLikes = 0;
         let totalVotes = 0;
 
+        // Iterate through each debate and sum the likes and votes
         debates.forEach((debate) => {
           totalLikes += debate.likes || 0;
           totalVotes += debate.totalVotes || 0;
         });
+
+        // Now return the user data along with the debates count, likes, votes, and createdDate of the debates
         return {
           userId: user._id,
-          username: user.username, // Adjust as per your user model
+          username: user.username,
           totalDebates: debates.length,
           totalLikes,
           totalVotes,
+          isblocked:user.isblocked,
+          createdDate: debates.length > 0 ? debates[0].createdDate : null, // Assuming you want the createdDate of the first debate
         };
       })
     );
-     
+
     // Send the response back to the frontend
     res.status(200).json(usersWithDebates);
   } catch (err) {
@@ -519,6 +547,7 @@ app.get("/allusers", async (req, res) => {
     res.status(500).json({ message: "Error fetching users and their debates." });
   }
 });
+
 
 
 // Get a single debate by ID
@@ -538,10 +567,10 @@ app.get('/debate/:id', middleware, async (req, res) => {
   }
 });
 
-app.delete('/debate/:id', async (req, res) => {
+app.patch('/debate/:id', async (req, res) => {
   const { id } = req.params;
   try {
-    await Debate.findByIdAndDelete(id);
+    await Debate.findByIdAndUpdate(id, { isblocked: true });
     res.status(200).json({ message: 'Debate deleted successfully' });
   } catch (err) {
     res.status(500).json({ message: 'Error deleting debate' });
@@ -549,16 +578,137 @@ app.delete('/debate/:id', async (req, res) => {
 });
 
 app.delete('/debate/:debateId/option/:optionId', async (req, res) => {
-  const { debateId, optionId } = req.params;
+  const { debateId, optionId } = req.params; // Get debateId and optionId from request params
   try {
+    // Find the debate by ID
     const debate = await Debate.findById(debateId);
+    
+    if (!debate) {
+      return res.status(404).json({ message: 'Debate not found' });
+    }
+
+    // Find the option to delete by matching the optionId
+    const optionToDelete = debate.options.find(option => option._id.toString() === optionId);
+    
+    if (!optionToDelete) {
+      return res.status(404).json({ message: 'Option not found' });
+    }
+
+    // Subtract the option's votes from the totalVotes
+    debate.totalVotes -= optionToDelete.votes;
+
+    // Remove the option from the options array
     debate.options = debate.options.filter(option => option._id.toString() !== optionId);
+
+    // Iterate through votedUsers to remove the user's vote for the deleted option
+    debate.votedUsers.forEach(user => {
+      // Filter out the vote that corresponds to the deleted option
+      user.votes = user.votes.filter(vote => vote.optionId.toString() !== optionId);
+    });
+
+    // Save the updated debate
     await debate.save();
+    
     res.status(200).json({ message: 'Option deleted successfully' });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: 'Error deleting option' });
   }
 });
+
+
+// /blockuser/:userId
+app.patch('/blockuser/:userId', async (req, res) => {
+  const { userId } = req.params;
+  console.log(userId)
+  await Registeruser.findByIdAndUpdate(userId, { isblocked: true });
+  res.status(200).send("User blocked");
+});
+
+// /blockuserdebates/:userId
+app.patch('/blockuserdebates/:userId', async (req, res) => {
+  const { userId } = req.params;
+  const user = await Registeruser.findById(userId);  // Assuming Registeruser is your user model
+
+    if (!user) {
+      return res.status(404).send("User not found");
+    }
+
+    const username = user.username;
+  await Debate.updateMany({ createdBy: username }, { isblocked: true });
+  res.status(200).send("Debates blocked");
+});
+
+app.patch('/:debateId/unblock', middleware, async (req, res) => {
+  const { debateId } = req.params;
+  console.log("hhii")
+  try {
+    console.log("Debate ID: ", debateId);
+    console.log("Authenticated user: ", req.user);
+
+    // Check if the user is an admin
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Access denied. Only admins can unblock debates.' });
+    }
+
+    // Find the debate by its ID
+    const debate = await Debate.findById(debateId);
+    if (!debate) {
+      return res.status(404).json({ message: 'Debate not found.' });
+    }
+
+    // Check if the debate is blocked
+    if (debate.isblocked !== true) {
+      return res.status(400).json({ message: 'Debate is not blocked.' });
+    }
+
+    // Unblock the debate
+    console.log("Before unblocking: ", debate);
+    debate.isblocked = false; // Change status to 'active'
+    await debate.save();
+    console.log("After unblocking: ", debate);
+
+    return res.status(200).json({ message: 'Debate successfully unblocked.' });
+  } catch (err) {
+    console.error('Error unblocking debate:', err);
+    return res.status(500).json({ message: 'Internal server error.' });
+  }
+});
+
+app.patch('/unblockuser/:userId', middleware, async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    // Find the user by ID
+    const user = await Registeruser.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    if (!user.isblocked) {
+      return res.status(400).json({ message: 'User is not blocked.' });
+    }
+
+    // Unblock the user
+    user.isblocked = false;
+    await user.save();
+
+    // Unblock all debates created by this user
+    const result = await Debate.updateMany(
+      { createdBy: user.username }, // Filter debates by the username
+      { $set: { isblocked: false } } // Update isBlocked to false
+    );
+
+    return res.status(200).json({
+      message: 'User and their debates successfully unblocked.',
+      unblockedDebates: result.nModified, // Number of debates unblocked
+    });
+  } catch (err) {
+    console.error('Error unblocking user:', err);
+    return res.status(500).json({ message: 'Internal server error.' });
+  }
+});
+
 
 
 

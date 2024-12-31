@@ -13,14 +13,14 @@ import {
 import { User } from "../models/user.model.js";
 
 export const signup = async (req, res) => {
-	const { email, password, name } = req.body;
+	const { email, password, name, role } = req.body;
 
 	try {
-		if (!email || !password || !name) {
+		if (!email || !password || !name || !role) {
 			throw new Error("All fields are required");
 		}
 
-		const userAlreadyExists = await User.findOne({ email });
+		const userAlreadyExists = await User.findOne({ name });
 		console.log("userAlreadyExists", userAlreadyExists);
 
 		if (userAlreadyExists) {
@@ -34,6 +34,7 @@ export const signup = async (req, res) => {
 			email,
 			password: hashedPassword,
 			name,
+			role,
 			verificationToken,
 			verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
 		});
@@ -92,15 +93,18 @@ export const verifyEmail = async (req, res) => {
 };
 
 export const login = async (req, res) => {
-	const { email, password } = req.body;
+	const { name, password } = req.body;
 	try {
-		const user = await User.findOne({ email });
+		const user = await User.findOne({ name });
 		if (!user) {
 			return res.status(400).json({ success: false, message: "Invalid credentials" });
 		}
 		const isPasswordValid = await bcryptjs.compare(password, user.password);
 		if (!isPasswordValid) {
 			return res.status(400).json({ success: false, message: "Invalid credentials" });
+		}
+		if(user.status==="suspended"){
+			return res.status(400).json({success:false,message:"Admin has suspended you.Try Contacting admin for logging in"})
 		}
 
 		generateTokenAndSetCookie(res, user._id);

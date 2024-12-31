@@ -18,7 +18,7 @@ function Navbar() {
             <nav className="navbar navbar-expand-lg bg-primary navbar-dark custom-navbar">
                 <div className="container-fluid">
                     
-                    <div className="navbar-brand">DebateHub Admin Panel</div>
+                    <div className="navbar-brand">Admin Panel</div>
                     <button 
                         className="navbar-toggler" 
                         type="button" 
@@ -33,6 +33,8 @@ function Navbar() {
                     <div className="collapse navbar-collapse" id="navbarNavAltMarkup">
                      
                         <div className="navbar-nav ms-auto">
+                            <a className="nav-link active" aria-current="page" href="/users">Users</a>
+                            <a className="nav-link" href="/admindebates">Debates</a>
                             <a className="nav-link" href="#" onClick={handleLogout}>Logout</a>
                         </div>
                     </div>

@@ -1,0 +1,78 @@
+<div class="bg-gray-100">
+  <div class="flex flex-col md:flex-row p-4 mx-auto min-h-screen max-w-7xl">
+    <!-- Sidebar Filter -->
+    <div class="w-full md:w-1/4 p-4 bg-white rounded-md shadow-md space-y-4">
+
+      <div>
+        <p>Likes greater than</p>
+        <input type="range" min="0" max="100" step="1" class="w-full" [(ngModel)]="likes"
+          (input)="onFilterChange()" />
+        <p class="text-sm text-gray-500">Selected: {{ likes }}</p>
+      </div>
+
+      <div>
+        <p>Questions greater than</p>
+        <input type="range" min="0" max="100" step="1" class="w-full" [(ngModel)]="debates"
+          (input)="onFilterChange()" />
+        <p class="text-sm text-gray-500">Selected: {{ debates }}</p>
+      </div>
+
+      <div>
+        <p>Joined After</p>
+        <input type="date" class="w-full p-2 border border-gray-300 rounded" [(ngModel)]="joinedAfter"
+          (change)="onFilterChange()" />
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 p-4 space-y-4">
+      <!-- Search Bar -->
+      <div class="flex items-center space-x-2">
+        <a routerLink="/admin" class="bg-orange-500 text-white px-4 py-2 rounded">Back</a>
+        <input type="text" class="flex-1 p-2 border border-gray-300 rounded" placeholder="Search by name"
+          [(ngModel)]="searchQuery" (keyup)="onSearch()" />
+        <button class="bg-orange-500 text-white px-4 py-2 rounded" (click)="onSearch()">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- User Cards -->
+      <div *ngIf="filteredUsers.length > 0; else noUsers" class="space-y-4">
+        <div *ngFor="let user of filteredUsers"
+          class="flex items-center justify-between p-4 bg-white rounded-md shadow-md">
+          <div>
+            <p class="text-blue-600 font-bold">{{ user.name }}</p>
+            <p>
+              {{user.debateCount}} debates, {{user.totalVotesCount}} votes, joined on {{user.joinDate | date}}
+            </p>
+          </div>
+          <div class="flex items-center space-x-4">
+            <p class="text-red-500 font-bold">{{ user.totalLikesCount }} ❤️</p>
+            <button class="text-blue-500" *ngIf="!user.blocked" (click)="onBlock(user.id)">
+              <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="black">
+                <path
+                  d="M791-55 686-160H160v-112q0-34 17.5-62.5T224-378q45-23 91.5-37t94.5-21L55-791l57-57 736 736-57 57ZM240-240h366L486-360h-6q-56 0-111 13.5T260-306q-9 5-14.5 14t-5.5 20v32Zm496-138q29 14 46 42.5t18 61.5L666-408q18 7 35.5 14t34.5 16ZM568-506l-59-59q23-9 37-29.5t14-45.5q0-33-23.5-56.5T480-720q-25 0-45.5 14T405-669l-59-59q23-34 58-53t76-19q66 0 113 47t47 113q0 41-19 76t-53 58Zm38 266H240h366ZM457-617Z" />
+              </svg>
+            </button>
+            <button class="text-red-500" *ngIf="user.blocked" (click)="onUnblock(user.id)">
+              <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
+                fill="#8B1A10">
+                <path
+                  d="M702-480 560-622l57-56 85 85 170-170 56 57-226 226Zm-342 0q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM40-160v-112q0-34 17.5-62.5T104-378q62-31 126-46.5T360-440q66 0 130 15.5T616-378q29 15 46.5 43.5T680-272v112H40Zm80-80h480v-32q0-11-5.5-20T580-306q-54-27-109-40.5T360-360q-56 0-111 13.5T140-306q-9 5-14.5 14t-5.5 20v32Zm240-320q33 0 56.5-23.5T440-640q0-33-23.5-56.5T360-720q-33 0-56.5 23.5T280-640q0 33 23.5 56.5T360-560Zm0 260Zm0-340Z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<ng-template #noUsers>
+  <div class="p-4 bg-white rounded-md shadow-md">
+    <p>No users found</p>
+  </div>

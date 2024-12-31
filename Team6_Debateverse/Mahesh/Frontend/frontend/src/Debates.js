@@ -7,7 +7,6 @@ import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Toolti
 import { jwtDecode } from 'jwt-decode';
 import { faker } from '@faker-js/faker'; 
 
-
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 function Debates() {
@@ -18,48 +17,44 @@ function Debates() {
   const [exactMatch, setExactMatch] = useState(false);
   const [postedAfter, setPostedAfter] = useState(null);
   const [showMore, setShowMore] = useState(false); 
+  const [likedDebates, setLikedDebates] = useState(new Set()); 
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    axios
-      .get('http://localhost:8081/alldebates', {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-      })
-      .then((response) => {
-        
+    const fetchDebates = async () => {
+      try {
+        const response = await axios.get('http://localhost:8081/alldebates', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        });
         const debatesWithRandomNames = response.data.map(debate => ({
           ...debate,
-          created_by: faker.name.fullName(), 
+          created_by: faker.name.fullName(),
         }));
         setDebates(debatesWithRandomNames);
-      })
-      .catch((error) => console.error('Error fetching debates:', error));
-  }, []);
 
-  useEffect(() => {
-   
+        
+        const token = localStorage.getItem('token');
+        const decodedToken = jwtDecode(token);
+        const userId = decodedToken.id;
+
+        const likedResponse = await axios.get(`http://localhost:8081/user/${userId}/likedDebates`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const likedSet = new Set(likedResponse.data.map(like => like.debate_id));
+        setLikedDebates(likedSet);
+      } catch (error) {
+        console.error('Error fetching debates:', error);
+      }
+    };
+
     fetchDebates();
-  }, [likesGreaterThan, votesGreaterThan, exactMatch, postedAfter, searchTerm]); 
-  const fetchDebates = async () => {
-    try {
-      const response = await axios.get(
-      'http://localhost:8081/alldebates', {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
-      const debatesWithRandomNames = response.data.map(debate => ({
-        ...debate,
-        created_by: faker.name.fullName(),
-      }));
-      setDebates(debatesWithRandomNames);
-    } catch (error) {
-      console.error('Error fetching debates:', error);
-    }
-  };
+  }, []);
 
   const handleLike = (debateId) => {
     const token = localStorage.getItem('token');
@@ -74,7 +69,7 @@ function Debates() {
     axios
       .post(
         `http://localhost:8081/debates/${debateId}/reactions`,
-        { action: 'like', userId },
+        { action: 'like' },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -82,13 +77,26 @@ function Debates() {
         }
       )
       .then((response) => {
+        const updatedLikes = response.data.likes;
+
         setDebates((prevDebates) =>
           prevDebates.map((debate) =>
             debate.id === debateId
-              ? { ...debate, likes: response.data.likes }
+              ? { ...debate, likes: updatedLikes }
               : debate
           )
         );
+
+        
+        setLikedDebates((prev) => {
+          const newLikedDebates = new Set(prev);
+          if (newLikedDebates.has(debateId)) {
+            newLikedDebates.delete(debateId); 
+          } else {
+            newLikedDebates.add(debateId); 
+          }
+          return newLikedDebates;
+        });
       })
       .catch((error) => console.error('Error liking debate:', error));
   };
@@ -103,24 +111,22 @@ function Debates() {
       day % 10 === 1 && day !== 11
         ? 'st'
         : day % 10 === 2 && day !== 12
-        ? 'nd'
+        ? ' nd'
         : day % 10 === 3 && day !== 13
         ? 'rd'
         : 'th';
 
     return `${day}${suffix} ${month}, ${year}`;
   };
-
   const filteredDebates = debates.filter((debate) => {
     const matchesSearch = exactMatch
-      ? debate.created_by.toLowerCase() === searchTerm.toLowerCase()
-      : debate.created_by.toLowerCase().includes(searchTerm.toLowerCase());
+      ? debate.text.toLowerCase() === searchTerm.toLowerCase()
+      : debate.text.toLowerCase().includes(searchTerm.toLowerCase()); 
     const matchesLikes = debate.likes >= likesGreaterThan;
     const matchesVotes = debate.options.some(option => option.upvotes >= votesGreaterThan);
     const matchesDate = !postedAfter || new Date(debate.created_on) >= new Date(postedAfter);
     return matchesSearch && matchesLikes && matchesVotes && matchesDate;
   });
-
   const displayedDebates = showMore ? filteredDebates : filteredDebates.slice(0, 5);
 
   const navigateToUpvotes = (debateId) => {
@@ -139,7 +145,7 @@ function Debates() {
       <div style={{ marginLeft: '60px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <input
           type="text"
-          placeholder="Search by username"
+          placeholder="Search"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           style={{ marginBottom: '20px', padding: '10px', width: '300px' }}
@@ -172,8 +178,7 @@ function Debates() {
               style={{ marginLeft: '10px' }}
             />
           </label>
-          <label
-          style={{ marginLeft: '20px' }}>
+          <label style={{ marginLeft: '20px' }}>
             Posted After:
             <input
               type="date"
@@ -195,8 +200,23 @@ function Debates() {
                 position: 'relative',
                 display: 'flex',
                 alignItems: 'flex-start',
+                opacity: debate.is_deleted === 'yes' ? 0.5 : 1,
               }}
             >
+              {debate.is_deleted === 'yes' && (
+                <div style={{
+                  position: 'absolute',
+                  top: '10px',
+                  right: '10px',
+                  backgroundColor: 'rgba(255, 0, 0, 0.7)',
+                  color: '#fff',
+                  padding: '5px',
+                  borderRadius: '5px',
+                  fontWeight: 'bold',
+                }}>
+                  This debate has been deleted by the admin
+                </div>
+              )}
               <div style={{ flex: 1, marginRight: '20px', width: '60%' }}>
                 <div
                   style={{
@@ -221,11 +241,13 @@ function Debates() {
                     onClick={() => handleLike(debate.id)}
                     style={{
                       fontSize: '30px',
-                      color: 'red',
+                      color: likedDebates.has(debate.id) ? 'gray' : 'red',
                       border: 'none',
                       background: 'none',
                       cursor: 'pointer',
                       marginRight: '5px',
+                      opacity: debate.is_deleted === 'yes' ? 0.5 : 1, 
+                      pointerEvents: debate.is_deleted === 'yes' ? 'none' : 'auto', 
                     }}
                   >
                     ❤️
@@ -240,58 +262,66 @@ function Debates() {
                       background: 'none',
                       cursor: 'pointer',
                       marginLeft: '10px',
+                      opacity: debate.is_deleted === 'yes' ? 0.5 : 1, 
+                      pointerEvents: debate.is_deleted === 'yes' ? 'none' : 'auto', 
                     }}
                   >
-                    👍 Upvote
+                    👍 Vote
                   </button>
                 </div>
                 <h4>{debate.text}</h4>
-                <p>Created by: {debate.created_by}</p>
+                <p>Created by: {debate.email}</p>
                 <p>Created on: {formatDate(debate.created_on)}</p>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  {debate.options && debate.options.length > 0 ? (
-                    debate.options.map((option, index) => (
-                      <div
-                        key={option.id}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          marginBottom: '10px',
-                        }}
-                      >
-                        <div
-                          style={{
-                            flex: 1,
-                            background: `linear-gradient(to right, #4caf50, #a5d6a7)`,
-                            height: '25px',
-                            borderRadius: '5px',
-                            textAlign: 'center',
-                            lineHeight: '25px',
-                            color: '#fff',
-                            fontWeight: 'bold',
-                            marginRight: '10px',
-                          }}
-                        >
-                          {index + 1}. {option.text}
-                        </div>
-                        <div>
-                          <span
-                            style={{
-                              backgroundColor: '#4caf50',
-                              padding: '5px 10px',
-                              borderRadius: '5px',
-                              color: '#fff',
-                              fontWeight: 'bold',
-                            }}
-                          >
-                            {option.upvotes || 0} votes
-                          </span>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <p>No options available for this debate.</p>
-                  )}
+                {debate.options && debate.options.length > 0 ? (
+  debate.options.map((option, index) => (
+    <div
+      key={option.id}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        marginBottom: '10px',
+        opacity: option.is_deleted === 'yes' ? 0.5 : 1, 
+      }}
+    >
+      <div
+        style={{
+          flex: 1,
+          background: `linear-gradient(to right, #4caf50, #a5d6a7)`,
+          height: '25px',
+          borderRadius: '5px',
+          textAlign: 'center',
+          lineHeight: '25px',
+          color: '#fff',
+          fontWeight: 'bold',
+          marginRight: '10px',
+        }}
+      >
+        {index + 1}. {option.text}
+      </div>
+      <div>
+        <span
+          style={{
+            backgroundColor: '#4caf50',
+            padding: '5px 10px',
+            borderRadius: '5px',
+            color: '#fff',
+            fontWeight: 'bold',
+          }}
+        >
+          {option.upvotes || 0} votes
+        </span>
+      </div>
+      {option.is_deleted === 'yes' && (
+        <div style={{ marginLeft: '10px', color: 'red', fontWeight: 'bold' }}>
+          This option has been deleted by the admin
+        </div>
+      )}
+    </div>
+  ))
+) : (
+  <p>No options available for this debate.</p>
+)}
                 </div>
               </div>
               <div style={{ width: '300px', height: '150px', marginTop: '120px' }}>
@@ -310,8 +340,7 @@ function Debates() {
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                      y: {
-                        beginAtZero: true,
+                      y:{beginAtZero: true,
                       },
                     },
                   }}

@@ -1,11 +1,26 @@
-<div class="min-h-full bg-gray-100">
+<div class="min-h-full">
   <main>
-    <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6">
-      <section class="bg-gray-100 h-screen flex items-center justify-center">
-        <div class="container mx-auto px-4 text-center">
-          <h1 class="text-4xl md:text-5xl font-bold mb-4">Welcome to DebateVerse</h1>
-          <p class="text-lg md:text-xl mb-8">Where Ideas Meet, Challenge, and Grow</p>
-          <a routerLink="/login" class="bg-blue-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700">
+    <div class="sm:px-6">
+      <section class="relative bg-gray-100 h-screen flex items-center justify-center">
+        <!-- Background Video -->
+        <video
+          autoplay
+          loop
+          muted
+          class="absolute inset-0 w-full h-full object-cover"
+        >
+          <source src="https://videos.pexels.com/video-files/8244305/8244305-uhd_3840_2160_25fps.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+
+        <!-- Overlay Content -->
+        <div class="relative container mx-auto px-4 text-center rounded-lg py-6">
+          <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">Welcome to DebateVerse</h1>
+          <p class="text-lg md:text-xl text-gray-300 mb-8">Where Ideas Meet, Challenge, and Grow</p>
+          <a
+            routerLink="/login"
+            class="bg-blue-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700"
+          >
             Join the Debate
           </a>
         </div>

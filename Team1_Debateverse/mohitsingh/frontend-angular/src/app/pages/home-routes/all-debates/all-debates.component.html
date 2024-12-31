@@ -1,0 +1,113 @@
+<div class="bg-gray-100">
+  <div class="min-h-screen mx-auto max-w-7xl p-4">
+    <div class="grid gap-6 md:grid-cols-[300px_1fr]">
+      <!-- Left Sidebar -->
+      <div class="space-y-6">
+        <!-- Back Button -->
+        <button
+          class="w-full justify-start bg-orange-500 hover:bg-orange-600 text-white font-bold p-3 rounded shadow-md">
+          Back to Dashboard
+        </button>
+
+        <!-- Search Bar -->
+        <div class="bg-orange-100 p-4 rounded shadow-md">
+          <div class="relative">
+            <input
+              type="text"
+              class="w-full pl-3 pr-10 py-2 rounded bg-white border focus:ring-2 focus:ring-orange-400"
+              placeholder="Search..."
+              [(ngModel)]="searchQuery"
+              (keyup)="onSearch()" />
+            <button (click)="onSearch()" class="absolute right-3 top-2.5 text-gray-500 hover:text-gray-700">
+              🔍
+            </button>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="bg-white p-4 space-y-6 rounded shadow-md">
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium mb-1">Likes greater than</label>
+              <input
+                type="range"
+                min="0"
+                max="50"
+                [(ngModel)]="likes"
+                (input)="onFilterChange()"
+                class="w-full appearance-none bg-gray-200 h-2 rounded-lg cursor-pointer accent-blue-500" />
+              <span class="block text-sm font-medium mt-2">Selected: {{ likes }}</span>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">Votes greater than</label>
+              <input
+                type="range"
+                min="0"
+                max="50"
+                [(ngModel)]="votes"
+                (input)="onFilterChange()"
+                class="w-full appearance-none bg-gray-200 h-2 rounded-lg cursor-pointer accent-blue-500" />
+              <span class="block text-sm font-medium mt-2">Selected: {{ votes }}</span>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Posted After</label>
+            <input
+              type="date"
+              class="w-full p-2 rounded border focus:ring-2 focus:ring-orange-400"
+              [(ngModel)]="postedAfter"
+              (change)="onFilterChange()" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="space-y-6">
+
+
+        <!-- Debate Cards -->
+        <div class="space-y-6" *ngIf="filteredDebates.length > 0; else noDebates">
+          <div *ngFor="let post of filteredDebates" class="bg-white p-6 rounded shadow-md">
+            <div class="grid grid-cols-12 gap-4">
+              <!-- Left Section -->
+              <div class="col-span-9 space-y-2">
+                <a href="#" [routerLink]="['/update/debate/', post.id]">
+                  <p class="text-lg font-semibold text-indigo-600 hover:underline">{{ post.text }}</p>
+                </a>
+                <div class="text-sm text-gray-500">
+                  <p>Posted by <span class="text-indigo-500 underline">{{ post.createdBy.name }}</span></p>
+                  <p>on {{ post.createdOn | date }}</p>
+                </div>
+              </div>
+
+              <!-- Right Section -->
+              <div class="col-span-3 flex flex-col items-end space-y-2">
+                <div class="flex items-center gap-1 text-red-500">
+                  ❤️ <span>{{ post.totalLikes }}</span>
+                </div>
+                <div *ngIf="post.blocked == true" class="mt-2 px-2 py-1 bg-gray-300 text-gray-600 text-xs font-semibold rounded">
+                  Closed Debate
+                </div>
+                <div class="w-full mt-2">
+                  <canvasjs-chart
+                    [options]="post.chartOptions"
+                    [styles]="{ width: '100%', height: '120px' }">
+                  </canvasjs-chart>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- No Content Fallback -->
+        <ng-template #noDebates>
+          <div class="bg-white p-6 rounded shadow-md text-center">
+            <p class="text-indigo-600 text-lg font-medium">No debates found</p>
+          </div>
+        </ng-template>
+        <mat-paginator [length]="totalElements" [pageSize]="size" [pageSizeOptions]="[5, 10, 25]" aria-label="Select page" (page)="onPageChange($event)">
+        </mat-paginator>
+      </div>
+    </div>
+  </div>
+</div>

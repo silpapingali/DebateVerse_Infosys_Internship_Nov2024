@@ -11,6 +11,7 @@ export class NavbarComponent implements OnInit {
 
   isLogged: any = false;
   user: any = null;
+  userRole: any = null;
 
   ngOnInit() {
     // console.log(this._auth.isLoggedIn());
@@ -19,7 +20,8 @@ export class NavbarComponent implements OnInit {
       if(loggedInStatus) {
         console.log('User is logged in');
         this.user = this._auth.getUser();
-        console.log(this.user);
+        this.userRole = this.user.role;
+        // console.log(this.user);
       }
     });
   }

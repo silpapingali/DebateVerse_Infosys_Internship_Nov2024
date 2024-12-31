@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
 import { AuthServiceService } from '../../../../services/auth-service/auth-service.service';
 import { DebateService } from '../../../../services/debate-service/debate.service';
 
@@ -14,9 +15,18 @@ export class CreateDebateComponent {
   constructor(
     private _debate: DebateService,
     private _snack: MatSnackBar,
-    private _auth: AuthServiceService
+    private _auth: AuthServiceService,
+    private _router:Router
   ) {
     this.userId = this._auth.getUser().id;
+    this._auth.isLoggedIn$.subscribe((res) => {
+      if (!res) {
+        this._router.navigate(['/login']);
+        this._snack.open('Please login to continue', 'Close', {
+          duration: 3000,
+        });
+      }
+    });
   }
 
   debateReq: any = {

@@ -1,0 +1,23 @@
+{
+  "name": "tailwind",
+  "version": "1.0.0",
+  "description": "Tailwind",
+  "homepage": "https://github.com/silpapingali/DebateVerse_Infosys_Internship_Nov2024#readme",
+  "bugs": {
+    "url": "https://github.com/silpapingali/DebateVerse_Infosys_Internship_Nov2024/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/silpapingali/DebateVerse_Infosys_Internship_Nov2024.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "vite": "^6.0.6"
+  }
+}

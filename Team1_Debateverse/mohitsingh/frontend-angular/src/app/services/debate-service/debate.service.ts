@@ -25,8 +25,16 @@ export class DebateService {
     return this._http.get(`${this.baseUrl}/user/${userId}`);
   }
 
-  getAllDebatesExceptUser() {
-    return this._http.get(`${this.baseUrl}`);
+  getAllDebatesExceptUser(userId: any, page: number, size: number) {
+    return this._http.get(`${this.baseUrl}`, {
+      params: { userId: userId, page: page.toString(), size: size.toString() },
+    });
+  }
+
+  getAllDebates(page: number, size: number) {
+    return this._http.get(`${this.baseUrl}/all`, {
+      params: { page: page.toString(), size: size.toString() },
+    });
   }
 
   likeDebate(debateId: any, userId: any) {
@@ -43,5 +51,13 @@ export class DebateService {
 
   getLikedDebatesByUser(userId: any) {
     return this._http.get(`${this.baseUrl}/liked`, { params: { userId } });
+  }
+
+  blockDebate(debateId: any) {
+    return this._http.put(`${this.baseUrl}/${debateId}/block`, {});
+  }
+
+  unblockDebate(debateId: any) {
+    return this._http.put(`${this.baseUrl}/${debateId}/unblock`, {});
   }
 }
