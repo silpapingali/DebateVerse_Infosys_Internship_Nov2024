@@ -1,8 +1,8 @@
-
 import { useNavigate, Link } from 'react-router-dom';
 import { Search, Calendar } from 'lucide-react';
 import VoteGraph from '../components/VoteGraph';
 import { useEffect, useState } from "react";
+
 const Debates = () => {
   const navigate = useNavigate();
   const [debates, setDebates] = useState([]);
@@ -20,8 +20,6 @@ const Debates = () => {
     fetchDebates();
   }, []);
 
-
-  
   const [searchTerm, setSearchTerm] = useState('');
   const [exactMatch, setExactMatch] = useState(false);
   const [minLikes, setMinLikes] = useState(0);
@@ -32,10 +30,10 @@ const Debates = () => {
     const matchesSearch = exactMatch 
       ? debate.title.toLowerCase() === searchTerm.toLowerCase()
       : debate.title.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesLikes = debate.likes >= minLikes;
-    const matchesVotes = debate.options.some(opt => opt.votes >= minVotes);
+
+    const matchesVotes = debate.options.some(opt => opt.userVotes >= minVotes);
     const matchesDate = !dateAfter || new Date(debate.createdAt) >= new Date(dateAfter);
-    return matchesSearch && matchesLikes && matchesVotes && matchesDate;
+    return matchesSearch  && matchesVotes && matchesDate;
   });
 
   return (
@@ -55,7 +53,7 @@ const Debates = () => {
               placeholder="Search debates..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border-2 border-orange-300 rounded-lg font-comic"
+              className="w-full pl-10 pr-4 py-2 border-2 border-green-300 rounded-lg font-comic"
             />
           </div>
         </div>
@@ -83,7 +81,7 @@ const Debates = () => {
                   max="10000"
                   value={minLikes}
                   onChange={(e) => setMinLikes(Number(e.target.value))}
-                  className="w-full h-2 bg-orange-200 rounded-lg appearance-none"
+                  className="w-full h-2 bg-green-200 rounded-lg appearance-none"
                 />
                 <div className="flex justify-between text-xs mt-1">
                   <span>0</span>
@@ -100,7 +98,7 @@ const Debates = () => {
                   max="25000"
                   value={minVotes}
                   onChange={(e) => setMinVotes(Number(e.target.value))}
-                  className="w-full h-2 bg-orange-200 rounded-lg appearance-none"
+                  className="w-full h-2 bg-green-200 rounded-lg appearance-none"
                 />
                 <div className="flex justify-between text-xs mt-1">
                   <span>0</span>
@@ -127,8 +125,8 @@ const Debates = () => {
           <div className="col-span-3 space-y-4">
             {filteredDebates.map((debate) => (
               <div 
-                key={debate.id}
-                onClick={() => navigate(`/debates/${debate.id}`)}
+                key={debate._id}
+                onClick={() => navigate(`/debates/${debate._id}`)}
                 className="bg-white rounded-lg shadow-lg p-6 cursor-pointer hover:shadow-xl"
               >
                 <div className="flex justify-between items-start mb-4">
@@ -149,11 +147,49 @@ const Debates = () => {
                     </p>
                   </div>
                   <div className="flex items-center gap-1 text-red-500 font-comic">
-                    <span>❤️ {debate.likes}</span>
+                    <span>❤️ {debate.likes.length}</span>
                   </div>
                 </div>
 
-                <VoteGraph options={debate.options} compact={true} />
+                {debate.options.map((option, idx) => (
+                  <div key={idx} className="p-4 bg-gray-100 rounded-lg mb-4">
+                    <p className="font-comic">{option.text}</p>
+                    <div className="flex gap-2 text-sm">
+                      <span>👍 {option.upvotes.length}</span>
+                      <span>👎 {option.downvotes.length}</span>
+                    </div>
+                    <div className="mt-2">
+                      <span>Votes: {option.userVotes}</span>
+                    </div>
+                  </div>
+                ))}
+
+<div className="mt-4 h-16 bg-green-50 rounded-lg flex items-end">
+  {debate.options.map((option, index) => {
+    const totalVotes = option.upvotes.reduce((sum, vote) => sum + vote.count, 0) - option.downvotes.reduce((sum, vote) => sum + vote.count, 0);
+    const maxVotes = Math.max(...debate.options.map(opt => opt.upvotes.reduce((sum, vote) => sum + vote.count, 0) - opt.downvotes.reduce((sum, vote) => sum + vote.count, 0)));
+    const heightPercentage = maxVotes ? (totalVotes / maxVotes) * 100 : 0; // Calculate the height as a percentage of the maxVotes
+
+    return (
+      <div
+        key={index}
+        className="bg-green-400 w-1/5 mx-0.5 transition-all"
+        style={{ height: `${heightPercentage}%` }}
+      />
+    );
+  })}
+</div>
+
+              <div className="mt-2 flex justify-end">
+                <span className={`px-2 py-1 rounded text-sm ${
+                  debate.isActive 
+                    ? 'bg-green-100 text-green-700'
+                    : 'bg-red-100 text-red-700'
+                }`}>
+                  {debate.isActive ? 'Active' : 'Closed'}
+                </span>
+                </div>
+              
               </div>
             ))}
           </div>

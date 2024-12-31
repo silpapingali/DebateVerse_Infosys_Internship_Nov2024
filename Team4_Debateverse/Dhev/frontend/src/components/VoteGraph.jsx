@@ -61,9 +61,7 @@ const VoteGraph = ({ options }) => {
         })}
       </div>
       
-      <div className="mt-4 text-sm text-gray-500 text-center">
-        Total Votes: {totalVotes}
-      </div>
+    
     </div>
   );
 };

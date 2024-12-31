@@ -5,62 +5,66 @@ import { store } from '../App';
 
 const Login = () => {
     const navigate = useNavigate();
-    const {token, setToken,role, setRole,username, setUsername} = useContext(store);
+    const { token, setToken, role, setRole, username, setUsername } = useContext(store);
     const [data, setData] = useState({
         email: '',
         password: '',
     });
-    const [errorMessage, setErrorMessage] = useState(''); 
+    const [errorMessage, setErrorMessage] = useState('');
 
     const changeHandler = (e) => {
         setData({ ...data, [e.target.name]: e.target.value });
     };
 
-    // Handle form submission
     const submitHandler = async (e) => {
         e.preventDefault();
         if (!data.email || !data.password) {
             setErrorMessage('Please enter both email and password');
             return;
         }
-        // Check if the email format is valid
         const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailPattern.test(data.email)) {
             setErrorMessage('Invalid email format');
             return;
         }
         try {
-            const res = await axios.post('http://localhost:5000/login', data); 
+            const res = await axios.post('http://localhost:5000/login', data);
             setToken(res.data.token);
-            setRole(res.data.role); 
+            setRole(res.data.role);
             if (res.data.username) {
                 setUsername(res.data.username);
             } else {
                 console.error('Username is not defined in the login response.');
             }
             if (res.data.role === 'admin') {
-                navigate('/admindashboard'); 
-              } else {
-                navigate('/userdashboard'); 
-              } 
+                navigate('/admindashboard');
+            } else {
+                navigate('/userdashboard');
+            }
         } catch (error) {
-        
             if (error.response) {
-                
-                if (error.response.data === 'USER_NOT_FOUND') {
-                    setErrorMessage('Email not found. Please check your email address.');
-                } else if (error.response.data === 'PASSWORD_MISSMATCH') {
-                    navigate('/passwordcorrect')
-                }else if (error.response.data === 'Email not verified') {
-                    setErrorMessage('Email not verified please check your email once');
-                } 
-                 else if (error.response.data === 'DATABASE_ISSUE') {
-                    setErrorMessage('Database issue: Unable to login at this time. Please try again later.');
-                } else if (error.response.data === 'SERVER_ISSUE') {
-                    setErrorMessage('Server issue: Unable to process your request at the moment. Please try again later.');
-                } 
-                else {
-                    setErrorMessage('Login failed. Please try again.');
+                const errorMessage = error.response.data;
+                switch (errorMessage) {
+                    case 'USER_NOT_FOUND':
+                        setErrorMessage('Email not found. Please check your email address.');
+                        break;
+                    case 'PASSWORD_MISSMATCH':
+                        navigate('/passwordcorrect');
+                        break;
+                    case 'Email not verified':
+                        setErrorMessage('Email not verified. Please check your email inbox.');
+                        break;
+                    case 'ACCOUNT_BLOCKED':
+                        setErrorMessage('Your account has been blocked by the admin.');
+                        break;
+                    case 'DATABASE_ISSUE':
+                        setErrorMessage('Database issue: Unable to login at this time. Please try again later.');
+                        break;
+                    case 'SERVER_ISSUE':
+                        setErrorMessage('Server issue: Unable to process your request at the moment. Please try again later.');
+                        break;
+                    default:
+                        setErrorMessage('Login failed. Please try again.');
                 }
             } else {
                 setErrorMessage('An error occurred. Please try again later.');

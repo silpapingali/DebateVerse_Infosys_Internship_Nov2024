@@ -66,6 +66,9 @@ public class Debate {
     @Transient
     private int totalLikes;
 
+    @Transient
+    private int totalDislikes;
+
     @PostLoad
     private void calculateDerivedFields() {
         this.totalVotes = options.stream()
@@ -73,5 +76,7 @@ public class Debate {
                 .mapToInt(Vote::getVotes)
                 .sum();
         this.totalLikes = likes.size();
+        this.totalDislikes = dislikes.size();
+        
     }
 }

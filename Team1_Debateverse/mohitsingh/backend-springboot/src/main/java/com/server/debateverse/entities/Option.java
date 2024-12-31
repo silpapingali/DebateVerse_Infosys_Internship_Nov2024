@@ -50,6 +50,9 @@ public class Option {
     @Transient
     private int totalVotes;
 
+    @Column(nullable = false)
+    private boolean isBlocked = false;
+
     @Column(nullable = false, updatable = false)
     @CreationTimestamp
     private LocalDate createdOn;

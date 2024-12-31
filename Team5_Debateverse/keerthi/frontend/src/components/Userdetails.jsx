@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { FaHeart } from "react-icons/fa6"; 
+import { FaHeart } from "react-icons/fa6";
+import { store } from "../App";
 import { MdOutlinePostAdd } from "react-icons/md";
 import { ImUsers } from "react-icons/im";
 import { FaTrashAlt } from "react-icons/fa"; // Trash can icon for delete
@@ -14,8 +15,8 @@ import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Toolti
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const Userdetails = () => {
+  const { token, role } = useContext(store);
   const { id } = useParams();
-  console.log("from userdetails", id);
   const [user, setUser] = useState(null);
   const [debates, setDebates] = useState([]);
   const navigate = useNavigate();
@@ -30,12 +31,10 @@ const Userdetails = () => {
       try {
         // Fetch user details
         const userResponse = await axios.get(`http://localhost:5000/user/${id}`);
-        console.log("hi", userResponse);
         setUser(userResponse.data);
 
         // Fetch debates of the user
         const debatesResponse = await axios.get(`http://localhost:5000/user/${id}/debates`);
-        console.log("Hello", debatesResponse);
         setDebates(debatesResponse.data);
       } catch (err) {
         console.error("Error fetching user details:", err);
@@ -87,17 +86,37 @@ const Userdetails = () => {
   // Function to handle deleting an option from a debate
   const deleteOption = async (debateId, optionId) => {
     try {
-      await axios.delete(`http://localhost:5000/debate/${debateId}/option/${optionId}`);
-      // After deleting the option, update the debate options
-      setDebates(debates.map(debate => {
+      const response = await axios.delete(`http://localhost:5000/debate/${debateId}/option/${optionId}`, {
+        headers: { 'x-token': token }
+      });
+      const updatedDebates = debates.map((debate) => {
         if (debate._id === debateId) {
           debate.options = debate.options.filter(option => option._id !== optionId);
         }
         return debate;
-      }));
-    } catch (err) {
-      console.error("Error deleting option:", err);
+      });
+      setDebates(updatedDebates);
+    } catch (error) {
+      console.error("Error deleting option:", error);
     }
+  };
+
+  // Function to unblock a debate
+  const unblockDebate = (debateId) => {
+    console.log(debateId)
+    axios
+      .patch(`http://localhost:5000/${debateId}/unblock`, null, {
+        headers: { "x-token": token },
+      })
+      .then(() => {
+        // Update the debate list after unblocking
+        setDebates((prevDebates) =>
+          prevDebates.map((debate) =>
+            debate._id === debateId ? { ...debate, isblocked: false } : debate
+          )
+        );
+      })
+      .catch((err) => console.error("Error unblocking debate:", err));
   };
 
   return (
@@ -118,9 +137,7 @@ const Userdetails = () => {
                 <p className="text-sm text-blue-700 font-semibold mt-1">
                   Posted on: {formatDate(debate.createdDate)}
                 </p>
-                <h4 className="font-semibold text-xl">
-                  {debate.question}
-                </h4>
+                <h4 className="font-semibold text-xl">{debate.question}</h4>
 
                 <div className="absolute top-4 right-4 m-4 flex items-center space-x-4">
                   <div className="flex items-center space-x-2">
@@ -158,18 +175,25 @@ const Userdetails = () => {
 
                 <div className="my-6">
                   <p>Votes distribution:</p>
-                  <div className="mb-6 flex justify-center w-[60%] mx-auto h-48"> {/* Center and reduce width */}
+                  <div className="mb-6 flex justify-center w-[60%] mx-auto h-48">
                     <Bar data={chartData(debate)} options={{ responsive: true }} />
                   </div>
                 </div>
-
-                {/* Place Delete Debate Button after Likes and Votes */}
-                <button
-                  onClick={() => deleteDebate(debate._id)}
-                  className="bg-red-500 text-white p-2 rounded-lg hover:bg-red-600"
-                >
-                  Delete Debate
-                </button>
+                {debate.isblocked ? (
+                  <button
+                    onClick={() => unblockDebate(debate._id)}
+                    className="bg-green-500 text-white p-2 rounded-lg hover:bg-green-600"
+                  >
+                    Unblock Debate
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => deleteDebate(debate._id)}
+                    className="bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 mt-2"
+                  >
+                    Delete Debate
+                  </button>
+                )}
               </div>
             ))
           )}

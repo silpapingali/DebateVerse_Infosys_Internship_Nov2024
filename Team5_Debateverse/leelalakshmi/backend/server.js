@@ -120,35 +120,41 @@ app.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     let exist = await Registeruser.findOne({ email });
+
     if (!exist) {
       return res.status(400).send('USER_NOT_FOUND');
     }
+
+    // Check if the user is blocked
+    if (exist.isblocked) {
+      return res.status(400).send('USER_BLOCKED');
+    }
+
     if (!exist.isVerified) {
       return res.status(400).send('Email not verified');
     }
+
     const isMatch = await bcrypt.compare(password, exist.password);
     if (!isMatch) {
       return res.status(400).send('PASSWORD_MISSMATCH');
     }
 
-    
     let payload = {
       user: {
         id: exist.id,
-        role: exist.role, 
+        role: exist.role,
         username: exist.username,
       },
     };
 
-    
     jwt.sign(payload, 'jwtSecret', { expiresIn: 3600000 }, (error, token) => {
       if (error) throw error;
-      return res.json({ token, role: exist.role ,username: exist.username }); 
+      return res.json({ token, role: exist.role, username: exist.username });
     });
   } catch (error) {
     console.log(error);
-     
-     if (error.message.includes('ECONNREFUSED') || error.message.includes('ENOTFOUND')) {
+
+    if (error.message.includes('ECONNREFUSED') || error.message.includes('ENOTFOUND')) {
       return res.status(500).send('DATABASE_ISSUE');
     }
 
@@ -159,6 +165,7 @@ app.post('/login', async (req, res) => {
     return res.status(500).send('SERVER_ERROR');
   }
 });
+
 app.post('/request-password-reset', async (req, res) => {
   try {
     const { email } = req.body;
@@ -416,7 +423,6 @@ app.post("/like/:debateId", middleware, async (req, res) => {
 });
 
 
-// Dislike a debate
 app.post('/dislike/:debateId', middleware, async (req, res) => {
   try {
     const debateId = req.params.debateId;
@@ -479,48 +485,64 @@ app.get("/allusers", middleware, async (req, res) => {
 });
 
 
-app.delete('/delete/:debateId', async (req, res) => {
+app.patch('/debate/block/:id', async (req, res) => {
   try {
-    const { debateId } = req.params;
-    const debate = await Debate.findByIdAndDelete(debateId);
+    const { id } = req.params;
+    const debate = await Debate.findByIdAndUpdate(id, { isblocked: true }, { new: true });
     if (!debate) {
-      return res.status(404).json({ message: "Debate not found" });
+      return res.status(404).json({ message: 'Debate not found' });
     }
-
-    res.status(200).json({ message: "Debate deleted successfully" });
+    res.json({ message: 'Debate blocked successfully', debate });
   } catch (error) {
-    console.error("Error deleting debate:", error);
-    res.status(500).json({ message: "Error deleting debate" });
+    console.error('Error blocking debate:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
-app.delete('/option/delete/:debateId/:optionId', async (req, res) => {
+app.patch('/debate/:debateId/option/:optionId/remove', async (req, res) => {
   try {
     const { debateId, optionId } = req.params;
-    if (!mongoose.Types.ObjectId.isValid(debateId)) {
-      return res.status(400).json({ message: "Invalid debate ID" });
-    }
-    if (!mongoose.Types.ObjectId.isValid(optionId)) {
-      return res.status(400).json({ message: "Invalid option ID" });
-    }
     const debate = await Debate.findById(debateId);
     if (!debate) {
-      return res.status(404).json({ message: "Debate not found" });
-    }
-    const optionIndex = debate.options.findIndex(option => option._id.toString() === optionId);
-    if (optionIndex === -1) {
-      return res.status(400).json({ message: "Option not found" });
+      return res.status(404).json({ message: 'Debate not found' });
     }
 
-    debate.options.splice(optionIndex, 1);
+    const option = debate.options.id(optionId);
+    if (!option) {
+      return res.status(404).json({ message: 'Option not found' });
+    }
+
+    option.isremoved = true;
     await debate.save();
 
-    res.status(200).json({ message: "Option deleted successfully" });
+    res.json({ message: 'Option removed successfully', debate });
   } catch (error) {
-    console.error("Error deleting option:", error);
-    res.status(500).json({ message: "Error deleting option" });
+    console.error('Error removing option:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 });
+
+app.put("/blockuser/:id", async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    user.isblocked = !user.isblocked;
+    await user.save();
+
+    res.json({
+      message: user.isblocked ? "User blocked successfully" : "User unblocked successfully",
+      user,
+    });
+  } catch (error) {
+    console.error("Error blocking/unblocking user:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
 
 
 app.listen(5000, () => {

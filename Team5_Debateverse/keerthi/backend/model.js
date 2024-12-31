@@ -28,6 +28,10 @@ const RegisterUserSchema = new mongoose.Schema({
     resetPasswordExpires: { 
       type: Date, 
       default: null },
+    isblocked:{
+        type:Boolean,
+        default:false
+      } ,  
 });
 
 
@@ -48,6 +52,10 @@ const OptionSchema = new mongoose.Schema({
     type: Number, 
     default: 0 
   },
+  isremoved:{
+    type:Boolean,
+    default:false
+  }  
 
 });
 
@@ -101,6 +109,11 @@ const DebateSchema = new mongoose.Schema({
       ],
     },
   ],
+  isblocked:{
+    type:Boolean,
+    default:false
+  }  
+
 });
 
 const Registeruser = mongoose.model('Registeruser', RegisterUserSchema, 'registerusers');
