@@ -7,7 +7,7 @@ import axios from 'axios';
 
 const NewDebate = () => {
   const [question, setQuestion] = useState('');
-  const [options, setOptions] = useState([{ optionText: '' }, { optionText: '' }]); // Initialize as array of objects with `optionText`
+  const [options, setOptions] = useState([{ optionText: '' }, { optionText: '' }]); 
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [loading, setLoading] = useState(false);

@@ -6,8 +6,8 @@
   "scripts": {
     "start": "node server",
     "server": "nodemon server",
-    "client": "npm run dev --prefix ../client",
-    "dev": "concurrently \"npm run server\" \"npm run client\" "
+    "frontend": "npm run dev --prefix ../frontend",
+    "dev": "concurrently \"npm run server\" \"npm run frontend\" "
   },
   "author": "Leela",
   "license": "ISC",

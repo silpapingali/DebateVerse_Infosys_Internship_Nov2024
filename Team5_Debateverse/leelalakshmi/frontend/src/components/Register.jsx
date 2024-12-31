@@ -1,6 +1,7 @@
-import{ useState } from 'react';
+import { useState } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
+import { FaEye, FaEyeSlash } from 'react-icons/fa'; 
 
 const Register = () => {
   const navigate = useNavigate();
@@ -14,6 +15,9 @@ const Register = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
 
   const changeHandler = (e) => {
     setData({ ...data, [e.target.name]: e.target.value });
@@ -43,6 +47,13 @@ const Register = () => {
       return;
     }
 
+    const passwordRegex =  /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+    if (!passwordRegex.test(data.password)) {
+      setErrorMessage('Password must start with a capital letter, contain alphanumeric characters, and be at least 6 characters long.');
+      setSuccessMessage('');
+      return;
+    }
+
     setLoading(true); 
     try {
       const res = await axios.post('http://localhost:5000/register', data);
@@ -54,7 +65,6 @@ const Register = () => {
       navigate('/registersuccess');
     } catch (error) {
       if (error.response?.data?.error === 'User Already Exist') {
-        console.log(error.response?.data?.error);
         setErrorMessage('Email already exists. Please log in.');
       } else if (error.response?.data?.error === 'Passwords do not match') {
         setErrorMessage('Passwords do not match.');
@@ -71,7 +81,7 @@ const Register = () => {
       <div className="w-full max-w-sm mx-auto bg-white/80 shadow-md rounded px-8 pt-6 pb-8 mb-4">
         <h2 className="text-xl font-semibold mb-4">Please Register</h2>
         <form onSubmit={submitHandler}>
-        <div className="mb-2">
+          <div className="mb-2">
             <label className="block text-gray-700 text-sm mb-1" htmlFor="username">
               Your Name
             </label>
@@ -99,12 +109,13 @@ const Register = () => {
               className="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow"
             />
           </div>
-          <div className="mb-2">
+
+          <div className="mb-2 relative">
             <label className="block text-gray-700 text-sm mb-1" htmlFor="password">
               Password
             </label>
             <input
-              type="password"
+              type={passwordVisible ? 'text' : 'password'} 
               onChange={changeHandler}
               name="password"
               id="password"
@@ -112,16 +123,21 @@ const Register = () => {
               value={data.password}
               className="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow"
             />
-          </div>
-          <div className="mb-2">
-            <label
-              className="block text-gray-700 text-sm mb-1"
-              htmlFor="confirmpassword"
+            <button
+              type="button"
+              className="absolute top-1/2 right-2 transform -translate-y-1/2"
+              onClick={() => setPasswordVisible(!passwordVisible)} 
             >
+              {passwordVisible ? <FaEyeSlash /> : <FaEye />} 
+            </button>
+          </div>
+
+          <div className="mb-2 relative">
+            <label className="block text-gray-700 text-sm mb-1" htmlFor="confirmpassword">
               Confirm Password
             </label>
             <input
-              type="password"
+              type={confirmPasswordVisible ? 'text' : 'password'}
               onChange={changeHandler}
               name="confirmpassword"
               id="confirmpassword"
@@ -129,7 +145,15 @@ const Register = () => {
               value={data.confirmpassword}
               className="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow"
             />
+            <button
+              type="button"
+              className="absolute top-1/2 right-2 transform -translate-y-1/2"
+              onClick={() => setConfirmPasswordVisible(!confirmPasswordVisible)} 
+            >
+              {confirmPasswordVisible ? <FaEyeSlash /> : <FaEye />}
+            </button>
           </div>
+
           {errorMessage && (
             <p className="text-red-500 text-xs italic mb-4">{errorMessage}</p>
           )}

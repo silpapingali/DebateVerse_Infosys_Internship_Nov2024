@@ -21,6 +21,8 @@ const ModerateDebate = () => {
   const [liked, setLiked] = useState(false);
   const [message, setMessage] = useState("");
   const [hasVoted, setHasVoted] = useState(false);
+  const [isDeleted, setIsDeleted] = useState(false);
+  const [isDelete, setIsDelete] = useState(false);
 
   useEffect(() => {
     if (!debate) {
@@ -78,9 +80,15 @@ const ModerateDebate = () => {
       } catch (error) {
         if (error.response?.data === "You have already liked for this debate.") {
           setMessage("Error: You have already liked for this debate.");
+          setTimeout(() => {
+            setMessage("");
+          }, 2000);
         } else {
           console.error("Error on likes:", error);
           setMessage("Error: Failed to like, Please try again.");
+          setTimeout(() => {
+        setMessage("");
+      }, 2000);
         }
       }
     } else {
@@ -137,10 +145,12 @@ const ModerateDebate = () => {
     }
   
     try {
-      const voteData = votes.map((voteCount, index) => ({
-        optionIndex: index,
-        increment: voteCount,
-      }));
+      const voteData = votes
+        .map((voteCount, index) => ({
+          optionId: index,
+          increment: voteCount,
+        }))
+        .filter((vote) => vote.increment > 0); 
   
       const response = await axios.post(
         `http://localhost:5000/vote/${debate._id}`,
@@ -154,7 +164,7 @@ const ModerateDebate = () => {
       );
   
       const { totalVotes } = response.data;
-      setTotalVotes(totalVotes); 
+      setTotalVotes(totalVotes);
       setHasVoted(true);
       setMessage("Success: Your votes have been recorded.");
   
@@ -162,7 +172,7 @@ const ModerateDebate = () => {
         setMessage("");
       }, 2000);
     } catch (error) {
-      if (error.response?.data === "You have already voted for this debate.") {
+      if (error.response?.data.error === "You have already voted for this debate.") {
         setMessage("Error: You have already voted for this debate.");
       } else {
         console.error("Error submitting votes:", error);
@@ -174,33 +184,33 @@ const ModerateDebate = () => {
   };
   
   const resetVotes = () => {
-    const totalNewVotes = votes.reduce((a, b) => a + b, 0); 
-    setTotalVotes((prevTotalVotes) => prevTotalVotes - totalNewVotes); 
+    const totalNewVotes = votes.reduce((a, b) => a + b, 0);
+    setTotalVotes((prevTotalVotes) => prevTotalVotes - totalNewVotes);
     setVotes(new Array(debate.options.length).fill(0));
   };
- 
+  
   const resetVotesDelay = () => {
     setTimeout(() => {
       setMessage("");
       resetVotes();
-    }, 2000); 
+    }, 2000);
   };
-
-  const handleDeleteDebate = async () => {
-    try {
-      const response = await axios.patch(`http://localhost:5000/debate/block/${debate._id}`, {}, {
-        headers: { 'x-token': token },
-      });
-      alert(response.data.message);
-      navigate("/debatesearch");
-    } catch (error) {
-      console.error("Error blocking debate:", error);
-      alert("Error: Failed to block debate.");
-    }
-  };
+  
+const handleDeleteDebate = async () => {
+  try {
+    setIsDeleted(true);
+    
+    alert("Debate marked for deletion. It will be removed once you update.");
+  } catch (error) {
+    console.error("Error blocking debate:", error);
+    alert("Error: Failed to block debate.");
+  }
+};
+  
   
   const handleDeleteOption = async (optionId) => {
     try {
+      setIsDelete(true);
       const response = await axios.patch(
         `http://localhost:5000/debate/${debate._id}/option/${optionId}/remove`,
         {},
@@ -211,19 +221,52 @@ const ModerateDebate = () => {
       const updatedOptions = debate.options.map((option) =>
         option._id === optionId ? { ...option, isremoved: true } : option
       );
-      setDebate({ ...debate, options: updatedOptions });
+  
+      setDebate((prevDebate) => ({
+        ...prevDebate,
+        options: updatedOptions.filter((option) => !option.isremoved),
+      }));
     } catch (error) {
       console.error("Error removing option:", error);
       alert("Error: Failed to remove option.");
     }
-  };
+};
+
   
+const submitUpdate = async () => {
+  if (isDeleted) {
+    try {
+      const response = await axios.patch(`http://localhost:5000/debate/block/${debate._id}`, {}, {
+        headers: { 'x-token': token },
+      });
 
+      alert(response.data.message);
 
+      navigate("/debatesearch"); 
+
+    } catch (error) {
+      console.error("Error updating debate:", error);
+      alert("Error: Failed to update debate.");
+    }
+  } else if(isDelete) {
+    setMessage("Options removed");
+    setTimeout(() => {
+      setMessage("");
+    }, 2000);
+  } 
+  else {
+    setMessage("Error: No updates were made.");
+    setTimeout(() => {
+      setMessage("");
+    }, 2000);
+  }
+};
+  
+const debateClass = isDeleted ? "opacity-70" : "";
   if (!debate) return <p>Loading debate details...</p>;
 
   return (
-    <div className="flex flex-col items-center bg-white/80 min-h-screen py-8 overflow-y-auto">
+    <div className={`flex flex-col items-center bg-white/80 min-h-screen py-8 overflow-y-auto ${debateClass}`}>
       <div className="relative w-full">
         {role === "admin" && (
           <button 
@@ -270,7 +313,7 @@ const ModerateDebate = () => {
         )}
         <div className="mb-6">
         {debate.options
-  .filter((option) => !option.isremoved) // Filter only options where isremoved is false
+  .filter((option) => !option.isremoved) 
   .map((option, index) => (
     <div key={index} className="mb-4">
       <div className="flex items-center justify-between mb-2">
@@ -280,15 +323,21 @@ const ModerateDebate = () => {
         </span>
         <div className="flex items-center">
           <button
-            className="px-2 py-1 bg-blue-500 text-white rounded-md mr-2"
+            className={`px-2 py-1 bg-blue-500 text-white rounded-md mr-2 ${
+              role === "admin" ? "cursor-not-allowed opacity-50" : ""
+            }`}
             onClick={() => handleVote(index, 1)}
+            disabled={role === "admin"}
           >
             +
           </button>
           <span>{votes[index]}</span>
           <button
-            className="px-2 py-1 bg-blue-500 text-white rounded-md ml-2"
+            className={`px-2 py-1 bg-blue-500 text-white rounded-md ml-2 ${
+              role === "admin" ? "cursor-not-allowed opacity-50" : ""
+            }`}
             onClick={() => handleVote(index, -1)}
+            disabled={role === "admin"} 
           >
             -
           </button>
@@ -304,6 +353,7 @@ const ModerateDebate = () => {
       </div>
     </div>
   ))}
+
 
 
         </div>
@@ -334,11 +384,12 @@ const ModerateDebate = () => {
             </ResponsiveContainer>
           </div>
           <button
-            onClick={handleSubmitVotes}
-            className="flex-grow-[2] h-40 px-6 py-3 bg-yellow-600 text-white font-bold rounded-lg shadow-md hover:bg-yellow-500 ml-4"
-          >
-            {role === "admin" ? "Update" : "Vote"}
-          </button>
+  onClick={role === "admin" ? submitUpdate : handleSubmitVotes}
+  className="flex-grow-[2] h-40 px-6 py-3 bg-yellow-600 text-white font-bold rounded-lg shadow-md hover:bg-yellow-500 ml-4"
+>
+  {role === "admin" ? "Update" : "Vote"}
+</button>
+
         </div>
       </div>
     </div>

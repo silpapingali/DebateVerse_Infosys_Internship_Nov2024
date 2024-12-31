@@ -1,0 +1,77 @@
+.admin-user-container {
+    margin: 0 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.search-input {
+    margin-bottom: 20px;
+    padding: 10px;
+    width: 300px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.user-list {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.user-card {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 10px;
+    width: 80%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+}
+
+.user-card:hover {
+    transform: scale(1.02);
+}
+
+.user-email {
+    font-size: 18px;
+    color: #333;
+}
+
+.user-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-delete, .btn-retrieve {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.btn-delete {
+    background-color: #ff4d4d;
+    color: white;
+}
+
+.btn-delete:hover {
+    background-color: #ff1a1a;
+}
+
+.btn-retrieve {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.btn-retrieve:hover {
+    background-color: #45a049;
+}

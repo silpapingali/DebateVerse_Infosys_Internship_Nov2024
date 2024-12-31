@@ -55,6 +55,7 @@ app.post('/register', async (req, res) => {
 
     let newUsername = new User({
       username,
+      email,
       totalDebatesCreated: 0, 
       totalVotes: 0, 
       joinedDate: newUser.joinedDate,
@@ -118,15 +119,15 @@ app.get('/verify-email', async (req, res) => {
 // Login Route
 app.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password} = req.body;
     let exist = await Registeruser.findOne({ email });
+    let user = await User.findOne({email})
 
     if (!exist) {
       return res.status(400).send('USER_NOT_FOUND');
     }
 
-    // Check if the user is blocked
-    if (exist.isblocked) {
+    if (user.isblocked) {
       return res.status(400).send('USER_BLOCKED');
     }
 
@@ -234,36 +235,11 @@ app.post('/reset-password/:token', async (req, res) => {
 });
 
 
-
-
-// User Dashboard Route
-app.get('/userdashboard', middleware, async (req, res) => {
-  try {
-    let exist = await Registeruser.findById(req.user.id);
-    if (!exist) {
-      return res.status(400).send('User not found');
-    }
-    if (exist.role !== 'user') {
-      return res.status(403).send('Access denied: Users only');
-    }
-    res.json({
-      message: "Welcome to the User Dashboard",
-      user:exist
-    });
-  } catch (error) {
-    console.log(error);
-    return res.status(500).send('Server Error');
-  }
-});
-
 app.get('/admindashboard', middleware, async (req, res) => {
   try {
     let exist = await Registeruser.findById(req.user.id);
     if (!exist) {
       return res.status(400).send('User not found');
-    }
-    if (exist.role !== 'admin') {
-      return res.status(403).send('Access denied: Admins only');
     }
     res.json({
       message: "Welcome to the Admin Dashboard",
@@ -367,36 +343,54 @@ app.get('/alldebates',middleware, async (req, res) => {
 app.post('/vote/:debateId', middleware, async (req, res) => {
   try {
     const { debateId } = req.params;
-    const { votes } = req.body;
-    const userId = req.user.id;
+    const { votes } = req.body; 
+    const userId = req.user.id; 
+
     const debate = await Debate.findById(debateId);
 
     if (!debate) {
       return res.status(404).json({ error: 'Debate not found' });
     }
 
-    if (debate.votedUsers.includes(userId)) {
-      return res.status(400).send('You have already voted for this debate.');
+    // Check if the user has already voted
+    const existingVote = debate.votedUsers.find(vote => vote.userId === userId);
+    if (existingVote) {
+      return res.status(400).json({ error: 'You have already voted for this debate.' });
     }
 
-    for (const { optionIndex, increment } of votes) {
-      if (optionIndex < 0 || optionIndex >= debate.options.length) {
-        return res.status(400).json({ error: 'Option index out of bounds' });
+    // Process votes
+    for (const { optionId, increment } of votes) {
+      const option = debate.options[optionId];
+      if (!option) {
+        return res.status(400).json({ error: `Option with ID ${optionId} not found` });
       }
-      debate.options[optionIndex].votes += increment;
+      option.votes += increment; 
     }
-    debate.votedUsers.push(userId);
-    const totalVotes = debate.options.reduce((sum, option) => sum + option.votes, 0);
 
+    debate.votedUsers.push({
+      userId,
+      votes: votes.map(vote => ({
+        optionId: vote.optionId,
+        voteCount: vote.increment,
+      })),
+    });
+
+    const totalVotes = debate.options.reduce((sum, option) => sum + option.votes, 0);
     debate.totalVotes = totalVotes;
+
     await debate.save();
 
-    res.status(200).json({ message: 'Votes registered successfully', totalVotes, debate });
+    res.status(200).json({ 
+      message: 'Votes registered successfully', 
+      totalVotes, 
+      debate 
+    });
   } catch (error) {
     console.error('Error voting:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
 
 
 

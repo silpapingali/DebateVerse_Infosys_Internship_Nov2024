@@ -28,7 +28,6 @@ db.connect((err) => {
     console.log('Connected to the database.');
 });
 
-
 app.post('/login', (req, res) => {
     const { email, password } = req.body;
 
@@ -43,7 +42,11 @@ app.post('/login', (req, res) => {
             return res.status(400).json({ message: "Invalid email or password." });
         }
 
-        
+       
+        if (data[0].is_deleted === 'yes') {
+            return res.status(400).json({ message: "User  is suspended by the admin." });
+        }
+
         bcrypt.compare(password, data[0].password, (err, match) => {
             if (err) {
                 console.error(err);
@@ -54,9 +57,7 @@ app.post('/login', (req, res) => {
                 return res.status(400).json({ message: "Invalid email or password." });
             }
 
-            
             if (data[0].status === 'confirmed') {
-                
                 const token = jwt.sign(
                     { id: data[0].id, email: data[0].email, role: data[0].role },
                     'A2pE@R#7%L08w!9XgM!zT$JtQ1yY#1j', 
@@ -72,7 +73,6 @@ app.post('/login', (req, res) => {
         });
     });
 });
-
 
 // Signup route
 app.post('/signup', (req, res) => {
@@ -114,7 +114,7 @@ app.post('/signup', (req, res) => {
 
                     const confirmationLink = `http://localhost:8081/confirm-registration/${token}`;
                     
-                    // Send confirmation email
+                  
                     const transporter = nodemailer.createTransport({
                         service: 'gmail',
                         auth: {
@@ -191,7 +191,7 @@ app.post('/forgot-password', (req, res) => {
             return res.status(400).json({ message: "Email not found." });
         }
 
-        const token = require('crypto').randomBytes(16).toString('hex'); // Generate a random token
+        const token = require('crypto').randomBytes(16).toString('hex'); 
         const expiresAt = new Date(Date.now() + 3600000); 
 
         const insertResetRequestSql = "INSERT INTO password_reset_requests (id, email, token, expires_at) VALUES (UUID(), ?, ?, ?)";
@@ -203,7 +203,7 @@ app.post('/forgot-password', (req, res) => {
 
             const confirmationLink = `http://localhost:3000/reset-password/${token}`;
                     
-                    // Send password-reset link
+                   
                     const transporter = nodemailer.createTransport({
                         service: 'gmail',
                         auth: {
@@ -304,7 +304,7 @@ const verifyToken = (req, res, next) => {
 app.post('/debates', verifyToken, (req, res) => {
     const { text, options, created_by } = req.body;
 
-    // Validate input
+    
     if (!text || !options || options.length < 2) {
         return res.status(400).json({ message: 'Debate text and at least 2 options are required' });
     }
@@ -312,7 +312,7 @@ app.post('/debates', verifyToken, (req, res) => {
     const debateId = uuidv4();
     const createdOn = new Date().toISOString().split('T')[0]; // Format to YYYY-MM-DD
 
-    // Insert debate into the debates table
+   
     const debateQuery = `
         INSERT INTO debates (id, text, created_by, created_on, likes, dislikes, is_public, is_blocked) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -327,21 +327,21 @@ app.post('/debates', verifyToken, (req, res) => {
                 return res.status(500).json({ message: 'Failed to create debate' });
             }
 
-            // Prepare options for insertion
+           
             const optionsQuery = `
                 INSERT INTO options (id, debate_id, text, created_on, upvotes) 
                 VALUES ?
             `;
 
             const optionsValues = options.map((option) => [
-                uuidv4(), // Generate a new UUID for each option
+                uuidv4(), 
                 debateId,
-                option.text, // Use the text from the option
-                createdOn, // Use the same created_on date for options
-                0 // Default upvotes to 0
+                option.text, 
+                createdOn, 
+                0 
             ]);
 
-            // Insert options into the options table
+            
             db.query(optionsQuery, [optionsValues], (optionsErr) => {
                 if (optionsErr) {
                     console.error('Error inserting into options table:', optionsErr);
@@ -390,45 +390,8 @@ app.get('/debates', verifyToken, (req, res) => {
       });
     });
   });
+  
 
-// Route to handle likes 
-app.post('/debates/:id/reactions', verifyToken, (req, res) => {
-    const { id } = req.params;
-    const { action, userId } = req.body;
-
-    // Check if the action is 'like'
-    if (action !== 'like') {
-        return res.status(400).json({ message: 'Only "like" action is supported at this time' });
-    }
-
-    // Query to fetch current likes for the debate
-    db.query('SELECT likes FROM debates WHERE id = ?', [id], (err, results) => {
-        if (err) {
-            console.error('Error fetching likes:', err);
-            return res.status(500).json({ message: 'Error fetching likes' });
-        }
-
-        // Check if the debate exists
-        if (results.length === 0) {
-            return res.status(404).json({ message: 'Debate not found' });
-        }
-
-        // Increment the likes count
-        let currentLikes = results[0].likes || 0;
-        currentLikes += 1;
-
-        // Update the likes count in the database
-        db.query('UPDATE debates SET likes = ? WHERE id = ?', [currentLikes, id], (updateErr) => {
-            if (updateErr) {
-                console.error('Error updating likes:', updateErr);
-                return res.status(500).json({ message: 'Error updating likes' });
-            }
-
-            // Respond with the updated likes count
-            res.status(200).json({ likes: currentLikes });
-        });
-    });
-});
 
 app.post('/options/:optionId/upvote', verifyToken, (req, res) => {
     const { optionId } = req.params; 
@@ -474,20 +437,24 @@ app.post('/options/:optionId/upvote', verifyToken, (req, res) => {
 });
 
 app.get('/alldebates', verifyToken, (req, res) => {
-    
+    const userId = req.userId; 
+
     const getDebatesQuery = `
-        SELECT * FROM debates;
+        SELECT d.*, u.email 
+        FROM debates d
+        JOIN user1 u ON d.created_by = u.id
+        WHERE d.created_by != ?  -- Exclude debates created by the logged-in user
     `;
 
-    db.query(getDebatesQuery, (err, results) => {
+    db.query(getDebatesQuery, [userId], (err, results) => {
         if (err) {
             console.error('Error fetching debates:', err);
             return res.status(500).json({ message: 'Failed to fetch debates' });
         }
 
-        
         const getOptionsQuery = `
-            SELECT * FROM options WHERE debate_id IN (?);
+            SELECT * FROM options 
+            WHERE debate_id IN (?);  -- Only fetch options that are not deleted
         `;
 
         db.query(getOptionsQuery, [results.map(debate => debate.id)], (optionsErr, optionsResults) => {
@@ -496,7 +463,6 @@ app.get('/alldebates', verifyToken, (req, res) => {
                 return res.status(500).json({ message: 'Failed to fetch options' });
             }
 
-            
             const debatesWithOptions = results.map(debate => {
                 const options = optionsResults.filter(option => option.debate_id === debate.id);
                 return { ...debate, options };
@@ -509,6 +475,7 @@ app.get('/alldebates', verifyToken, (req, res) => {
 
 app.get('/debates/:debateId', verifyToken, (req, res) => {
     const { debateId } = req.params;
+    const userId = req.userId;
 
     const getDebateQuery = `
         SELECT * FROM debates WHERE id = ?;
@@ -527,7 +494,7 @@ app.get('/debates/:debateId', verifyToken, (req, res) => {
         const debate = debateResults[0];
 
         const getOptionsQuery = `
-            SELECT * FROM options WHERE debate_id = ?;
+            SELECT * FROM options WHERE debate_id = ? and is_deleted='no';
         `;
 
         db.query(getOptionsQuery, [debateId], (optionsErr, optionsResults) => {
@@ -536,31 +503,143 @@ app.get('/debates/:debateId', verifyToken, (req, res) => {
                 return res.status(500).json({ message: 'Failed to fetch options' });
             }
 
-            const debateWithOptions = {
-                ...debate,
-                options: optionsResults,
-            };
+            
+            const getUserVotesQuery = `
+                SELECT option_1, option_2, option_3, option_4, option_5, option_6, option_7
+                FROM user_upvotes
+                WHERE user_id = ? AND debate_id = ?;
+            `;
 
-            res.status(200).json(debateWithOptions);
+            db.query(getUserVotesQuery, [userId, debateId], (votesErr, votesResults) => {
+                if (votesErr) {
+                    console.error('Error fetching user votes:', votesErr);
+                    return res.status(500).json({ message: 'Failed to fetch user votes' });
+                }
+
+                
+                const userVotes = votesResults.length > 0 ? votesResults[0] : {
+                    option_1: 0,
+                    option_2: 0,
+                    option_3: 0,
+                    option_4: 0,
+                    option_5: 0,
+                    option_6: 0,
+                    option_7: 0,
+                };
+
+                
+                const debateWithOptionsAndVotes = {
+                    ...debate,
+                    options: optionsResults.map((option, index) => ({
+                        ...option,
+                        userVotes: userVotes[`option_${index + 1}`] || 0, 
+                    })),
+                };
+
+                res.status(200).json(debateWithOptionsAndVotes);
+            });
         });
     });
 });
 
 app.post('/debates/:debateId/submitVotes', verifyToken, (req, res) => {
     const { debateId } = req.params;
-    const { votes } = req.body; // Expecting an array of { optionId, votes }
+    const { votes } = req.body; 
 
     if (!votes || !Array.isArray(votes)) {
         return res.status(400).json({ message: 'Invalid votes data' });
     }
 
-    // Prepare the SQL query to update the votes for each option
+    const userId = req.userId; 
+
+    
+    const checkQuery = `
+        SELECT * FROM user_upvotes 
+        WHERE user_id = ? AND debate_id = ?
+    `;
+
+    db.query(checkQuery, [userId, debateId], (err, results) => {
+        if (err) {
+            console.error('Error checking user votes:', err);
+            return res.status(500).json({ message: 'Failed to check user votes' });
+        }
+
+        
+        const votesData = {
+            user_id: userId,
+            debate_id: debateId,
+            option_1: votes[0]?.votes || 0,
+            option_2: votes[1]?.votes || 0,
+            option_3: votes[2]?.votes || 0,
+            option_4: votes[3]?.votes || 0,
+            option_5: votes[4]?.votes || 0,
+            option_6: votes[5]?.votes || 0,
+            option_7: votes[6]?.votes || 0,
+        };
+
+        if (results.length > 0) {
+           
+            const updateQuery = `
+                UPDATE user_upvotes 
+                SET option_1 = ?, option_2 = ?, option_3 = ?, option_4 = ?, option_5 = ?, option_6 = ?, option_7 = ?
+                WHERE user_id = ? AND debate_id = ?
+            `;
+
+            db.query(updateQuery, [
+                votesData.option_1,
+                votesData.option_2,
+                votesData.option_3,
+                votesData.option_4,
+                votesData.option_5,
+                votesData.option_6,
+                votesData.option_7,
+                userId,
+                debateId
+            ], (updateErr) => {
+                if (updateErr) {
+                    console.error('Error updating user votes:', updateErr);
+                    return res.status(500).json({ message: 'Failed to update user votes' });
+                }
+                
+                updateOptionsTable(votes, res);
+            });
+        } else {
+           
+            const insertQuery = `
+                INSERT INTO user_upvotes (user_id, debate_id, option_1, option_2, option_3, option_4, option_5, option_6, option_7)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `;
+
+            db.query(insertQuery, [
+                votesData.user_id,
+                votesData.debate_id,
+                votesData.option_1,
+                votesData.option_2,
+                votesData.option_3,
+                votesData.option_4,
+                votesData.option_5,
+                votesData.option_6,
+                votesData.option_7
+            ], (insertErr) => {
+                if (insertErr) {
+                    console.error('Error inserting user votes:', insertErr);
+                    return res.status(500).json({ message: 'Failed to insert user votes' });
+                }
+                
+                updateOptionsTable(votes, res);
+            });
+        }
+    });
+});
+
+
+const updateOptionsTable = (votes, res) => {
     const updateQueries = votes.map(vote => {
         const { optionId, votes } = vote;
         return new Promise((resolve, reject) => {
             const query = `
                 UPDATE options 
-                SET upvotes = upvotes+ ?
+                SET upvotes = upvotes + ?
                 WHERE id = ?;
             `;
             db.query(query, [votes, optionId], (err) => {
@@ -572,17 +651,199 @@ app.post('/debates/:debateId/submitVotes', verifyToken, (req, res) => {
         });
     });
 
-    // Execute all update queries
+    
     Promise.all(updateQueries)
         .then(() => {
-            res.status(200).json({ message: 'Votes submitted successfully' });
+            res.status(200).json({ message: 'Votes submitted successfully and options updated' });
         })
         .catch(err => {
-            console.error('Error updating votes:', err);
-            res.status(500).json({ message: 'Failed to submit votes' });
+            console.error('Error updating options:', err);
+            res.status(500).json({ message: 'Failed to update options' });
         });
+}; 
+ 
+app.post('/debates/:id/reactions', verifyToken, (req, res) => {
+    const { id } = req.params;
+    const { action } = req.body; 
+
+    
+    if (action !== 'like') {
+        return res.status(400).json({ message: 'Only "like" action is supported at this time' });
+    }
+
+    
+    db.query('SELECT likes FROM debates WHERE id = ?', [id], (err, results) => {
+        if (err) {
+            console.error('Error fetching likes:', err);
+            return res.status(500).json({ message: 'Error fetching likes' });
+        }
+
+        
+        if (results.length === 0) {
+            return res.status(404).json({ message: 'Debate not found' });
+        }
+
+        
+        db.query('SELECT * FROM debate_likes WHERE debate_id = ? AND user_id = ?', [id, req.userId], (likeErr, likeResults) => {
+            if (likeErr) {
+                console.error('Error checking likes:', likeErr);
+                return res.status(500).json({ message: 'Error checking likes' });
+            }
+
+            let currentLikes = results[0].likes || 0;
+
+            if (likeResults.length > 0) {
+               
+                currentLikes -= 1;
+
+               
+                db.query('DELETE FROM debate_likes WHERE debate_id = ? AND user_id = ?', [id, req.userId], (deleteErr) => {
+                    if (deleteErr) {
+                        console.error('Error deleting like record:', deleteErr);
+                        return res.status(500).json({ message: 'Error removing like' });
+                    }
+
+                    
+                    db.query('UPDATE debates SET likes = ? WHERE id = ?', [currentLikes, id], (updateErr) => {
+                        if (updateErr) {
+                            console.error('Error updating likes:', updateErr);
+                            return res.status(500).json({ message: 'Error updating likes' });
+                        }
+
+                        
+                        res.status(200).json({ likes: currentLikes });
+                    });
+                });
+            } else {
+                
+                currentLikes += 1;
+
+                
+                db.query('INSERT INTO debate_likes (debate_id, user_id) VALUES (?, ?)', [id, req.userId], (insertErr) => {
+                    if (insertErr) {
+                        console.error('Error inserting like record:', insertErr);
+                        return res.status(500).json({ message: 'Error recording like' });
+                    }
+
+                   
+                    db.query('UPDATE debates SET likes = ? WHERE id = ?', [currentLikes, id], (updateErr) => {
+                        if (updateErr) {
+                            console.error('Error updating likes:', updateErr);
+                            return res.status(500).json({ message: 'Error updating likes' });
+                        }
+
+                        
+                        res.status(200).json({ likes: currentLikes });
+                    });
+                });
+            }
+        });
+    });
 });
 
+app.get('/admin/users', verifyToken, (req, res) => {
+    const getUsersQuery = `
+        SELECT email, is_deleted FROM user1 WHERE role='user' AND status='confirmed';
+    `;
+
+    db.query(getUsersQuery, (err, results) => {
+        if (err) {
+            console.error('Error fetching users:', err);
+            return res.status(500).json({ message: 'Failed to fetch users' });
+        }
+        res.status(200).json(results);
+    });
+});
+
+app.delete('/admin/users/:email', verifyToken, (req, res) => {
+    const { email } = req.params;
+
+    const updateUserQuery = `
+        UPDATE user1
+        SET is_deleted = 'yes'
+        WHERE email = ?;
+    `;
+
+    db.query(updateUserQuery, [email], (err) => {
+        if (err) {
+            console.error('Error updating user status:', err);
+            return res.status(500).json({ message: 'Failed to delete user' });
+        }
+        res.status(200).json({ message: 'User  marked as deleted' });
+    });
+});
+
+app.post('/admin/users/:email/retrieve', verifyToken, (req, res) => {
+    const { email } = req.params;
+
+    const updateUserQuery = `
+        UPDATE user1
+        SET is_deleted = 'no'
+        WHERE email = ?;
+    `;
+
+    db.query(updateUserQuery, [email], (err) => {
+        if (err) {
+            console.error('Error updating user status:', err);
+            return res.status(500).json({ message: 'Failed to retrieve user' });
+        }
+        res.status(200).json({ message: 'User  retrieved successfully' });
+    });
+});
+
+app.post('/debates/:id/delete', verifyToken, (req, res) => {
+    const debateId = req.params.id;
+
+    const updateQuery = "UPDATE debates SET is_deleted = 'yes' WHERE id = ?";
+    db.query(updateQuery, [debateId], (err, result) => {
+        if (err) {
+            console.error('Error updating debate:', err);
+            return res.status(500).json({ message: 'Failed to delete debate' });
+        }
+        res.status(200).json({ message: 'Debate deleted successfully' });
+    });
+});
+
+app.post('/debates/:id/retrieve', verifyToken, (req, res) => {
+    const debateId = req.params.id;
+
+    const updateQuery = "UPDATE debates SET is_deleted = 'no' WHERE id = ?";
+    db.query(updateQuery, [debateId], (err, result) => {
+        if (err) {
+            console.error('Error retrieving debate:', err);
+            return res.status(500).json({ message: 'Failed to retrieve debate' });
+        }
+        res.status(200).json({ message: 'Debate retrieved successfully' });
+    });
+});
+
+
+app.post('/options/:id/delete', verifyToken, (req, res) => {
+    const optionId = req.params.id;
+
+    const updateQuery = "UPDATE options SET is_deleted = 'yes' WHERE id = ?";
+    db.query(updateQuery, [optionId], (err, result) => {
+        if (err) {
+            console.error('Error updating option:', err);
+            return res.status(500).json({ message: 'Failed to delete option' });
+        }
+        res.status(200).json({ message: 'Option deleted successfully' });
+    });
+});
+
+
+app.post('/options/:id/retrieve', verifyToken, (req, res) => {
+    const optionId = req.params.id;
+
+    const updateQuery = "UPDATE options SET is_deleted = 'no' WHERE id = ?";
+    db.query(updateQuery, [optionId], (err, result) => {
+        if (err) {
+            console.error('Error retrieving option:', err);
+            return res.status(500).json({ message: 'Failed to retrieve option' });
+        }
+        res.status(200).json({ message: 'Option retrieved successfully' });
+    });
+});
 
 app.listen(8081, () => {
     console.log("Server is running on port 8081.");
