@@ -34,4 +34,32 @@ public class OptionServiceImpl implements OptionService {
                 .orElseThrow(() -> new RuntimeException("Debate not found"));
         return optionRepository.findByDebate(debate);
     }
+
+    @Override
+    public void blockOption(Long optionId, Long debateId) {
+        Option option = optionRepository.findById(optionId)
+                .orElseThrow(() -> new RuntimeException("Option not found"));
+        Debate debate = debateRepository.findById(debateId)
+                .orElseThrow(() -> new RuntimeException("Debate not found"));
+        if (debate.getOptions().contains(option)) {
+            option.setBlocked(true);
+            optionRepository.save(option);
+        } else {
+            throw new RuntimeException("Option not found in debate");
+        }
+    }
+
+    @Override
+    public void unblockOption(Long optionId, Long debateId) {
+        Option option = optionRepository.findById(optionId)
+                .orElseThrow(() -> new RuntimeException("Option not found"));
+        Debate debate = debateRepository.findById(debateId)
+                .orElseThrow(() -> new RuntimeException("Debate not found"));
+        if (debate.getOptions().contains(option)) {
+            option.setBlocked(false);
+            optionRepository.save(option);
+        } else {
+            throw new RuntimeException("Option not found in debate");
+        }
+    }
 }

@@ -90,7 +90,7 @@ const NewDebate = () => {
   };
 
   return (
-    <div className="bg-white/80 p-6 rounded-lg shadow-md max-w-3xl mx-auto mt-10">
+    <div className=" p-6 rounded-lg shadow-md max-w-3xl mx-auto mt-10">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold">New Debate</h2>
         <button

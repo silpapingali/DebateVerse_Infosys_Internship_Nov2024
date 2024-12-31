@@ -33,7 +33,7 @@ export class LoginComponent {
         if (res.user.role === 'ADMIN') {
           this._router.navigate(['/admin']);
         } else if (res.user.role === 'USER') {
-          this._router.navigate(['/user']);
+          this._router.navigate(['/user/dashboard']);
         }
         this._snack.open('Login Successful', 'Close', {
           duration: 3000,

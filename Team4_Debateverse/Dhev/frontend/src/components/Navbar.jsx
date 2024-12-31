@@ -1,16 +1,17 @@
 import { useDispatch, useSelector } from 'react-redux';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation ,useNavigate} from 'react-router-dom';
 import { LogOut } from 'lucide-react';
 import { useAuthStore } from "../store/authStore";
 
 const Navbar = () => {
-  
+  const navigate=useNavigate();
   const location = useLocation();
   
   const { user, logout } = useAuthStore();
 
   const handleLogout = () => {
     logout();
+    navigate('/login');
   };
 
   return (

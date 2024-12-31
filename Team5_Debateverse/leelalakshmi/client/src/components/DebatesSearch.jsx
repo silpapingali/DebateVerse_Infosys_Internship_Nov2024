@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { IoSearchSharp } from "react-icons/io5";
 import { FaHeart } from "react-icons/fa";
 import { store } from "../App";
@@ -23,7 +23,7 @@ const DebatesSearch = () => {
       navigate("/login");
       return;
     }
-
+  
     axios
       .get("http://localhost:5000/alldebates", {
         headers: {
@@ -31,11 +31,13 @@ const DebatesSearch = () => {
         },
       })
       .then((res) => {
-        setDebates(res.data);
-        setFilteredDebates(res.data); 
+        const unblockedDebates = res.data.filter((debate) => !debate.isblocked);
+        setDebates(unblockedDebates);
+        setFilteredDebates(unblockedDebates);
       })
       .catch((err) => console.error("Error fetching debates:", err));
   }, [token, navigate]);
+  
 
   const filterDebates = () => {
     let filtered = [...debates]; 
@@ -80,7 +82,11 @@ const DebatesSearch = () => {
   };
 
   const handleDebateClick = (debate) => {
-    navigate("/moderatedebate", { state: { debate } });
+    if (debate.isblocked) {
+      alert("This debate is blocked and cannot be accessed.");
+    } else {
+      navigate("/moderatedebate", { state: { debate } });
+    }
   };
 
   const handleBackToDashboard = () => {
@@ -160,7 +166,7 @@ const DebatesSearch = () => {
           <IoSearchSharp className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600" />
         </div>
         {filteredDebates.length === 0 ? (
-          <p>No debates found based on the filters.</p>
+          <p>No debates match the applied filters, or the debate might have been removed by the Admin.</p>
         ) : (
           filteredDebates.map((debate) => (
             <div

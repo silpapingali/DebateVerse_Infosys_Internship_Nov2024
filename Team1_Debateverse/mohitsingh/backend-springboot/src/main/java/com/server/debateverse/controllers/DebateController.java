@@ -2,11 +2,12 @@ package com.server.debateverse.controllers;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -15,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.server.debateverse.entities.Debate;
 import com.server.debateverse.entities.DebateReq;
 import com.server.debateverse.entities.Option;
-import com.server.debateverse.entities.User;
 import com.server.debateverse.services.DebateService;
 
 import lombok.RequiredArgsConstructor;
@@ -31,7 +31,7 @@ public class DebateController {
     public ResponseEntity<Debate> createDebate(
             @PathVariable Long userId,
             @RequestBody DebateReq debateReq) {
-                System.out.println("DebateReq" + debateReq);
+        System.out.println("DebateReq" + debateReq);
         Debate debate = new Debate();
         debate.setText(debateReq.getDebate().getText());
 
@@ -47,10 +47,11 @@ public class DebateController {
         return ResponseEntity.ok(debateService.createBatchDebate(debateReqs, userId));
     }
 
-    // @GetMapping
-    // public ResponseEntity<List<Debate>> getAllDebates() {
-    //     return ResponseEntity.ok(debateService.getAllDebates());
-    // }
+    @GetMapping("/all")
+    public ResponseEntity<Page<Debate>> getAllDebates(@RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
+        return ResponseEntity.ok(debateService.getAllDebates(page, size));
+    }
 
     @GetMapping("/{id}")
     public ResponseEntity<Debate> getDebateById(@PathVariable Long id) {
@@ -68,10 +69,9 @@ public class DebateController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Debate>> getDebatesExceptUserDebates() {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        System.out.println("User" + user);
-        return ResponseEntity.ok(debateService.getDebatesExceptUserDebates(user.getId()));
+    public Page<Debate> getDebates(@RequestParam Long userId, @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
+        return debateService.getDebatesExceptUserDebates(userId, page, size);
     }
 
     @PostMapping("/{debateId}/like")
@@ -89,5 +89,17 @@ public class DebateController {
     @GetMapping("/liked")
     public ResponseEntity<List<Debate>> getLikedDebatesByUserId(@RequestParam Long userId) {
         return ResponseEntity.ok(debateService.getLikedDebatesByUserId(userId));
+    }
+
+    @PutMapping("/{debateId}/block")
+    public ResponseEntity<Void> blockDebate(@PathVariable Long debateId) {
+        debateService.blockDebate(debateId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/{debateId}/unblock")
+    public ResponseEntity<Void> unblockDebate(@PathVariable Long debateId) {
+        debateService.unblockDebate(debateId);
+        return ResponseEntity.ok().build();
     }
 }

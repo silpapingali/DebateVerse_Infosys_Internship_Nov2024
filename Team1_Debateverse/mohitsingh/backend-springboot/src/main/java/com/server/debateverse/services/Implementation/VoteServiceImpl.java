@@ -61,4 +61,9 @@ public class VoteServiceImpl implements VoteService {
         return "Votes saved successfully";
     }
 
+    @Override
+    public List<Vote> getVotes(Long userId, Long debateId) {
+        return voteRepo.findByUserIdAndDebateId(userId, debateId);
+    }
+
 }
