@@ -1,18 +1,17 @@
-// ... other imports
 import React, { useState, useEffect } from 'react';
 import Navbar from './Navbar';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
-import { Bar } from 'react-chartjs-2'; // Import Bar chart
+import { Bar } from 'react-chartjs-2'; 
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
 
-// Register the necessary components for Chart.js
+
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 function Home() {
   const [debates, setDebates] = useState([]);
-  const [showAll, setShowAll] = useState(false); // Control whether to show all debates
+  const [showAll, setShowAll] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -23,54 +22,21 @@ function Home() {
         },
       })
       .then(response => {
-        // Sort debates by created_on in descending order
+        
         const sortedDebates = response.data.sort((a, b) => new Date(b.created_on) - new Date(a.created_on));
         setDebates(sortedDebates);
       })
       .catch(error => console.error("Error fetching debates:", error));
   }, []);
 
-  // Commenting out the handleLike function to disable its functionality
-  // const handleLike = (debateId) => {
-  //   const token = localStorage.getItem('token');
-  //   if (!token) {
-  //     console.error("No token found");
-  //     return;
-  //   }
-
-  //   const decodedToken = jwtDecode(token);
-  //   const userId = decodedToken.id;
-
-  //   axios.post(
-  //     `http://localhost:8081/debates/${debateId}/reactions`,
-  //     { action: 'like', userId },
-  //     {
-  //       headers: {
-  //         Authorization: `Bearer ${token}`,
-  //       },
-  //     }
-  //   )
-  //     .then((response) => {
-  //       // Update the likes count based on the response
-  //       setDebates(prevDebates =>
-  //         prevDebates.map(debate =>
-  //           debate.id === debateId
-  //             ? { ...debate, likes: response.data.likes } // Update to use the number of likes directly
-  //             : debate
-  //         )
-  //       );
-  //     })
-  //     .catch(error => console.error("Error liking debate:", error));
-  // };
-
-  // Function to format the date
+ 
   const formatDate = (isoDate) => {
     const date = new Date(isoDate);
     const day = date.getDate();
     const month = date.toLocaleString('default', { month: 'long' }); // Full month name
     const year = date.getFullYear();
 
-    // Determine the day suffix
+    
     const suffix = 
       day % 10 === 1 && day !== 11 ? 'st' : 
       day % 10 === 2 && day !== 12 ? 'nd' : 
@@ -79,7 +45,7 @@ function Home() {
     return `${day}${suffix} ${month}, ${year}`;
   };
 
-  // Determine the debates to display based on showAll state
+  
   const displayedDebates = showAll ? debates : debates.slice(0, 5);
 
   return (
@@ -98,15 +64,30 @@ function Home() {
         {displayedDebates.length > 0 ? (
           displayedDebates.map(debate => (
             <div
-              key={debate.id }
+              key={debate.id}
               style={{
                 marginBottom: '20px',
                 border: '1px solid #ccc',
                 padding: '10px',
                 width: '80%',
                 position: 'relative',
+                opacity: debate.is_deleted === 'yes' ? 0.5 : 1, 
               }}
             >
+              {debate.is_deleted === 'yes' && (
+                <div style={{
+                  position: 'absolute',
+                  top: '10px',
+                  right: '10px',
+                  backgroundColor: 'rgba(255, 0, 0, 0.7)',
+                  color: '#fff',
+                  padding: '5px',
+                  borderRadius: '5px',
+                  fontWeight: 'bold',
+                }}>
+                  This debate was deleted by the admin
+                </div>
+              )}
               <div
                 style={{
                   position: 'absolute',
@@ -121,14 +102,13 @@ function Home() {
                 </span>
                 <button
                   className="btn btn-light"
-                  n
-                  disabled
+                  disabled={debate.is_deleted === 'yes'} 
                   style={{
                     fontSize: '30px',
                     color: 'red',
                     border: 'none',
                     background: 'none',
-                    cursor: 'not-allowed', 
+                    cursor: debate.is_deleted === 'yes' ? 'not-allowed' : 'pointer',
                     marginRight: '5px',
                   }}
                 >

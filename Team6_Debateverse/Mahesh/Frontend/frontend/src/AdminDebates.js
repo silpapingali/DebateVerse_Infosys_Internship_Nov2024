@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Bar } from "react-chartjs-2"; // Import Bar chart
-import Navbar from "./AdminNavbar"; // Ensure you import your Navbar component
+import { Bar } from "react-chartjs-2"; 
+import Navbar from "./AdminNavbar"; 
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
-import { jwtDecode } from 'jwt-decode';
-import { faker } from '@faker-js/faker'; // Import faker
+import { faker } from '@faker-js/faker'; 
 
-// Register the necessary components for Chart.js
+
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 function Admin() {
@@ -17,7 +16,7 @@ function Admin() {
   const [votesGreaterThan, setVotesGreaterThan] = useState(0);
   const [exactMatch, setExactMatch] = useState(false);
   const [postedAfter, setPostedAfter] = useState(null);
-  const [showMore, setShowMore] = useState(false); // State to control showing more debates
+  const [showMore, setShowMore] = useState(false); 
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -35,7 +34,7 @@ function Admin() {
         });
       const debatesWithRandomNames = response.data.map(debate => ({
         ...debate,
-        created_by: faker.name.fullName(),
+        created_by: faker.name.fullName(), 
       }));
       setDebates(debatesWithRandomNames);
     } catch (error) {
@@ -43,78 +42,117 @@ function Admin() {
     }
   };
 
-  const handleLike = (debateId) => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      console.error('No token found');
-      return;
-    }
-
-    const decodedToken = jwtDecode(token);
-    const userId = decodedToken.id;
-
-    axios
-      .post(
-        `http://localhost:8081/debates/${debateId}/reactions`,
-        { action: 'like', userId },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      )
-      .then((response) => {
-        setDebates((prevDebates) =>
-          prevDebates.map((debate) =>
-            debate.id === debateId
-              ? { ...debate, likes: response.data.likes }
-              : debate
-          )
-        );
-      })
-      .catch((error) => console.error('Error liking debate:', error));
-  };
-
   const handleDeleteDebate = (debateId) => {
     const token = localStorage.getItem('token');
     if (!token) {
-      console.error('No token found');
-      return;
+        console.error('No token found');
+        return;
     }
-
+    if (window.confirm(`Are you sure you want to delete this debate ?`)){
     axios
-      .delete(`http://localhost:8081/debates/${debateId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then(() => {
-        // Optionally, you can update the state to reflect the deletion
-        setDebates((prevDebates) =>
-          prevDebates.filter((debate) => debate.id !== debateId)
-        );
-      })
-      .catch((error) => console.error('Error deleting debate:', error));
+        .post(`http://localhost:8081/debates/${debateId}/delete`, {}, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        })
+        .then(() => {
+            
+            setDebates((prevDebates) =>
+                prevDebates.map((debate) =>
+                    debate.id === debateId ? { ...debate, is_deleted: 'yes' } : debate
+                )
+            );
+        })
+        .catch((error) => console.error('Error deleting debate:', error));
+      }
+  };
+
+  const handleDeleteOption = (optionId, debateId) => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        console.error('No token found');
+        return;
+    }
+    if (window.confirm(`Are you sure you want to delete this option ?`)){
+    axios
+        .post(`http://localhost:8081/options/${optionId}/delete`, {}, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        })
+        .then(() => {
+            
+            setDebates((prevDebates) =>
+                prevDebates.map((debate) => {
+                    if (debate.id === debateId) {
+                        const updatedOptions = debate.options.map(option =>
+                            option.id === optionId ? { ...option, is_deleted: 'yes' } : option
+                        );
+                        return { ...debate, options: updatedOptions };
+                    }
+                    return debate;
+                })
+            );
+        })
+        .catch((error) => console.error('Error deleting option:', error));
+      }
   };
 
   const handleRetrieveDebate = (debateId) => {
     const token = localStorage.getItem('token');
     if (!token) {
-      console.error('No token found');
-      return;
+        console.error('No token found');
+        return;
     }
+    if (window.confirm(`Are you sure you want to retrieve this debate ?`)){
 
     axios
-      .post(`http://localhost:8081/debates/${debateId}/retrieve`, {}, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then((response) => {
-        // Add the retrieved debate back to the state
-        setDebates((prevDebates) => [...prevDebates, response.data]);
-      })
-      .catch((error) => console.error('Error retrieving debate:', error));
+        .post(`http://localhost:8081/debates/${debateId}/retrieve`, {}, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        })
+        .then(() => {
+           
+            setDebates((prevDebates) =>
+                prevDebates.map((debate) =>
+                    debate.id === debateId ? { ...debate, is_deleted: 'no' } : debate
+                )
+            );
+        })
+ .catch((error) => console.error('Error retrieving debate:', error));
+      }
+  };
+
+  const handleRetrieveOption = (optionId) => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        console.error('No token found');
+        return;
+    }
+    if (window.confirm(`Are you sure you want to retrieve this option ?`)){
+    axios
+        .post(`http://localhost:8081/options/${optionId}/retrieve`, {}, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        })
+        .then((response) => {
+          
+            setDebates((prevDebates) => {
+                return prevDebates.map(debate => {
+                    if (debate.options) {
+                        const updatedOptions = debate.options.map(option => 
+                            option.id === optionId ? { ...option, is_deleted: 'no' } : option
+                        );
+                        return { ...debate, options: updatedOptions };
+                    }
+                    return debate;
+                });
+            });
+        })
+        .catch((error) => console.error('Error retrieving option:', error));
+      }
   };
 
   const formatDate = (isoDate) => {
@@ -137,8 +175,8 @@ function Admin() {
 
   const filteredDebates = debates.filter((debate) => {
     const matchesSearch = exactMatch
-      ? debate.created_by.toLowerCase() === searchTerm.toLowerCase()
-      : debate.created_by.toLowerCase().includes(searchTerm.toLowerCase());
+      ? debate.text.toLowerCase() === searchTerm.toLowerCase() 
+      : debate.text.toLowerCase().includes(searchTerm.toLowerCase()); 
     const matchesLikes = debate.likes >= likesGreaterThan;
     const matchesVotes = debate.options.some(option => option.upvotes >= votesGreaterThan);
     const matchesDate = !postedAfter || new Date(debate.created_on) >= new Date(postedAfter);
@@ -146,10 +184,6 @@ function Admin() {
   });
 
   const displayedDebates = showMore ? filteredDebates : filteredDebates.slice(0, 5);
-
-  const navigateToUpvotes = (debateId) => {
-    navigate('/upvotes', { state: { debateId } });
-  };
 
   return (
     <div>
@@ -160,7 +194,7 @@ function Admin() {
       <div style={{ marginLeft: '60px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <input
           type="text"
-          placeholder="Search by username"
+          placeholder="Search"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           style={{ marginBottom: '20px', padding: '10px', width: '300px' }}
@@ -208,14 +242,15 @@ function Admin() {
             <div
               key={debate.id}
               style={{
-                marginBottom: '20px',
-                border: '1px solid #ccc',
-                padding: '10px',
-                width: '80%',
-                position: 'relative',
-                display: 'flex',
-                alignItems: 'flex-start',
-              }}
+                  marginBottom: '20px',
+                  border: '1px solid #ccc',
+                  padding: '10px',
+                  width: '80%',
+                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  opacity: debate.is_deleted === 'yes' ? 0.5 : 1, 
+                }}
             >
               <div style={{ flex: 1, marginRight: '20px', width: '60%' }}>
                 <div
@@ -227,72 +262,38 @@ function Admin() {
                     alignItems: 'center',
                   }}
                 >
-                  <span
-                    style={{
-                      fontSize: '14px',
-                      fontWeight: 'bold',
-                      color: '#555',
-                    }}
-                  >
-                    {debate.likes} {debate.likes === 1 ? 'like' : 'likes'}
-                  </span>
-                  <button
-                    className="btn btn-light"
-                    onClick={() => handleLike(debate.id)}
-                    style={{
-                      fontSize: '30px',
-                      color: 'red',
-                      border: 'none',
-                      background: 'none',
-                      cursor: 'pointer',
-                      marginRight: '5px',
-                    }}
-                  >
-                    ❤️
-                  </button>
-                  <button
-                    className="btn btn-light"
-                    onClick={() => navigateToUpvotes(debate.id)}
- style={{
-                      fontSize: '20px',
-                      color: 'blue',
-                      border: 'none',
-                      background: 'none',
-                      cursor: 'pointer',
-                      marginLeft: '10px',
-                    }}
-                  >
-                    👍 Upvote
-                  </button>
-                  <button
-                    className="btn btn-danger"
-                    onClick={() => handleDeleteDebate(debate.id)}
-                    style={{
-                      fontSize: '20px',
-                      marginLeft: '10px',
-                      border: 'none',
-                      background: 'none',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    🗑️ Delete Debate
-                  </button>
-                  <button
-                    className="btn btn-success"
-                    onClick={() => handleRetrieveDebate(debate.id)}
-                    style={{
-                      fontSize: '20px',
-                      marginLeft: '10px',
-                      border: 'none',
-                      background: 'none',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    🔄 Retrieve Debate
-                  </button>
+                  {debate.is_deleted === 'no' ? (
+                    <button
+                      className="btn btn-danger"
+                      onClick={() => handleDeleteDebate(debate.id)}
+                      style={{
+                        fontSize: '20px',
+                        marginLeft: '10px',
+                        border: 'none',
+                        background: 'none',
+                        cursor: 'pointer',
+                      }}
+                    >
+                       ❌ Close Debate
+                    </button>
+                  ) : (
+                    <button
+                      className="btn btn-success"
+                      onClick={() => handleRetrieveDebate(debate.id)}
+                      style={{
+                        fontSize: '20px',
+                        marginLeft: '10px',
+                        border: 'none',
+                        background: 'none',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      🔄 Retrieve Debate
+                    </button>
+                  )}
                 </div>
                 <h4>{debate.text}</h4>
-                <p>Created by: {debate.created_by}</p>
+                <p>Created by: {debate.email}</p> 
                 <p>Created on: {formatDate(debate.created_on)}</p>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   {debate.options && debate.options.length > 0 ? (
@@ -303,6 +304,7 @@ function Admin() {
                           display: 'flex',
                           alignItems: 'center',
                           marginBottom: '10px',
+                          opacity: option.is_deleted === 'yes' ? 0.5 : 1, 
                         }}
                       >
                         <div
@@ -333,6 +335,34 @@ function Admin() {
                             {option.upvotes || 0} votes
                           </span>
                         </div>
+                        {option.is_deleted === 'yes' && (
+                          <button
+                            className="btn btn-success"
+                            onClick={() => handleRetrieveOption(option.id)} 
+                            style={{
+                              fontSize: '20px',
+                              marginLeft: '10px',
+                              border: 'none',
+                              background: 'none',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            🔄 Retrieve Option
+                          </button>
+                        )}
+                        <button
+                          className="btn btn-danger"
+                          onClick={() => handleDeleteOption(option.id, debate.id)} 
+                          style={{
+                            fontSize: '20px',
+                            marginLeft: '10px',
+                            border: 'none',
+                            background: 'none',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          🗑️ Delete Option
+                        </button>
                       </div>
                     ))
                   ) : (
@@ -356,7 +386,8 @@ function Admin() {
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                      y: {
+                      y 
+                      : {
                         beginAtZero: true,
                       },
                     },

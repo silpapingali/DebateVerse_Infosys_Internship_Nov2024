@@ -13,4 +13,4 @@ const Vote = ({closePopup}) => {
   )
 }
 
-export default Vote
+export default Vote;

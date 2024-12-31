@@ -30,13 +30,12 @@ function Login() {
                 .then(res => {
                     if (res.data.token) {
                         localStorage.setItem('token', res.data.token);
-
+    
                         const token = res.data.token;
-                        const decodedToken = JSON.parse(atob(token.split('.')[1])); // Decode JWT
-                        const role = decodedToken.role; // Role is in the payload
-
+                        const decodedToken = JSON.parse(atob(token.split('.')[1])); 
+                        const role = decodedToken.role; 
                         if (role === 'admin') {
-                            navigate('/admin');
+                            navigate('/users');
                         } else {
                             navigate('/home');
                         }
