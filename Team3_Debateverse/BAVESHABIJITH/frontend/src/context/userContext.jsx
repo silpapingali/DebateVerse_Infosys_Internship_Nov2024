@@ -45,12 +45,10 @@ const UserContextProvider = ({ children }) => {
     };
     getData();
   }, []);
-
   return (
     <UserContext.Provider value={{ isAuth, setIsAuth, role, setRole, isLoading }}>
       {children}
     </UserContext.Provider>
   );
 };
-
 export { UserContext, UserContextProvider };

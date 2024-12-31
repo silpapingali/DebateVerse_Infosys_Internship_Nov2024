@@ -1,8 +1,6 @@
 import { useNavigate } from "react-router-dom";
-
 const Home = () => {
   const navigate = useNavigate();
-
   return (
     <div>
       <div className="pt-16 flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-indigo-300 via-indigo-400 to-indigo-500">
@@ -24,5 +22,4 @@ const Home = () => {
     </div>
   );
 };
-
 export default Home;

@@ -3,7 +3,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { X } from "lucide-react";
 
-const Resetpopup = ({ onClose }) => {
+const ResetPopup = ({ onClose }) => {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const popRef = useRef();
@@ -72,5 +72,4 @@ const Resetpopup = ({ onClose }) => {
     </div>
   );
 };
-
-export default Resetpopup;
+export default ResetPopup;
