@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchStats } from "../redux/slices/adminDashboardSlice";
 import ModerateUser from "../components/ModerateUser";
+import { useNavigate } from "react-router-dom";
 
 const AdminDashboard = () => {
   const dispatch = useDispatch();
+  const navigate= useNavigate()
   const {
     openDebates,
     closedDebates,
@@ -27,14 +29,14 @@ const AdminDashboard = () => {
         <div className="w-full max-w-4xl p-4 bg-white rounded-lg shadow-lg">
               <h1 className="text-2xl font-bold mb-4">Actions</h1>
               <div className="flex flex-col md:flex-row gap-4">
-                <button className="bg-indigo-500 hover:bg-indigo-600 text-white p-4 rounded-lg shadow-md transition duration-300">
-                  Moderate Debates
+                <button onClick={()=> navigate('/userdebates')} className="bg-indigo-500 hover:bg-indigo-600 text-white p-4 rounded-lg shadow-md transition duration-300">
+                  Manage Debates
                 </button>
                 <button
-                  onClick={() => setModerateUserPopup(!moderateUserPopup)}
+                  onClick={() => navigate('/manageusers')}
                   className="bg-indigo-500 hover:bg-indigo-600 text-white p-4 rounded-lg shadow-md transition duration-300"
                 >
-                  Moderate User
+                  Manage Users
                 </button>
               </div>
             </div>

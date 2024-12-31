@@ -35,48 +35,68 @@ const Stats = async (req, res) => {
   }
 };
 
-const fetchUserStatus= async(req, res)=>{
-  const {userEmail}= req.body;
-  
-  try{
-    const user = await usersModel.findOne({email: userEmail}, {status: 1});
-    if(!user){
-      return res.status(400).json({message: "User not found"});
+const fetchUserStatus = async (req, res) => {
+  const { userEmail } = req.body;
+
+  try {
+    const user = await usersModel.findOne({ email: userEmail }, { status: 1 });
+    if (!user) {
+      return res.status(400).json({ message: "User not found" });
     }
-    res.status(200).json({message: "User found", status: user.status});
+    res.status(200).json({ message: "User found", status: user.status });
   } catch (err) {
     res.status(400).json({ message: "Server error ! Try again later" });
-  } 
-}
+  }
+};
 
-const blockUser= async(req, res)=>{
-  const {userEmail}= req.body;
+const blockUser = async (req, res) => {
+  const { userEmail } = req.body;
   console.log(userEmail);
-  try{
-    const user = await usersModel.findOneAndUpdate({email: userEmail}, {status: "blocked"}); 
-    if(!user){
-      return res.status(400).json({message: "User not found"});
+  try {
+    const user = await usersModel.findOneAndUpdate(
+      { email: userEmail },
+      { status: "blocked" }
+    );
+    if (!user) {
+      return res.status(400).json({ message: "User not found" });
     }
     console.log(user);
-    res.status(200).json({message: "User blocked !"});
-  }
-  catch (err) {
+    res.status(200).json({ message: "User blocked !" });
+  } catch (err) {
     res.status(400).json({ message: "Server error ! Try again later" });
   }
-}
+};
 
-const activateUser= async(req, res)=>{
-  const {userEmail}= req.body;
-  try{
-    const user = await usersModel.findOneAndUpdate({email: userEmail}, {status: "active"}); 
-    if(!user){
-      return res.status(400).json({message: "User not found"});
+const activateUser = async (req, res) => {
+  const { userEmail } = req.body;
+  try {
+    const user = await usersModel.findOneAndUpdate(
+      { email: userEmail },
+      { status: "active" }
+    );
+    if (!user) {
+      return res.status(400).json({ message: "User not found" });
     }
-    res.status(200).json({message: "User activated !"});
-  }
-  catch (err) {
+    res.status(200).json({ message: "User activated !" });
+  } catch (err) {
     res.status(400).json({ message: "Server error ! Try again later" });
   }
-}
+};
 
-module.exports = { AllDebates, Stats, fetchUserStatus, blockUser, activateUser };
+const fetchAllUsers = async (req, res) => {
+  try {
+    const users = await userModel.find();
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching users", error });
+  }
+};
+
+module.exports = {
+  AllDebates,
+  Stats,
+  fetchUserStatus,
+  blockUser,
+  activateUser,
+  fetchAllUsers
+};

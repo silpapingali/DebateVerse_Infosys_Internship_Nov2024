@@ -25,7 +25,9 @@ const DebateCard = ({ debate, liked, Qno, isMine }) => {
   const dispatch = useDispatch();
   const likeBtn = useRef(null);
   const navigate = useNavigate();
+
   const onCardClick = (e) => {
+    if(isMine) return;
     dispatch(fetchVotes(debate._id));
     dispatch(setDebate(debate));
     dispatch(setLike(liked));
@@ -99,8 +101,8 @@ const DebateCard = ({ debate, liked, Qno, isMine }) => {
           })}
         </div>
 
-        <div className="graph w-full">
-          <ResponsiveContainer width="100%" height="100%" aspect={3}>
+        <div className="graph w-full h-full flex justify-center items-center">
+          <ResponsiveContainer width="100%" aspect={3}>
             <BarChart data={debate.options}>
               <XAxis
                 dataKey=""
