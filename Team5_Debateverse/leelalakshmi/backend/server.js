@@ -235,28 +235,6 @@ app.post('/reset-password/:token', async (req, res) => {
 });
 
 
-
-
-// User Dashboard Route
-app.get('/userdashboard', middleware, async (req, res) => {
-  try {
-    let exist = await Registeruser.findById(req.user.id);
-    if (!exist) {
-      return res.status(400).send('User not found');
-    }
-    if (exist.role !== 'user') {
-      return res.status(403).send('Access denied: Users only');
-    }
-    res.json({
-      message: "Welcome to the User Dashboard",
-      user:exist
-    });
-  } catch (error) {
-    console.log(error);
-    return res.status(500).send('Server Error');
-  }
-});
-
 app.get('/admindashboard', middleware, async (req, res) => {
   try {
     let exist = await Registeruser.findById(req.user.id);
