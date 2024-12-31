@@ -8,41 +8,21 @@ import { useNavigate } from "react-router-dom";
 import { FaPlus, FaMinus } from "react-icons/fa";
 import { toast } from "react-toastify";
 import axios from "axios";
+import { setVotes } from "../redux/slices/votingSlice";
 
 const Voting = () => {
-  const { debate, liked, Qno, votes } = useSelector((states) => states.voting);
-  // console.log(votes);
-  const [isVoted, setIsVoted] = useState(false);
-  const [vote, setVote] = useState([]);
+  const { debate, liked, Qno, votes, isVoted, isLoading } = useSelector((states) => states.voting);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleVote = (index, val) => {
     if (val == "") return;
-    let totalVotesCasted = vote.reduce((acc, curr) => acc + curr, 0);
+    let totalVotesCasted = votes.reduce((acc, curr) => acc + curr, 0);
     if (totalVotesCasted >= 10 && val === 1)
       return toast.error("10 votes already distributed !");
-    if (vote[index] === 0 && val === -1) return;
-    setVote((prevVotes) => {
-      prevVotes[index] += val;
-      return [...prevVotes];
-    });
+    if (votes[index] === 0 && val === -1) return;
+    dispatch(setVotes({index, val}));
   };
-
-  useEffect(() => {
-    console.log(votes);
-    if(votes.length>0){
-      votes.map((val) => {
-        vote.push(val);
-        console.log(val);
-      });
-      return;
-    }
-    debate.options.map(() => {
-      vote.push(0);
-      console.log("first");
-    });
-  }, []);
 
   const handleLike = (_id, index) => {
     dispatch(likeRequest(_id));
@@ -52,13 +32,13 @@ const Voting = () => {
   };
 
   const handleSubmission = async () => {
-    console.log(vote.length);
-    let totalVotesCasted = vote.reduce((acc, curr) => acc + curr, 0);
+    console.log(votes.length);
+    let totalVotesCasted = votes.reduce((acc, curr) => acc + curr, 0);
     if (totalVotesCasted < 10) return toast.error("Please cast all 10 votes !");
     try {
       const res = await axios.post(
         "http://localhost:3000/api/debates/voterequest",
-        { debateId: debate._id, votes: vote },
+        { debateId: debate._id, votes: votes },
         {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
@@ -72,7 +52,8 @@ const Voting = () => {
   };
   return (
     <div className="pt-16 lg:p-48 p-5 flex items-center justify-center min-h-screen bg-gradient-to-r from-indigo-300 via-indigo-400 to-indigo-500">
-      <div className=" w-full">
+      {!isLoading && (
+        <div className=" w-full">
         <button
           onClick={() => navigate("/userdebates")}
           className="bg-blue-500 px-6 py-2 rounded-lg mb-4"
@@ -121,18 +102,19 @@ const Voting = () => {
                         className={`flex gap-2 justify-center font-bold items-center`}
                       >
                         <BiSolidUpvote size={28} fill="white" />
-                        {option.vote}
+                        {option.votes}
                       </button>
                     </div>
                     <div className="flex justify-center items-center gap-1 md:ml-10">
                       <button
+                        disabled={isVoted}
                         onClick={() => handleVote(ind, -1)}
                         className="p-2 rounded-full bg-violet-500"
                       >
                         <FaMinus size={16} />
                       </button>
                       <h1 className="px-5 py-1 bg-blue-600 rounded-xl">
-                        {vote[ind]}
+                        {votes[ind]}
                       </h1>
                       {/* <input type="number" value={vote[ind]} onChange={(e)=>handleVote(ind, e.target.value)} min="0" max="10" className="p-1 text-center rounded-lg text-black" /> */}
                       <button
@@ -152,14 +134,15 @@ const Voting = () => {
               <button
                 disabled={isVoted}
                 onClick={handleSubmission}
-                className="p-8 bg-emerald-500 rounded-lg font-bold text-2xl"
+                className={`p-8 ${isVoted ? 'bg-emerald-200' : 'bg-emerald-500'} rounded-lg font-bold text-2xl`}
               >
-                Vote
+                {isVoted? "Voted" : "Vote"}
               </button>
             </div>
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 };
