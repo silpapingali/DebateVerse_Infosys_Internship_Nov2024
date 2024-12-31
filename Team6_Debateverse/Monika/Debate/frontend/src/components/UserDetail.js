@@ -1,23 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom'; // Use `useParams` for route parameters and `useNavigate` for navigation
+import { useParams, useNavigate } from 'react-router-dom'; 
 
 const UserDetail = () => {
-  const { userId } = useParams(); // Extract userId from the route
+  const { userId } = useParams(); 
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate(); // Navigation hook
+  const navigate = useNavigate(); 
 
   useEffect(() => {
-    // Fetch user details from the backend
+ 
     const fetchUser = async () => {
       try {
-        const response = await fetch(`http://localhost:8081/UserDetail?userId=${userId}`);
+        const response = await fetch(`http://localhost:8081/api/admin/UserDetail?userId=${userId}`);
         const userData = await response.json();
         if (userData.user) {
           setUser(userData.user);
         } else {
           alert('User not found.');
-          navigate('/'); // Redirect if user not found
+          navigate('/'); 
         }
       } catch (error) {
         console.error('Error fetching user details:', error);
@@ -42,7 +42,7 @@ const UserDetail = () => {
       const result = await response.json();
       alert(result.message || 'User suspended successfully.');
       
-      // Optionally update the user's status on the frontend
+     
       setUser((prev) => ({ ...prev, status: 'Suspended' }));
     } catch (error) {
       console.error('Error suspending user:', error);

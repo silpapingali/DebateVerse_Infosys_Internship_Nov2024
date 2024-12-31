@@ -12,7 +12,7 @@ const UserList = () => {
   
   const searchUser = async () => {
     try {
-      const response = await fetch(`http://localhost:8081/searchUser?query=${query}`);
+      const response = await fetch(`http://localhost:8081/api/admin/searchUser?query=${query}`);
       const data = await response.json();
 
       if (data.user) {
