@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import CreateDebate from "../components/CreateDebate";
 import DebateCard from "../components/DebateCard";
-import { FaTrash } from "react-icons/fa6";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchUserDebates } from "../redux/slices/userDebateSlice";
 import PagesButton from "../components/PagesButton";
@@ -51,9 +50,6 @@ const UserDashboard = () => {
               return (
                 <div key={ind} className="w-full">
                   <div className="flex justify-end pb-1">
-                    <button>
-                      <FaTrash size={26} />
-                    </button>
                   </div>
                   <DebateCard
                     debate={val}
@@ -65,6 +61,7 @@ const UserDashboard = () => {
             })}
             {isCreatePop && <CreateDebate showCreate={showCreate} />}
             <PagesButton
+              from="user"
               totalPages={totalPages}
               debates={debates}
               currPage={currPage}
