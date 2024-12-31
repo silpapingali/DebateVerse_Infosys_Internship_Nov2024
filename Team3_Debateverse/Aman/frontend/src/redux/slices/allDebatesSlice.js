@@ -7,8 +7,9 @@ export const fetchAllDebates = createAsyncThunk(
     const token = localStorage.getItem("token");
     console.log("in fetching");
     try {
-      const response = await axios.get(
-        `http://localhost:3000/api/debates/alldebates/?page=${data}`,
+      const response = await axios.post(
+        "http://localhost:3000/api/debates/alldebates",
+        data,
         {
           headers: {
             Authorization: `Bearer ${token}`,

@@ -1,9 +1,9 @@
 import axios from "axios";
 import React, { useRef, useState } from "react";
 import { FaXmark } from "react-icons/fa6";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
-import { fetchUserDebates } from "../redux/slices/userDebateSlice";
+import { fetchUserDebates, setCurrPage } from "../redux/slices/userDebateSlice";
 
 const CreateDebate = ({ showCreate }) => {
   const [question, setQuestion] = useState("");
@@ -54,7 +54,8 @@ const CreateDebate = ({ showCreate }) => {
       );
       toast.success(res.data.message);
       showCreate();
-      dispatch(fetchUserDebates());
+      dispatch(setCurrPage(1));
+      dispatch(fetchUserDebates(1));
     } catch (err) {
       // console.log(err, "in catch");
       toast.error(err?.response?.data?.message || "Server error !");
