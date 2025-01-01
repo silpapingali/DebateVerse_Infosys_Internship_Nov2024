@@ -235,21 +235,26 @@ app.post('/reset-password/:token', async (req, res) => {
 });
 
 
-app.get('/admindashboard', middleware, async (req, res) => {
+app.get('/userdashboard', middleware, async (req, res) => {
   try {
     let exist = await Registeruser.findById(req.user.id);
+    
     if (!exist) {
       return res.status(400).send('User not found');
     }
-    res.json({
-      message: "Welcome to the Admin Dashboard",
-      user: exist
+    if (exist.role !== 'user') {
+      return res.status(403).send('Access denied: Users only');
+    }
+    return res.json({
+      message: "Welcome to the User Dashboard",
+      user:exist
     });
   } catch (error) {
     console.log(error);
     return res.status(500).send('Server Error');
   }
 });
+
 
 app.post('/registersuccess', async (req, res) => {
   try {
@@ -323,10 +328,19 @@ app.get('/debates',middleware, async (req, res) => {
   }
 });
 
-app.get('/alldebates',middleware, async (req, res) => {
+app.get('/alldebates', middleware, async (req, res) => {
   try {
     const username = req.user.username;
-    const alldebates = await Debate.find({ createdBy: {$ne:username} });
+    const role = req.user.role;  // Assuming the role is available in the middleware
+    let query = {};
+
+    if (role === 'admin') {
+      query = {};  // Admin can see all debates including blocked
+    } else {
+      query = { createdBy: { $ne: username }, isblocked: false };  // User can't see their own debates or blocked ones
+    }
+
+    const alldebates = await Debate.find(query);
 
     if (alldebates.length === 0) {
       return res.status(404).json({ message: 'No debates found.' });
@@ -339,55 +353,46 @@ app.get('/alldebates',middleware, async (req, res) => {
   }
 });
 
+
 // Vote for a specific debate option
-app.post('/vote/:debateId', middleware, async (req, res) => {
+app.post('/vote/:id', middleware, async (req, res) => {
+  const { id } = req.params;
+  const { votes } = req.body; 
+  const userId = req.user.id;
+
   try {
-    const { debateId } = req.params;
-    const { votes } = req.body; 
-    const userId = req.user.id; 
+    const debate = await Debate.findById(id);
+    if (!debate) return res.status(404).json({ message: "Debate not found" });
 
-    const debate = await Debate.findById(debateId);
+    const userVote = debate.votedUsers.find(user => user.userId === userId);
 
-    if (!debate) {
-      return res.status(404).json({ error: 'Debate not found' });
+    if (userVote) {
+      userVote.votes = votes;
+    } else {
+      debate.votedUsers.push({ userId, votes });
     }
-
-    // Check if the user has already voted
-    const existingVote = debate.votedUsers.find(vote => vote.userId === userId);
-    if (existingVote) {
-      return res.status(400).json({ error: 'You have already voted for this debate.' });
-    }
-
-    // Process votes
-    for (const { optionId, increment } of votes) {
-      const option = debate.options[optionId];
-      if (!option) {
-        return res.status(400).json({ error: `Option with ID ${optionId} not found` });
-      }
-      option.votes += increment; 
-    }
-
-    debate.votedUsers.push({
-      userId,
-      votes: votes.map(vote => ({
-        optionId: vote.optionId,
-        voteCount: vote.increment,
-      })),
+    debate.options.forEach(option => {
+      option.votes = 0;
     });
-
-    const totalVotes = debate.options.reduce((sum, option) => sum + option.votes, 0);
-    debate.totalVotes = totalVotes;
-
+    debate.votedUsers.forEach(user => {
+      user.votes.forEach(vote => {
+        const option = debate.options[vote.optionId];
+        if (option) {
+          option.votes += vote.voteCount;
+        }
+      });
+    });
+    debate.totalVotes = debate.options.reduce((total, option) => total + option.votes, 0);
     await debate.save();
 
-    res.status(200).json({ 
-      message: 'Votes registered successfully', 
-      totalVotes, 
-      debate 
+    res.json({
+      totalVotes: debate.totalVotes,
+      options: debate.options,
+      userVotes: votes,
     });
   } catch (error) {
-    console.error('Error voting:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
@@ -395,48 +400,49 @@ app.post('/vote/:debateId', middleware, async (req, res) => {
 
 
 // Like a debate
-app.post("/like/:debateId", middleware, async (req, res) => {
-  const { debateId } = req.params;
-  const username = req.user.username; 
+app.post('/like/:id', middleware, async (req, res) => {
+  const { id } = req.params;
+  const userId = req.user.id;
+
+
   try {
-    const debate = await Debate.findById(debateId);
-    if (!debate) {
-      return res.status(404).json({ error: "Debate not found." });
+    const debate = await Debate.findById(id);
+    if (!debate) return res.status(404).json({ message: "Debate not found" });
+
+    if (debate.likedBy.includes(userId)) {
+      return res.status(400).json({ message: "You already liked this debate" });
     }
-    if (debate.likedBy.includes(username)) {
-      return res.status(400).send('You have already liked for this debate.');
-    }
-    debate.likedBy.push(username);
-    debate.likes += 1;
+
+    debate.likes++;
+    debate.likedBy.push(userId);
     await debate.save();
-    return res.status(200).json({ message: "Debate liked successfully.", likes: debate.likes });
+    return res.json({ likes: debate.likes });
   } catch (error) {
-    console.error("Error liking debate:", error);
-    return res.status(500).json({ error: "Internal Server Error" });
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
 
-app.post('/dislike/:debateId', middleware, async (req, res) => {
-  try {
-    const debateId = req.params.debateId;
-    const username = req.user.username;
-    const debate = await Debate.findById(debateId);
-    
-    if (!debate) {
-      return res.status(404).json({ message: 'Debate not found' });
-    }
-    if (debate.likedBy.includes(username)) {
-      debate.likedBy = debate.likedBy.filter((user) => user.toString() !== username.toString());
-      debate.likes = Math.max(0, debate.likes - 1);
-    }
-      
-      await debate.save();
+app.post('/dislike/:id', middleware, async (req, res) => {
+  const { id } = req.params;
+  const userId = req.user.id;
 
-      return res.json({ likes: debate.likes });
+  try {
+    const debate = await Debate.findById(id);
+    if (!debate) return res.status(404).json({ message: "Debate not found" });
+
+    if (!debate.likedBy.includes(userId)) {
+      return res.status(400).json({ message: "You haven't liked this debate" });
+    }
+
+    debate.likes--;
+    debate.likedBy = debate.likedBy.filter(user => user !== userId);
+    await debate.save();
+    res.json({ likes: debate.likes });
   } catch (error) {
-    console.error('Error disliking debate:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
   }
 });
 

@@ -15,6 +15,7 @@ const ModerateDebate = () => {
   const role = localStorage.getItem("role");
   const username = localStorage.getItem("username");
 
+  const [userId, setUserId] = useState(null);
   const [votes, setVotes] = useState([]);
   const [totalVotes, setTotalVotes] = useState(debate?.totalVotes || 0); 
   const [likes, setLikes] = useState(debate?.likes || 0);
@@ -23,6 +24,38 @@ const ModerateDebate = () => {
   const [hasVoted, setHasVoted] = useState(false);
   const [isDeleted, setIsDeleted] = useState(false);
   const [isDelete, setIsDelete] = useState(false);
+
+  useEffect(() => {
+    const fetchUserDetails = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/userdashboard', {
+          headers: {
+            'x-token': token,
+          },
+        });
+        setUserId(response.data.user._id); 
+      } catch (error) {
+        console.error("Error fetching user details:", error);
+      }
+    };
+
+    if (token) {
+      fetchUserDetails();
+    }
+  }, [token]);
+
+  useEffect(() => {
+    if (debate && userId) {
+      const userVotes = debate.votedUsers.find(user => user.userId === userId);
+      if (userVotes) {
+        const initialVotes = new Array(debate.options.length).fill(0);
+        userVotes.votes.forEach((vote, index) => {
+          initialVotes[index] = vote.voteCount || 0;
+        });
+        setVotes(initialVotes);
+      }
+    }
+  }, [debate, userId]);
 
   useEffect(() => {
     if (!debate) {
@@ -50,18 +83,27 @@ const ModerateDebate = () => {
   }, [token, debate, navigate]);
 
   const handleVote = (index, increment) => {
-    if (increment > 10) return;
-
+    console.log("1");
+  
     const newVotes = [...votes];
     newVotes[index] = Math.max(0, newVotes[index] + increment); 
-
+    console.log("Updated votes:", newVotes);
+  
     const newTotalVotes = newVotes.reduce((a, b) => a + b, 0);
-
-    if (newTotalVotes <= 10) {
-      setVotes(newVotes);
-      setTotalVotes(debate.totalVotes + newTotalVotes);
+    console.log("Total votes:", newTotalVotes);
+  
+    if (newTotalVotes > 10) {
+      setMessage("Error: Only 10 total votes are allowed.");
+      setTimeout(() => {
+        setMessage("");
+      }, 2000);
+      return; 
     }
+  
+    setVotes(newVotes);
+    setMessage(""); 
   };
+  
 
   const handleLike = async () => {
     if (!liked) {
@@ -125,33 +167,31 @@ const ModerateDebate = () => {
   };
 
   const handleSubmitVotes = async () => {
-    if (hasVoted) {
+    if (hasVoted || debate.votedUsers.find(user => user.userId === userId)) {
       setMessage("Error: You have already voted.");
       resetVotesDelay();
       return;
     }
-  
+
     if (votes.every((vote) => vote === 0)) {
       setMessage("Error: You must vote for at least one option.");
       resetVotesDelay();
       return;
     }
-  
+
     const token = localStorage.getItem("token");
     if (!token) {
       setMessage("Error: Authentication required.");
       resetVotesDelay();
       return;
     }
-  
+
     try {
-      const voteData = votes
-        .map((voteCount, index) => ({
-          optionId: index,
-          increment: voteCount,
-        }))
-        .filter((vote) => vote.increment > 0); 
-  
+      const voteData = votes.map((voteCount, index) => ({
+        optionId: index,
+        voteCount: voteCount,
+      }));
+      
       const response = await axios.post(
         `http://localhost:5000/vote/${debate._id}`,
         { votes: voteData },
@@ -162,38 +202,44 @@ const ModerateDebate = () => {
           },
         }
       );
-  
       const { totalVotes } = response.data;
       setTotalVotes(totalVotes);
       setHasVoted(true);
       setMessage("Success: Your votes have been recorded.");
-  
+
       setTimeout(() => {
         setMessage("");
       }, 2000);
     } catch (error) {
-      if (error.response?.data.error === "You have already voted for this debate.") {
+      if (error.response?.data === "You have already voted for this debate.") {
         setMessage("Error: You have already voted for this debate.");
       } else {
         console.error("Error submitting votes:", error);
         setMessage("Error: Failed to record votes. Please try again.");
       }
-  
+
       resetVotesDelay();
     }
   };
-  
+
   const resetVotes = () => {
     const totalNewVotes = votes.reduce((a, b) => a + b, 0);
-    setTotalVotes((prevTotalVotes) => prevTotalVotes - totalNewVotes);
-    setVotes(new Array(debate.options.length).fill(0));
+    setTotalVotes((prevTotalVotes) => prevTotalVotes + totalNewVotes);
+    const userVotes = debate.votedUsers.find(user => user.userId === userId);
+      if (userVotes) {
+        const initialVotes = new Array(debate.options.length).fill(0);
+        userVotes.votes.forEach((vote, index) => {
+          initialVotes[index] = vote.voteCount || 0;
+        });
+        setVotes(initialVotes);
+      }
   };
-  
+
   const resetVotesDelay = () => {
     setTimeout(() => {
       setMessage("");
       resetVotes();
-    }, 2000);
+    }, 500);
   };
   
 const handleDeleteDebate = async () => {
