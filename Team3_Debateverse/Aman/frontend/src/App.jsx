@@ -14,6 +14,7 @@ import UserProtected from "./ProtectedRoute/UserProtected";
 import AdminProtected from "./ProtectedRoute/AdminProtected";
 import PublicProtected from "./ProtectedRoute/PublicProtected";
 import Voting from "./pages/Voting";
+import ManageUsers from "./pages/ManageUsers";
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
             <Route path="/userdashboard" element={<UserDashboard />} />
             <Route path="/voting" element={<Voting/>}/>
             <Route path="/admindashboard" element={<AdminDashboard />} />
+            <Route path="/manageusers" element={<ManageUsers/>}/>
 
           <Route element={<PublicProtected />}>
             <Route path="/home" element={<Home />} />

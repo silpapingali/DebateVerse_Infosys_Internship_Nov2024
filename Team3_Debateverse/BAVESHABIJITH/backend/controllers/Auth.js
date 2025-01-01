@@ -12,6 +12,12 @@ const Login = async (req, res) => {
         .status(400)
         .json({ message: "Email not found ! Please register" });
     }
+    if (databaseUser.status === "blocked") {
+      console.log("User is blocked ! Contact admin");
+      return res
+        .status(400)
+        .json({ message: "User is blocked ! Contact admin" });
+    }
     if (!databaseUser.isVerified) {
       const send = await verifyMail(email);
       if (send) {

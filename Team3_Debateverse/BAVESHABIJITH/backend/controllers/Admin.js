@@ -85,7 +85,7 @@ const activateUser = async (req, res) => {
 
 const fetchAllUsers = async (req, res) => {
   try {
-    const users = await usersModel.find({ role: { $ne: "admin" } }, { status: 1, email: 1 });
+    const users = await userModel.find();
     res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ message: "Error fetching users", error });

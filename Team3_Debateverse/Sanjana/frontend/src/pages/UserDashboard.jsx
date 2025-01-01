@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import CreateDebate from "../components/CreateDebate";
 import DebateCard from "../components/DebateCard";
