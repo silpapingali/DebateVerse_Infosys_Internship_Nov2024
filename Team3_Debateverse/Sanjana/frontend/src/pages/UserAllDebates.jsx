@@ -79,7 +79,7 @@ const UserAllDebates = () => {
                 type="range"
                 min="0"
                 max="10000"
-                step="10"
+                step="1000"
                 className="w-full"
                 value={likegt}
                 onChange={(e) => setLikegt(e.target.value)}
@@ -96,7 +96,7 @@ const UserAllDebates = () => {
                 type="range"
                 min="0"
                 max="25000"
-                step="5"
+                step="1000"
                 className="w-full"
                 value={votes}
                 onChange={(e) => setVotes(e.target.value)}

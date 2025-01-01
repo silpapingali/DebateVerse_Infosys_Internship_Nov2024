@@ -1,3 +1,4 @@
+
 import React, { useRef, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -32,6 +33,7 @@ const ModerateUser = ({ onClose }) => {
       setIsLoading(false);
     }
   };
+  
   
   const blockUser = async (e) => {
     setIsLoading(true);

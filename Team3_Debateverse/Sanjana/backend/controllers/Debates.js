@@ -45,7 +45,7 @@ const AllDebates = async (req, res) => {
 
     res.status(200).json({ totalRecords, debates, likes });
   } catch (err) {
-    res.status(400).json({ message: "Question cant be empty!" });
+    res.status(400).json({ message: "Server error! Try again later." });
   }
 };
 
@@ -83,7 +83,7 @@ const CreateDebate = async (req, res) => {
     res.status(200).json({ message: "Success ! Debate created" });
   } catch (err) {
     console.log(err);
-    res.status(400).json({ message: "questions cant be empty" });
+    res.status(400).json({ message: "Server error ! Try after sometime" });
   }
 };
 
