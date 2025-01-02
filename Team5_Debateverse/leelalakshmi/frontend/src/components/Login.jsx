@@ -117,7 +117,11 @@ const Login = () => {
                         </button>
                     </div>
                 </form>
-
+                <p className="align-baseline font-medium mt-4 mb-2 text-sm">
+                <Link to="/passwordcorrect" className="text-red-500 hover:text-blue-700">
+                        forgot password
+                    </Link>
+                  </p>
                 <p className="align-baseline font-medium mt-4 mb-2 text-sm">
                     Haven't an account? Please{' '}
                     <Link to="/register" className="text-blue-500 hover:text-blue-700">
