@@ -12,6 +12,7 @@ const Userdashboard = () => {
   const [data, setData] = useState(null);
   const [debates, setDebates] = useState([]); 
   const navigate = useNavigate();
+  const role=localStorage.getItem('role');
 
   useEffect(() => {
     if (!token) {
@@ -70,6 +71,18 @@ const Userdashboard = () => {
     const dayWithSuffix = day + getDaySuffix(day);
     return `${month} ${dayWithSuffix}, ${year}`;
   };
+
+  if (role !== "user") {
+    return (
+      <div className="h-[calc(100vh-120px)] flex justify-center items-center">
+            <div className="w-full max-w-3xl mx-auto bg-white/80 shadow-md rounded px-8 pt-6 pb-8 mb-4">
+                <p className='text-xl font-semibold mb-4 text-center text-red-600'>Access Denied users Only
+
+              </p>
+            </div>
+    </div>
+    );
+  }
 
   return (
     <div className="p-4">
