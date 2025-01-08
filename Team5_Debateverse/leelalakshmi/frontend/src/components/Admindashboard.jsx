@@ -122,7 +122,7 @@ const toggleBlockStatus = (userId, isBlocked) => {
     return (
       <div className="h-[calc(100vh-120px)] flex justify-center items-center">
             <div className="w-full max-w-3xl mx-auto bg-white/80 shadow-md rounded px-8 pt-6 pb-8 mb-4">
-                <p className='text-xl font-semibold mb-4 text-center text-red-600'>Access Denied admins Only
+                <p className='text-xl font-semibold mb-4 text-center text-red-600'>Access Denied admin Only
 
               </p>
             </div>
