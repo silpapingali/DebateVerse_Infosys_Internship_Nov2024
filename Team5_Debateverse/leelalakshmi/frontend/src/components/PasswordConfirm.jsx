@@ -1,18 +1,28 @@
-import  { useState } from 'react';
+import { useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const PasswordConfirm = () => {
-    const { token } = useParams(); // Get the token from the URL parameters
-    const navigate = useNavigate(); // To redirect after successful reset
+    const { token } = useParams(); 
+    const navigate = useNavigate();
 
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
     const [message, setMessage] = useState('');
 
+    const validatePassword = (password) => {
+        const passwordRegex = /^[A-Z][A-Za-z0-9!@#$%^&*]{5,}$/; 
+        return passwordRegex.test(password);
+    };
+
     const handleReset = async (event) => {
         event.preventDefault();
+
+        if (!validatePassword(password)) {
+            setError('Password must start with a capital letter, include alphanumeric and special characters, and be at least 6 characters long.');
+            return;
+        }
 
         if (password !== confirmPassword) {
             setError('Passwords do not match');
@@ -26,8 +36,7 @@ const PasswordConfirm = () => {
 
             setMessage(response.data.message);
             setError('');
-            // Optionally redirect the user to the login page after successful reset
-            setTimeout(() => navigate('/login'), 2000); // Redirect after 2 seconds
+            setTimeout(() => navigate('/login'), 2000); 
         } catch (err) {
             setError(err.response?.data?.error || 'An error occurred. Please try again later.');
             setMessage('');

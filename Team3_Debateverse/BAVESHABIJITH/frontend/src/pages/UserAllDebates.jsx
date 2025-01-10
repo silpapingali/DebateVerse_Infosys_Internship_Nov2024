@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import DebateCard from "../components/DebateCard";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAllDebates, setCurrPage } from "../redux/slices/allDebatesSlice";
@@ -18,6 +18,7 @@ const UserAllDebates = () => {
     errorMessage,
   } = useSelector((states) => states.allDebates);
 
+
   const [isVotePopup, setIsVotePopup] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isExact, setIsExact] = useState(false);
@@ -26,9 +27,8 @@ const UserAllDebates = () => {
   const [date, setDate] = useState("");
 
   useEffect(() => {
-    console.log("in effect in all debates");
     dispatch(
-      fetchAllDebates({ page: 1, isExact, votes, likegt, date, searchQuery })
+      fetchAllDebates({ page: currPage, isExact, votes, likegt, date, searchQuery })
     );
   }, []);
 
@@ -62,14 +62,14 @@ const UserAllDebates = () => {
         <>
           <div className="hidden rounded-lg mb-1 lg:flex flex-col bg-indigo-500 p-4">
             <div className="mb-4">
-              <label className="text-white">
+              <label className="text-white flex items-center space-x-2">
                 <input
                   type="checkbox"
-                  className="mr-2"
+                  className="w-5 h-5 accent-blue-600 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-blue-500 mr-2"
                   checked={isExact}
                   onChange={(e) => setIsExact(e.target.checked)}
                 />
-                Exact Match
+                <span className="">Exact Match</span>
               </label>
             </div>
 
@@ -79,15 +79,15 @@ const UserAllDebates = () => {
                 type="range"
                 min="0"
                 max="10000"
-                step="1000"
+                step="100"
                 className="w-full"
                 value={likegt}
                 onChange={(e) => setLikegt(e.target.value)}
               />
-            <div className="flex justify-between text-white">
-              <h1>0</h1>
-              <h1>10k</h1>
-            </div>
+              <div className="flex justify-between text-white">
+                <h1>0</h1>
+                <h1>10k</h1>
+              </div>
             </div>
 
             <div className="mb-4">
@@ -96,15 +96,15 @@ const UserAllDebates = () => {
                 type="range"
                 min="0"
                 max="25000"
-                step="1000"
+                step="500"
                 className="w-full"
                 value={votes}
                 onChange={(e) => setVotes(e.target.value)}
               />
               <div className="flex justify-between text-white">
-              <h1>0</h1>
-              <h1>25k</h1>
-            </div>
+                <h1>0</h1>
+                <h1>25k</h1>
+              </div>
             </div>
 
             <div className="mb-4">
@@ -122,13 +122,13 @@ const UserAllDebates = () => {
 
             <button
               onClick={applyFilters}
-              className="bg-emerald-500 p-2 m-1 rounded-lg"
+              className="bg-emerald-500 p-2 my-1 rounded-lg"
             >
               Apply filters
             </button>
             <button
               onClick={resetFilters}
-              className="bg-blue-500 p-2 m-1 rounded-lg"
+              className="bg-blue-500 p-2 my-1 rounded-lg"
             >
               Reset
             </button>
@@ -151,7 +151,12 @@ const UserAllDebates = () => {
                 className="p-2 w-full rounded-lg bg-indigo-700 text-white"
                 placeholder="Search Debates"
               />
-              <button onClick={applyFilters} className="p-2 rounded-lg bg-emerald-500">Search</button>
+              <button
+                onClick={applyFilters}
+                className="p-2 rounded-lg bg-emerald-500"
+              >
+                Search
+              </button>
             </div>
 
             {debates[currPage].length == 0 ? (
@@ -164,7 +169,6 @@ const UserAllDebates = () => {
                       debate={deb}
                       Qno={(currPage - 1) * 10 + ind + 1}
                       liked={likes[currPage][ind]}
-                      
                     />
                   </div>
                 );

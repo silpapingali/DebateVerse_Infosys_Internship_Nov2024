@@ -17,6 +17,7 @@ const DebatesSearch = () => {
   const [exactMatch, setExactMatch] = useState(false);
   const navigate = useNavigate();
   const role = localStorage.getItem("role");
+  const username = localStorage.getItem("username");
 
   useEffect(() => {
     if (!token) {
@@ -31,16 +32,26 @@ const DebatesSearch = () => {
         },
       })
       .then((res) => {
-        const unblockedDebates = res.data.filter((debate) => !debate.isblocked);
-        setDebates(unblockedDebates);
-        setFilteredDebates(unblockedDebates);
+        let debates = res.data;
+  
+        if (role === "admin") {
+          // Separate blocked and unblocked debates for the admin
+          const blockedDebates = debates.filter(debate => debate.isblocked);
+          const unblockedDebates = debates.filter(debate => !debate.isblocked);
+          setDebates([...blockedDebates, ...unblockedDebates]);
+          setFilteredDebates([...blockedDebates, ...unblockedDebates]);
+        } else {
+          // Filter out the user's debates and blocked debates for regular users
+          const unblockedDebates = debates.filter(debate => !debate.isblocked && debate.createdBy !== username);
+          setDebates(unblockedDebates);
+          setFilteredDebates(unblockedDebates);
+        }
       })
       .catch((err) => console.error("Error fetching debates:", err));
-  }, [token, navigate]);
-  
+  }, [token, navigate, role, username]);
 
   const filterDebates = () => {
-    let filtered = [...debates]; 
+    let filtered = [...debates];
 
     if (searchTerm) {
       filtered = filtered.filter((debate) =>
@@ -59,7 +70,7 @@ const DebatesSearch = () => {
 
     if (votesFilter > 0) {
       filtered = filtered.filter((debate) => {
-        const votes = debate.totalVotes || 0; 
+        const votes = debate.totalVotes || 0;
         return votes >= votesFilter;
       });
     }
@@ -168,37 +179,115 @@ const DebatesSearch = () => {
         {filteredDebates.length === 0 ? (
           <p>No debates match the applied filters, or the debate might have been removed by the Admin.</p>
         ) : (
-          filteredDebates.map((debate) => (
-            <div
-              key={debate._id}
-              className="relative bg-white p-4 rounded-lg shadow-md mb-4 hover:bg-gray-300 cursor-pointer"
-              onClick={() => handleDebateClick(debate)}
-            >
-              <h4 className="font-semibold text-xl">{debate.question}</h4>
-              <p className="text-gray-500">
-                Posted by {debate.createdBy} on {formatDate(debate.createdDate)}
-              </p>
-              <div className="mt-4 flex items-center">
-                <FaHeart className="text-red-500 mr-2" />
-                <p>{debate.likes || 0} Likes</p>
+          <>
+            {role === "admin" && (
+              <>
+                {/* Blocked Debates Section */}
+                {filteredDebates.filter(debate => debate.isblocked).length > 0 && (
+                  <div className="bg-red-200 p-4 rounded-lg mb-4">
+                    <h3 className="text-xl font-bold text-red-600">Blocked Debates</h3>
+                    {filteredDebates.filter(debate => debate.isblocked).map((debate) => (
+                      <div
+                        key={debate._id}
+                        className="relative bg-white p-4 rounded-lg shadow-md mb-4"
+                        onClick={() => handleDebateClick(debate)}
+                      >
+                        <h4 className="font-semibold text-xl">{debate.question}</h4>
+                        <p className="text-gray-500">
+                          Posted by {debate.createdBy} on {formatDate(debate.createdDate)}
+                        </p>
+                        <div className="mt-4 flex items-center">
+                          <FaHeart className="text-red-500 mr-2" />
+                          <p>{debate.likes || 0} Likes</p>
+                        </div>
+                        <div className="key={debate._id} absolute top-3 right-4 w-1/4">
+                          <ResponsiveContainer width="100%" height={150}>
+                            <BarChart
+                              data={debate.options?.map((opt, idx) => ({
+                                name: `Option ${idx + 1}`,
+                                votes: opt.votes || 0,
+                              }))}
+                              margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
+                            >
+                              <XAxis dataKey="name" tick={false} />
+                              <YAxis tick={false} />
+                              <Bar dataKey="votes" fill="#6a0dad" barSize={20} />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Unblocked Debates Section */}
+                {filteredDebates.filter(debate => !debate.isblocked).map((debate) => (
+                  <div
+                    key={debate._id}
+                    className="relative bg-white p-4 rounded-lg shadow-md mb-4"
+                    onClick={() => handleDebateClick(debate)}
+                  >
+                    <h4 className="font-semibold text-xl">{debate.question}</h4>
+                    <p className="text-gray-500">
+                      Posted by {debate.createdBy} on {formatDate(debate.createdDate)}
+                    </p>
+                    <div className="mt-4 flex items-center">
+                      <FaHeart className="text-red-500 mr-2" />
+                      <p>{debate.likes || 0} Likes</p>
+                    </div>
+                    <div className="key={debate._id} absolute top-3 right-4 w-1/4">
+                      <ResponsiveContainer width="100%" height={150}>
+                        <BarChart
+                          data={debate.options?.map((opt, idx) => ({
+                            name: `Option ${idx + 1}`,
+                            votes: opt.votes || 0,
+                          }))}
+                          margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
+                        >
+                          <XAxis dataKey="name" tick={false} />
+                          <YAxis tick={false} />
+                          <Bar dataKey="votes" fill="#6a0dad" barSize={20} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                ))}
+              </>
+            )}
+
+            {/* For Users */}
+            {role !== "admin" && filteredDebates.filter(debate => !debate.isblocked && debate.createdBy !== username).map((debate) => (
+              <div
+                key={debate._id}
+                className="relative bg-white p-4 rounded-lg shadow-md mb-4"
+                onClick={() => handleDebateClick(debate)}
+              >
+                <h4 className="font-semibold text-xl">{debate.question}</h4>
+                <p className="text-gray-500">
+                  Posted by {debate.createdBy} on {formatDate(debate.createdDate)}
+                </p>
+                <div className="mt-4 flex items-center">
+                  <FaHeart className="text-red-500 mr-2" />
+                  <p>{debate.likes || 0} Likes</p>
+                </div>
+                <div className="key={debate._id} absolute top-3 right-4 w-1/4">
+                  <ResponsiveContainer width="100%" height={150}>
+                    <BarChart
+                      data={debate.options?.map((opt, idx) => ({
+                        name: `Option ${idx + 1}`,
+                        votes: opt.votes || 0,
+                      }))}
+                      margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
+                    >
+                      <XAxis dataKey="name" tick={false} />
+                      <YAxis tick={false} />
+                      <Bar dataKey="votes" fill="#6a0dad" barSize={20} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
-              <div className="key={debate._id} absolute top-3 right-4 w-1/4">
-              <ResponsiveContainer width="100%" height={150}>
-        <BarChart
-          data={debate.options?.map((opt, idx) => ({
-            name: `Option ${idx + 1}`,  
-            votes: opt.votes || 0,     
-          }))}
-          margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
-        >
-          <XAxis dataKey="name" tick={false} />
-          <YAxis tick={false} />
-          <Bar dataKey="votes" fill="#6a0dad" barSize={20} />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
-            </div>
-          ))
+            ))}
+          </>
         )}
       </div>
     </div>

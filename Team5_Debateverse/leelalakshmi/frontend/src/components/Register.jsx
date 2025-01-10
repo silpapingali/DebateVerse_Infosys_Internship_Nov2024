@@ -47,7 +47,7 @@ const Register = () => {
       return;
     }
 
-    const passwordRegex =  /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+    const passwordRegex =  /^[A-Z][A-Za-z0-9!@#$%^&*]{5,}$/; 
     if (!passwordRegex.test(data.password)) {
       setErrorMessage('Password must start with a capital letter, contain alphanumeric characters, and be at least 6 characters long.');
       setSuccessMessage('');
@@ -66,7 +66,9 @@ const Register = () => {
     } catch (error) {
       if (error.response?.data?.error === 'User Already Exist') {
         setErrorMessage('Email already exists. Please log in.');
-      } else if (error.response?.data?.error === 'Passwords do not match') {
+      } else if (error.response?.data?.error === 'Username Already Exist please try another name') {
+        setErrorMessage('Username Already Exist please try another name');
+      }else if (error.response?.data?.error === 'Passwords do not match') {
         setErrorMessage('Passwords do not match.');
       } else {
         setErrorMessage('Registration failed. Please try again.');
@@ -128,7 +130,7 @@ const Register = () => {
               className="absolute top-1/2 right-2 transform -translate-y-1/2"
               onClick={() => setPasswordVisible(!passwordVisible)} 
             >
-              {passwordVisible ? <FaEyeSlash /> : <FaEye />} 
+              {passwordVisible ? <FaEye />: <FaEyeSlash /> } 
             </button>
           </div>
 
@@ -150,7 +152,7 @@ const Register = () => {
               className="absolute top-1/2 right-2 transform -translate-y-1/2"
               onClick={() => setConfirmPasswordVisible(!confirmPasswordVisible)} 
             >
-              {confirmPasswordVisible ? <FaEyeSlash /> : <FaEye />}
+              {confirmPasswordVisible ? <FaEye />: <FaEyeSlash />}
             </button>
           </div>
 
