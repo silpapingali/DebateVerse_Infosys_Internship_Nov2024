@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchStats } from "../redux/slices/adminDashboardSlice";
-import ModerateUser from "../components/ModerateUser";
 import { useNavigate } from "react-router-dom";
 
 const AdminDashboard = () => {
@@ -26,7 +25,7 @@ const AdminDashboard = () => {
     <div className="pt-16 gap-5 flex flex-col items-center justify-start min-h-screen bg-gradient-to-r from-indigo-300 via-indigo-500 to-indigo-700">
       {!isLoading && (
         <>
-        <div className="w-full max-w-4xl p-4 bg-white rounded-lg shadow-lg">
+        <div className="w-full mt-3 max-w-4xl p-4 bg-white rounded-lg shadow-lg">
               <h1 className="text-2xl font-bold mb-4">Actions</h1>
               <div className="flex flex-col md:flex-row gap-4">
                 <button onClick={()=> navigate('/userdebates')} className="bg-indigo-500 hover:bg-indigo-600 text-white p-4 rounded-lg shadow-md transition duration-300">

@@ -32,8 +32,13 @@ app.post('/register', async (req, res) => {
   try {
     const { username,email, password, confirmpassword } = req.body;
     let exist = await Registeruser.findOne({ email });
+    let user = await Registeruser.findOne({username})
     if (exist) {
       return res.status(400).json({ error: 'User Already Exist' }); 
+    }
+
+    if (user) {
+      return res.status(400).json({ error: 'Username Already Exist please try another name' }); 
     }
 
     if (password !== confirmpassword) {
@@ -331,13 +336,13 @@ app.get('/debates',middleware, async (req, res) => {
 app.get('/alldebates', middleware, async (req, res) => {
   try {
     const username = req.user.username;
-    const role = req.user.role;  // Assuming the role is available in the middleware
+    const role = req.user.role;  
     let query = {};
 
     if (role === 'admin') {
-      query = {};  // Admin can see all debates including blocked
+      query = {};  
     } else {
-      query = { createdBy: { $ne: username }, isblocked: false };  // User can't see their own debates or blocked ones
+      query = { createdBy: { $ne: username }, isblocked: false };  
     }
 
     const alldebates = await Debate.find(query);

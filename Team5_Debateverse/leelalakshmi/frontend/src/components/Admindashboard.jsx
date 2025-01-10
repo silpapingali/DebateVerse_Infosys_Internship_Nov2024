@@ -15,7 +15,9 @@ const Admindashboard = () => {
   const [joinedAfter, setJoinedAfter] = useState("");
   const [exactMatch, setExactMatch] = useState(false);
   const [popupUser, setPopupUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const role=localStorage.getItem('role');
 
   useEffect(() => {
     if (!token) {
@@ -31,9 +33,14 @@ const Admindashboard = () => {
       })
       .then((res) => {
         setUsers(res.data);
+        setLoading(false);
         setFilteredUsers(res.data);
       })
-      .catch((err) => console.error("Error fetching users:", err));
+      .catch((err) => {
+        console.error("Error fetching user role:", err);
+        setLoading(false);
+        navigate("/login");
+      });
   }, [token, navigate]);
 
   const filterUsers = () => {
@@ -108,7 +115,20 @@ const toggleBlockStatus = (userId, isBlocked) => {
   const getUserClass = (isBlocked) => {
     return isBlocked ? "bg-red-100 border-red-500" : "";
   };
+  if (loading) {
+    return <p>Loading...</p>;
+  }
+  if (role !== "admin") {
+    return (
+      <div className="h-[calc(100vh-120px)] flex justify-center items-center">
+            <div className="w-full max-w-3xl mx-auto bg-white/80 shadow-md rounded px-8 pt-6 pb-8 mb-4">
+                <p className='text-xl font-semibold mb-4 text-center text-red-600'>Access Denied admin Only
 
+              </p>
+            </div>
+    </div>
+    );
+  }
   return (
     <div className="flex flex-col md:flex-row h-screen bg-white/80">
       <div className="w-full md:w-1/4 p-4 bg-white shadow-lg">

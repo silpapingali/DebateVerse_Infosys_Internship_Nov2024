@@ -54,6 +54,7 @@ export const Reset = () => {
               id="password"
               name="password"
               type="password"
+              required
               onChange={(e) => setPassword(e.target.value)}
               value={password}
               className="w-full px-3 py-2 mt-1 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
