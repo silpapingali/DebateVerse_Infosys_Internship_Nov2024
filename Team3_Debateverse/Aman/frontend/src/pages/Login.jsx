@@ -7,6 +7,7 @@ import ResetPopup from "../components/ResetPopup";
 import { UserContext } from "../context/UserContext";
 
 const Login = () => {
+
   const navigate = useNavigate();
   const [loginData, setLoginData] = useState({
     email: "",
@@ -18,6 +19,7 @@ const Login = () => {
   const { setIsAuth, setRole } = useContext(UserContext);
   const [params] = useSearchParams();
   const status = params.get("status");
+
   if (status) {
     status == "true"
       ? toast.success("Congratulations! You are Verified Please login")
