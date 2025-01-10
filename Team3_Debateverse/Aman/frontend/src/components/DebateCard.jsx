@@ -86,7 +86,7 @@ const DebateCard = ({ debate, liked, Qno, isMine }) => {
                 key={ind}
                 className="option w-full flex-wrap font-bold flex justify-between py-1 items-center"
               >
-                <div className="w-full bg-blue-400 rounded-lg px-2 flex gap-3 flex-wrap justify-between items-center">
+                <div className={`${option.isRemoved?"bg-red-500":""} w-full bg-blue-400 rounded-lg px-2 flex gap-3 flex-wrap justify-between items-center`}>
                   <h1 key={ind}>{`${ind + 1}. ${option.answer}`}</h1>
                   <button
                     className={`flex gap-2 justify-center font-bold items-center`}
