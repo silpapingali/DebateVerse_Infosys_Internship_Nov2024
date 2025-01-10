@@ -71,6 +71,7 @@ const MyDebates = async (req, res) => {
     debates = debates.map((debate) => {
       debate.options = debate.options.filter((option) => !option.isRemoved);
       return debate;
+      
     });
 
     res.status(200).json({ totalRecords, debates });
