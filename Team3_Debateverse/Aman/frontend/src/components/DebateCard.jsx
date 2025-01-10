@@ -32,7 +32,6 @@ const DebateCard = ({ debate, liked, Qno, isMine }) => {
     dispatch(setDebate(debate));
     dispatch(setLike(liked));
     dispatch(setQno(Qno));
-    console.log("Card Clicked");
     navigate("/voting");
   };
 
