@@ -130,7 +130,7 @@ const Register = () => {
               className="absolute top-1/2 right-2 transform -translate-y-1/2"
               onClick={() => setPasswordVisible(!passwordVisible)} 
             >
-              {passwordVisible ? <FaEyeSlash /> : <FaEye />} 
+              {passwordVisible ? <FaEye />: <FaEyeSlash /> } 
             </button>
           </div>
 
@@ -152,7 +152,7 @@ const Register = () => {
               className="absolute top-1/2 right-2 transform -translate-y-1/2"
               onClick={() => setConfirmPasswordVisible(!confirmPasswordVisible)} 
             >
-              {confirmPasswordVisible ? <FaEyeSlash /> : <FaEye />}
+              {confirmPasswordVisible ? <FaEye />: <FaEyeSlash />}
             </button>
           </div>
 
