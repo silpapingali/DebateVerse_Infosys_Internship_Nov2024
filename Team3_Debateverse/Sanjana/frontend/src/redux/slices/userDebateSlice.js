@@ -39,6 +39,9 @@ const UserDebateSlice = createSlice({
     setCurrPage: (state, action) => {
       state.currPage = action.payload;
     },
+    setEmptyDebates: (state, action)=>{
+      state.debates= {};
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -65,5 +68,5 @@ const UserDebateSlice = createSlice({
       });
   },
 });
-export const { setCurrPage } = UserDebateSlice.actions;
+export const { setCurrPage, setEmptyDebates } = UserDebateSlice.actions;
 export default UserDebateSlice.reducer;

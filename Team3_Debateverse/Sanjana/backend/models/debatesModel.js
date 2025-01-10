@@ -6,6 +6,7 @@ const debatesSchema = new mongoose.Schema({
     {
       answer: { type: String, required: true },
       votes: { type: Number, default: 0 },
+      isRemoved: {type: Boolean, default: false},
     },
   ],
   createdBy: { type: String, required: true },
