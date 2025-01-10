@@ -95,8 +95,8 @@ const UserAllDebates = () => {
               <input
                 type="range"
                 min="0"
-                max="25000"
-                step="5"
+                max="2500"
+                step="10"
                 className="w-full"
                 value={votes}
                 onChange={(e) => setVotes(e.target.value)}

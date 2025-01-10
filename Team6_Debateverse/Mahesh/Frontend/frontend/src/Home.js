@@ -118,28 +118,36 @@ function Home() {
               <h4>{debate.text}</h4>
               <p>Created on: {formatDate(debate.created_on)}</p>
               <div style={{ display: 'flex' }}>
-                <div style={{ marginTop: '10px', width: '60%' }}>
-                  {debate.options && debate.options.length > 0 ? (
-                    debate.options.map((option, index) => (
-                      <div
-                        key={option.id}
-                        style={{
-                          border: '1px solid #ddd',
-                          borderRadius: '5px',
-                          padding: '5px',
-                          marginBottom: '5px',
-                          backgroundColor: '#f9f9f9',
-                          width: '100%',
-                        }}
-                      >
-                        <strong>{index + 1}. </strong>
-                        {option.text} - {option.upvotes || 0} votes 
-                      </div>
-                    ))
-                  ) : (
-                    <p>No options available for this debate.</p>
-                  )}
-                </div>
+              <div style={{ marginTop: '10px', width: '60%' }}>
+  {debate.options && debate.options.length > 0 ? (
+    debate.options.map((option, index) => (
+      <div
+        key={option.id}
+        style={{
+          border: '1px solid #ddd',
+          borderRadius: '5px',
+          padding: '5px',
+          marginBottom: '5px',
+          backgroundColor: option.is_deleted === 'yes' ? '#f0f0f0' : '#f9f9f9',
+          opacity: option.is_deleted === 'yes' ? 0.5 : 1,
+        }}
+      >
+        <strong>{index + 1}. </strong>
+        {option.is_deleted === 'yes' ? (
+          <>
+            {option.text} - <span style={{ color: 'red' }}>This option was deleted by the admin</span>
+          </>
+        ) : (
+          <>
+            {option.text} - {option.upvotes || 0} votes 
+          </>
+        )}
+      </div>
+    ))
+  ) : (
+    <p>No options available for this debate.</p>
+  )}
+</div>
                 <div style={{ width: '35%', marginLeft: '20px' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                     {debate.options && debate.options.length > 0 ? (
