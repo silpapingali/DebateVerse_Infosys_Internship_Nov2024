@@ -3,17 +3,19 @@ const likesModel = require("../models/likesModel");
 const votesModel = require("../models/votesModel");
 
 const AllDebates = async (req, res) => {
-  console.log(req.body);
-
   const createdBy = req.user.email.split("@")[0];
-  const { userId } = req.user;
+  const { userId, role } = req.user;
   const { page = 1, isExact, votes, likegt, date, searchQuery } = req.body;
-  console.log(req.body);
   const skip = (page - 1) * 10;
+
   let filters = {
     createdBy: { $ne: createdBy },
-    status: { $ne: "closed" },
   };
+
+  if (role === "user") {
+    filters.status = { $ne: "closed" };
+  }
+
   if (votes) {
     filters.totalVotes = { $gte: votes };
   }
@@ -24,18 +26,24 @@ const AllDebates = async (req, res) => {
     filters.createdOn = { $gte: new Date(date) };
   }
   if (searchQuery) {
-    const queryRegex = isExact ? `^${searchQuery}$` : `^${searchQuery}`;
+    const queryRegex = isExact ? `^${searchQuery}$` : `${searchQuery}`;
     filters["question"] = { $regex: queryRegex, $options: "i" };
   }
 
   try {
     const totalRecords = await debatesModel.countDocuments(filters);
-    const debates = await debatesModel
+    let debates = await debatesModel
       .find(filters)
       .skip(skip)
       .limit(10)
       .sort({ createdOn: -1 });
 
+    if (role === "user") {
+      debates = debates.map((debate) => {
+        debate.options = debate.options.filter((option) => !option.isRemoved);
+        return debate;
+      });
+    }
     const likes = await Promise.all(
       debates.map(async (debate) => {
         const like = await likesModel.findOne({ debateId: debate._id, userId });
@@ -55,17 +63,23 @@ const MyDebates = async (req, res) => {
   const skip = (page - 1) * 10;
   try {
     const totalRecords = await debatesModel.countDocuments({ createdBy });
-    const debates = await debatesModel
+    let debates = await debatesModel
       .find({ createdBy })
       .skip(skip)
       .limit(10)
       .sort({ createdOn: -1 });
+    debates = debates.map((debate) => {
+      debate.options = debate.options.filter((option) => !option.isRemoved);
+      return debate;
+    });
+
     res.status(200).json({ totalRecords, debates });
   } catch (err) {
     console.log(err);
-    res.status(400).json({ message: "Server error ! Please try again later" });
+    res.status(400).json({ message: "Server error! Please try again later" });
   }
 };
+
 
 const CreateDebate = async (req, res) => {
   const { question, options } = req.body;
@@ -83,7 +97,7 @@ const CreateDebate = async (req, res) => {
     res.status(200).json({ message: "Success ! Debate created" });
   } catch (err) {
     console.log(err);
-    res.status(400).json({ message: "Fill the Fields" });
+    res.status(400).json({ message: "Server error ! Try after sometime" });
   }
 };
 
@@ -119,17 +133,21 @@ const VoteDebate = async (req, res) => {
     if (!debate) {
       return res.status(400).json({ message: "Debate not found" });
     }
+    let voteIndex = 0;
     debate.options.forEach((option, index) => {
-      option.votes += votes[index];
+      if (!option.isRemoved) {
+        option.votes += votes[voteIndex];
+        voteIndex++;
+      }
     });
-    debate.totalVotes+=10;
-    await debate.save()
+    debate.totalVotes += 10;
+    await debate.save();
     const newVote = new votesModel({
       userId,
       debateId,
-      votes: votes,
+      votes,
     });
-    await newVote.save();;
+    await newVote.save();
     res.status(200).json({ message: "Votes Casted Successfully !" });
   } catch (err) {
     console.log(err);
@@ -152,7 +170,7 @@ const FetchVotes = async (req, res) => {
     console.log(err);
     res.status(400).json({ message: "Server error" });
   }
-} 
+};
 
 module.exports = {
   AllDebates,

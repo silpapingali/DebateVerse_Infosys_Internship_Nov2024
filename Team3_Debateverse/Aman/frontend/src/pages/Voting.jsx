@@ -8,7 +8,11 @@ import { useNavigate } from "react-router-dom";
 import { FaPlus, FaMinus } from "react-icons/fa";
 import { toast } from "react-toastify";
 import axios from "axios";
-import { setVotes } from "../redux/slices/votingSlice";
+import {
+  setDebateOptionStatus,
+  setDebateStatus,
+  setVotes,
+} from "../redux/slices/votingSlice";
 import {
   ResponsiveContainer,
   Tooltip,
@@ -17,8 +21,10 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { UserContext } from "../context/UserContext";
 
 const Voting = () => {
+  const { role } = useContext(UserContext);
   const { debate, liked, Qno, votes, isVoted, isLoading } = useSelector(
     (states) => states.voting
   );
@@ -42,7 +48,6 @@ const Voting = () => {
   };
 
   const handleSubmission = async () => {
-    console.log(votes.length);
     let totalVotesCasted = votes.reduce((acc, curr) => acc + curr, 0);
     if (totalVotesCasted < 10) return toast.error("Please cast all 10 votes !");
     try {
@@ -53,23 +58,90 @@ const Voting = () => {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
       );
-      console.log(res);
       toast.success(res.data.message);
+      navigate("/userdebates");
     } catch (err) {
       toast.error(err.response.data.message);
-      console.log(err);
     }
   };
+
+  const handleClose = async (status) => {
+    try {
+      const res = await axios.post(
+        "http://localhost:3000/api/admin/closedebate",
+        { debateId: debate._id, status },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      dispatch(setDebateStatus(status));
+      toast.success(`Successfully ${status} !`);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Error closing debate");
+    }
+  };
+
+  const removeOption = async (idx, action) => {
+    if (action == -1) {
+      const optionLength = debate.options.filter(
+        (option) => !option.isRemoved
+      ).length;
+      if (optionLength < 3) {
+        return toast.warning("Cannot Remove ! Minimum 2 options are required");
+      }
+    }
+
+    try {
+      const res = await axios.post(
+        "http://localhost:3000/api/admin/removeoption",
+        { debateId: debate._id, idx },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      dispatch(setDebateOptionStatus(idx));
+      toast.success(`Success !`);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Error closing debate");
+    }
+  };
+
   return (
     <div className="pt-16 lg:p-48 p-5 flex items-center justify-center min-h-screen bg-gradient-to-r from-indigo-300 via-indigo-400 to-indigo-500">
       {!isLoading && (
         <div className=" w-full">
-          <button
-            onClick={() => navigate("/userdebates")}
-            className="bg-blue-500 px-6 py-2 rounded-lg mb-4"
-          >
-            Go Back
-          </button>
+          <div className="flex justify-between">
+            <button
+              onClick={() => navigate("/userdebates")}
+              className="bg-blue-500 px-6 py-2 rounded-lg mb-4"
+            >
+              Go Back
+            </button>
+            {role == "admin" &&
+              (debate.status === "open" ? (
+                <button
+                  onClick={() => {
+                    handleClose("closed");
+                  }}
+                  className="bg-red-500 px-6 py-2 rounded-lg mb-4"
+                >
+                  Close
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    handleClose("open");
+                  }}
+                  className="bg-green-500 px-6 py-2 rounded-lg mb-4"
+                >
+                  Open
+                </button>
+              ))}
+          </div>
           <div className={`bg-indigo-600 rounded-lg p-5 w-full text-white `}>
             <div className="flex justify-between items-center">
               <h1 className="font-semibold">
@@ -80,6 +152,7 @@ const Voting = () => {
                 </span>
               </h1>
               <button
+                disabled={role == "admin"}
                 onClick={() => {
                   handleLike(debate._id, Qno - 1);
                 }}
@@ -115,25 +188,46 @@ const Voting = () => {
                           {option.votes}
                         </button>
                       </div>
-                      <div className="flex justify-center items-center gap-1 md:ml-10">
-                        <button
-                          disabled={isVoted}
-                          onClick={() => handleVote(ind, -1)}
-                          className="p-2 rounded-full bg-violet-500"
-                        >
-                          <FaMinus size={16} />
-                        </button>
-                        <h1 className="px-5 py-1 bg-blue-600 rounded-xl">
-                          {votes[ind]}
-                        </h1>
-                        {/* <input type="number" value={vote[ind]} onChange={(e)=>handleVote(ind, e.target.value)} min="0" max="10" className="p-1 text-center rounded-lg text-black" /> */}
-                        <button
-                          onClick={() => handleVote(ind, 1)}
-                          className="p-2 rounded-full bg-violet-500"
-                        >
-                          <FaPlus size={16} />
-                        </button>
-                      </div>
+
+                      {role == "user" ? (
+                        <div className="flex justify-center items-center gap-1 md:ml-10">
+                          <button
+                            disabled={isVoted}
+                            onClick={() => handleVote(ind, -1)}
+                            className="p-2 rounded-full bg-violet-500"
+                          >
+                            <FaMinus size={16} />
+                          </button>
+                          <h1 className="px-5 py-1 bg-blue-600 rounded-xl">
+                            {votes[ind]}
+                          </h1>
+                          {/* <input type="number" value={vote[ind]} onChange={(e)=>handleVote(ind, e.target.value)} min="0" max="10" className="p-1 text-center rounded-lg text-black" /> */}
+                          <button
+                            onClick={() => handleVote(ind, 1)}
+                            className="p-2 rounded-full bg-violet-500"
+                          >
+                            <FaPlus size={16} />
+                          </button>
+                        </div>
+                      ) : (
+                        <div>
+                          {!option.isRemoved ? (
+                            <button
+                              onClick={() => removeOption(ind, -1)}
+                              className="bg-red-500 px-5 py-1 rounded-lg"
+                            >
+                              Remove
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => removeOption(ind, 1)}
+                              className="bg-green-500 px-5 py-1 rounded-lg"
+                            >
+                              Add
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -152,15 +246,17 @@ const Voting = () => {
                     <Bar dataKey="votes" fill="#82ca9d" />
                   </BarChart>
                 </ResponsiveContainer>
-                <button
-                  disabled={isVoted}
-                  onClick={handleSubmission}
-                  className={`p-8 ${
-                    isVoted ? "bg-emerald-200" : "bg-emerald-500"
-                  } rounded-lg font-bold text-2xl`}
-                >
-                  {isVoted ? "Voted" : "Vote"}
-                </button>
+                {role != "admin" && (
+                  <button
+                    disabled={isVoted}
+                    onClick={handleSubmission}
+                    className={`p-8 ${
+                      isVoted ? "bg-emerald-200" : "bg-emerald-500"
+                    } rounded-lg font-bold text-2xl`}
+                  >
+                    {isVoted ? "Voted" : "Vote"}
+                  </button>
+                )}
               </div>
             </div>
           </div>

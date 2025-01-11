@@ -36,7 +36,6 @@ const votingSlice = createSlice({
   },
   reducers: {
     setQno: (state, action) => {
-        console.log("in setQno");
         state.Qno = action.payload;
     },
     setDebate: (state, action) => {
@@ -48,6 +47,14 @@ const votingSlice = createSlice({
     setVotes: (state, action) => {
       const { index, val } = action.payload;
       state.votes[index] = state.votes[index] + Number(val);
+    },
+    setDebateStatus: (state, action)=>{
+      state.debate.status= action.payload;
+    },
+    setDebateOptionStatus: (state, action) => {
+      const idx = action.payload;
+      const currentStatus = state.debate.options[idx].isRemoved;
+      state.debate.options[idx].isRemoved = !currentStatus;
     }
   },
   extraReducers: (builder) => { 
@@ -72,5 +79,5 @@ const votingSlice = createSlice({
   },
 });
 
-export const { setQno, setDebate, setLike, setVotes } = votingSlice.actions;
+export const { setQno, setDebate, setLike, setVotes, setDebateStatus, setDebateOptionStatus } = votingSlice.actions;
 export default votingSlice.reducer;

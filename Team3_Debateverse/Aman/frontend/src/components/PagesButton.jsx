@@ -16,10 +16,9 @@ const PagesButton = ({
   votes = 0,
   likegt = 0,
   date = null,
-  searchQuery= null
+  searchQuery= null,
 }) => {
   const dispatch = useDispatch();
-
   const handlePageClick = (i) => {
     if (from == "all") {
       if (i > totalPages) return toast.warning("No More Pages !");

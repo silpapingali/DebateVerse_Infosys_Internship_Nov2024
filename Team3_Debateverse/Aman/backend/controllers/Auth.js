@@ -111,7 +111,6 @@ const Verify = async (req, res) => {
 
 const ResetRequest = async (req, res) => {
   const { email } = req.body;
-  console.log(email, " in request reset");
   try {
     const user = await userModel.findOne({ email });
     if (!user) {
