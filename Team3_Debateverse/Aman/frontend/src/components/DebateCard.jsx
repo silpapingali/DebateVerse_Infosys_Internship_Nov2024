@@ -23,14 +23,14 @@ import {
 
 const DebateCard = ({ debate, liked, Qno, isMine }) => {
   const dispatch = useDispatch();
-  const likeBtn = useRef(null);
   const navigate = useNavigate();
+  const likeBtn = useRef(null);
 
   const onCardClick = (e) => {
     if(isMine) return;
     dispatch(fetchVotes(debate._id));
     dispatch(setDebate(debate));
-    dispatch(setLike(liked));
+    dispatch(setLike({act:false, liked}));
     dispatch(setQno(Qno));
     navigate("/voting");
   };

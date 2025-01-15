@@ -36,7 +36,7 @@ const Register = () => {
     setIsLoading(true);
     try {
       const res = await axios.post(
-        "http://localhost:3000/api/auth/register",
+        `${import.meta.env.VITE_BASE_URL}api/auth/register`,
         RegisterData
       );
       if (res.status == 201) {

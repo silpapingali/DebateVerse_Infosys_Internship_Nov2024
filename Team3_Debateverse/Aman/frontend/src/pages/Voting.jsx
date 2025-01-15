@@ -11,6 +11,7 @@ import axios from "axios";
 import {
   setDebateOptionStatus,
   setDebateStatus,
+  setLike,
   setVotes,
 } from "../redux/slices/votingSlice";
 import {
@@ -41,7 +42,9 @@ const Voting = () => {
   };
 
   const handleLike = (_id, index) => {
+    console.log(index);
     dispatch(likeRequest(_id));
+    dispatch(setLike({act:true, liked}));
     liked
       ? dispatch(setLiked({ index, val: -1 }))
       : dispatch(setLiked({ index, val: 1 }));
@@ -52,7 +55,7 @@ const Voting = () => {
     if (totalVotesCasted < 10) return toast.error("Please cast all 10 votes !");
     try {
       const res = await axios.post(
-        "http://localhost:3000/api/debates/voterequest",
+        `${import.meta.env.VITE_BASE_URL}api/debates/voterequest`,
         { debateId: debate._id, votes: votes },
         {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
@@ -68,7 +71,7 @@ const Voting = () => {
   const handleClose = async (status) => {
     try {
       const res = await axios.post(
-        "http://localhost:3000/api/admin/closedebate",
+        `${import.meta.env.VITE_BASE_URL}api/admin/closedebate`,
         { debateId: debate._id, status },
         {
           headers: {
@@ -95,7 +98,7 @@ const Voting = () => {
 
     try {
       const res = await axios.post(
-        "http://localhost:3000/api/admin/removeoption",
+        `${import.meta.env.VITE_BASE_URL}api/admin/removeoption`,
         { debateId: debate._id, idx },
         {
           headers: {

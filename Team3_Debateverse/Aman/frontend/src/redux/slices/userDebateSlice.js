@@ -8,7 +8,7 @@ export const fetchUserDebates = createAsyncThunk(
     console.log("in fetching");
     try {
       const response = await axios.get(
-        `http://localhost:3000/api/debates/mydebates/?page=${data}`,
+        `${import.meta.env.VITE_BASE_URL}api/debates/mydebates/?page=${data}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

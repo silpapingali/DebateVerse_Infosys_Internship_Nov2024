@@ -22,7 +22,7 @@ const UserContextProvider = ({ children }) => {
         setIsLoading(true);
         try {
           const res = await axios.get(
-            "http://localhost:3000/api/auth/authcheck",
+            `${import.meta.env.VITE_BASE_URL}api/auth/authcheck`,
             {
               headers: {
                 Authorization: `Bearer ${token}`,

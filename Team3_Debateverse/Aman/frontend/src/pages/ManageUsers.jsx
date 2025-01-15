@@ -38,7 +38,7 @@ const ManageUsers = () => {
     setIsLoading(true);
     try {
       const res = await axios.post(
-        "http://localhost:3000/api/admin/blockuser",
+        `${import.meta.env.VITE_BASE_URL}api/admin/blockuser`,
         { userEmail: users[index].email }
       );
       toast.success(res.data.message);
@@ -53,7 +53,7 @@ const ManageUsers = () => {
     setIsLoading(true);
     try {
       const res = await axios.post(
-        "http://localhost:3000/api/admin/activateuser",
+        `${import.meta.env.VITE_BASE_URL}api/admin/activateuser`,
         { userEmail: users[index].email }
       );
       toast.success(res.data.message);

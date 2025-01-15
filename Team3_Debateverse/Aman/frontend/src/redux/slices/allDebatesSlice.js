@@ -8,7 +8,7 @@ export const fetchAllDebates = createAsyncThunk(
     console.log("in fetching");
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/debates/alldebates",
+        `${import.meta.env.VITE_BASE_URL}api/debates/alldebates`,
         data,
         {
           headers: {
@@ -31,7 +31,7 @@ export const likeRequest = createAsyncThunk(
     const token = localStorage.getItem("token");
     try {
       const res = await axios.get(
-        `http://localhost:3000/api/debates/likerequest/?debateId=${data}`,
+        `${import.meta.env.VITE_BASE_URL}api/debates/likerequest/?debateId=${data}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

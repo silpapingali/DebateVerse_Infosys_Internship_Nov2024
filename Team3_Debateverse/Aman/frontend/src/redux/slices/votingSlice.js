@@ -7,7 +7,7 @@ export const fetchVotes = createAsyncThunk(
     const token = localStorage.getItem("token");
     try {
       const response = await axios.get(
-        `http://localhost:3000/api/debates/fetchvotes/?debateId=${data}`,
+        `${import.meta.env.VITE_BASE_URL}api/debates/fetchvotes/?debateId=${data}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -42,8 +42,15 @@ const votingSlice = createSlice({
       state.debate = action.payload;
     },
     setLike: (state, action) => {
-      state.liked = action.payload;
+      const { act, liked } = action.payload;
+      console.log(act, liked);
+      if (act) {
+        state.liked = !liked;
+      } else {
+        state.liked = liked;
+      }
     },
+    
     setVotes: (state, action) => {
       const { index, val } = action.payload;
       state.votes[index] = state.votes[index] + Number(val);

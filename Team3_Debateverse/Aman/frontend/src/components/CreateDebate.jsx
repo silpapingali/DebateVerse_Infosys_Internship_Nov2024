@@ -43,7 +43,7 @@ const CreateDebate = ({ showCreate }) => {
     const token = localStorage.getItem("token");
     try {
       const res = await axios.post(
-        "http://localhost:3000/api/debates/create",
+        `${import.meta.env.VITE_BASE_URL}api/debates/create`,
         data,
         {
           headers: {
